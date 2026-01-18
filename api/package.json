@@ -1,0 +1,28 @@
+{
+  "name": "maxflow-shift-optimizer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "setup": "prisma generate && prisma migrate dev",
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "node prisma/seed.js",
+    "db:reset": "prisma migrate reset",
+    "db:studio": "prisma studio",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "API REST para sistema de asignación de turnos médicos",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "prisma": "^5.22.0"
+  }
+}
