@@ -15,6 +15,7 @@ struct InputData {
   int maxGuardiasPorPeriodo;
   int maxGuardiasTotales;
   std::map<std::string, int> medicosPorDia;
+  std::map<std::string, int> personalCapacities;
 };
 
 /**

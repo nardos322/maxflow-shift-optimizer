@@ -10,7 +10,9 @@
     "db:seed": "node prisma/seed.js",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "dotenv -e .env.test -- npx prisma migrate reset --force --skip-seed && dotenv -e .env.test -- jest --runInBand",
+    "db:scenario:feasible": "prisma migrate reset --force --skip-seed && node prisma/scenarios/feasible.js",
+    "db:scenario:infeasible": "prisma migrate reset --force --skip-seed && node prisma/scenarios/infeasible.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -18,11 +20,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "API REST para sistema de asignación de turnos médicos",
+  "description": "Optimizador de cobertura de personal para guardias hospitalarias usando algoritmos de flujo.",
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",
     "prisma": "^5.22.0"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2"
   }
 }

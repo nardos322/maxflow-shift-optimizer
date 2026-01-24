@@ -11,7 +11,7 @@ TEST_DIR = tests
 INCLUDES = -I$(INCLUDE_DIR) -I$(TEST_DIR)
 
 # Archivos programa principal
-TARGET = $(BUILD_DIR)/turnos
+TARGET = $(BUILD_DIR)/solver
 SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/graph.cpp $(SRC_DIR)/edmonds_karp.cpp $(SRC_DIR)/graph_builder.cpp $(SRC_DIR)/json_parser.cpp
 OBJECTS = $(BUILD_DIR)/main.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o $(BUILD_DIR)/graph_builder.o $(BUILD_DIR)/json_parser.o
 
@@ -112,6 +112,15 @@ test-graph: $(BUILD_DIR) $(TEST_GRAPH_TARGET)
 
 test-ek: $(BUILD_DIR) $(TEST_EK_TARGET)
 	./$(TEST_EK_TARGET)
+
+test-mincut: $(BUILD_DIR)/test_mincut
+	./$(BUILD_DIR)/test_mincut
+
+$(BUILD_DIR)/test_mincut: $(BUILD_DIR)/test_mincut.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(BUILD_DIR)/test_mincut.o: $(TEST_DIR)/test_mincut.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 test-hospital: $(BUILD_DIR) $(TEST_HOSPITAL_TARGET)
 	./$(TEST_HOSPITAL_TARGET)

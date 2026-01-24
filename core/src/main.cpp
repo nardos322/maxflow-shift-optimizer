@@ -23,6 +23,14 @@ int main(int argc, char *argv[]) {
                            flowGraph);
 
       ResultadoAsignacion resultado = builder.extraerResultado(flowGraph);
+
+      if (!resultado.factible) {
+        // Calcular Min-Cut para identificar cuellos de botella
+        std::vector<int> reachable =
+            ek.getReachableNodes(g, flowGraph, builder.getSource());
+        resultado.bottlenecks = builder.analyzeMinCut(reachable);
+      }
+
       std::cout << JSONParser::toJson(resultado) << std::endl;
       return 0;
     } catch (const std::exception &e) {
@@ -56,7 +64,16 @@ int main(int argc, char *argv[]) {
     ek.maxFlowWithResult(g, builder.getSource(), builder.getSink(), flowGraph);
 
     // Extraer y devolver resultado
+    // Extraer y devolver resultado
     ResultadoAsignacion resultado = builder.extraerResultado(flowGraph);
+
+    if (!resultado.factible) {
+      // Calcular Min-Cut para identificar cuellos de botella
+      std::vector<int> reachable =
+          ek.getReachableNodes(g, flowGraph, builder.getSource());
+      resultado.bottlenecks = builder.analyzeMinCut(reachable);
+    }
+
     std::cout << JSONParser::toJson(resultado) << std::endl;
 
     return 0;

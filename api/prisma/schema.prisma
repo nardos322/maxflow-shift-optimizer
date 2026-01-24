@@ -77,5 +77,4 @@ model Asignacion {
   @@unique([fecha, medicoId]) // Un médico no puede tener dos asignaciones el mismo día
   @@index([medicoId])
   @@index([periodoId])
-  @@map("Turno") // Mantiene el nombre de tabla existente
 }

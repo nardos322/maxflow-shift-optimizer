@@ -114,3 +114,37 @@ int EdmondsKarp::maxFlowWithResult(Graph graph, int source, int sink,
 
   return maxFlowValue;
 }
+
+std::vector<int> EdmondsKarp::getReachableNodes(
+    const Graph &graph, const std::vector<std::vector<int>> &flowGraph,
+    int source) {
+  int n = graph.getNumVertices();
+  std::vector<bool> visited(n, false);
+  std::vector<int> reachable;
+  std::queue<int> q;
+
+  q.push(source);
+  visited[source] = true;
+  reachable.push_back(source);
+
+  while (!q.empty()) {
+    int u = q.front();
+    q.pop();
+
+    for (int v = 0; v < n; v++) {
+      if (!visited[v]) {
+        // Capacidad residual = Capacidad original - Flujo neto
+        // Nota: flowGraph[u][v] puede ser negativo si el flujo va de v a u
+        int residualCap = graph.getCapacity(u, v) - flowGraph[u][v];
+
+        if (residualCap > 0) {
+          visited[v] = true;
+          reachable.push_back(v);
+          q.push(v);
+        }
+      }
+    }
+  }
+
+  return reachable;
+}

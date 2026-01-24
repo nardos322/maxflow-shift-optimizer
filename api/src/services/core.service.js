@@ -22,7 +22,7 @@ function ejecutarCore(inputData) {
             stderr += data.toString();
         });
 
-        process.on('close', (code) => {
+        process.on('close', (code, signal) => {
             if (code === 0) {
                 try {
                     resolve(JSON.parse(stdout));
@@ -30,7 +30,7 @@ function ejecutarCore(inputData) {
                     reject(new Error(`Error parseando respuesta del core: ${parseError.message}`));
                 }
             } else {
-                reject(new Error(stderr || `Proceso terminó con código ${code}`));
+                reject(new Error(stderr || `Proceso terminó con código ${code} y señal ${signal}`));
             }
         });
 

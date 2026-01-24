@@ -47,8 +47,25 @@ async function limpiar(req, res, next) {
     }
 }
 
+/**
+ * POST /asignaciones/reparar
+ * Body: { medicoId: 123 }
+ */
+async function reparar(req, res, next) {
+    try {
+        const { medicoId, darDeBaja } = req.body;
+        if (!medicoId) return res.status(400).json({ error: 'medicoId es requerido' });
+
+        const resultado = await asignacionesService.repararAsignaciones(medicoId, darDeBaja);
+        res.json(resultado);
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     calcular,
     obtenerResultados,
     limpiar,
+    reparar,
 };

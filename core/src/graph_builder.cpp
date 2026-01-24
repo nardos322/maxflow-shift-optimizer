@@ -35,6 +35,11 @@ void GraphBuilder::setMedicosPorDia(
   medicosPorDia_ = medicosPorDia;
 }
 
+void GraphBuilder::setPersonalCapacities(
+    const std::map<std::string, int> &capacities) {
+  personalCapacities_ = capacities;
+}
+
 void GraphBuilder::setMedicosRequeridosTodosDias(int cantidad) {
   for (const auto &dia : dias_) {
     medicosPorDia_[dia] = cantidad;
@@ -113,8 +118,14 @@ Graph GraphBuilder::build() {
     if (it != disponibilidad_.end()) {
       diasDisponibles = it->second.size();
     }
+
     // Aplicar límite C: el médico no puede trabajar más de C días en total
-    int capacidad = std::min(maxGuardiasTotales_, diasDisponibles);
+    // Si tiene capacidad personal definida, usar esa. Si no, usar la global C.
+    int limit = maxGuardiasTotales_;
+    if (personalCapacities_.count(medico)) {
+      limit = personalCapacities_[medico];
+    }
+    int capacidad = std::min(limit, diasDisponibles);
     g.addEdge(source_, medicoToNode_[medico], capacidad);
   }
 
@@ -188,4 +199,44 @@ GraphBuilder::extraerResultado(const std::vector<std::vector<int>> &flowGraph) {
   resultado.factible = (resultado.diasCubiertos == resultado.diasRequeridos);
 
   return resultado;
+}
+
+std::vector<Bottleneck>
+GraphBuilder::analyzeMinCut(const std::vector<int> &reachableNodes) {
+  std::vector<Bottleneck> bottlenecks;
+  std::vector<bool> isReachable(numVertices_, false);
+  for (int node : reachableNodes) {
+    isReachable[node] = true;
+  }
+
+  // 1. Días no cubiertos
+  // Si un nodo DÍA no es alcanzable desde Source, significa que no llegó flujo a él.
+  for (const auto &[dia, node] : diaToNode_) {
+    if (!isReachable[node]) {
+      bottlenecks.push_back({"Dia", dia, "No se pudo asignar médico suficiente"});
+    }
+  }
+
+  // 2. Médicos Saturados Globalmente
+  // Si Source (Reachable) -> Medico (Unreachable)
+  // Significa que la arista Source->Medico está saturada (Capacidad Total agotada)
+  for (const auto &[medico, node] : medicoToNode_) {
+    if (!isReachable[node]) {
+      // El nodo Médico no es alcanzable, por lo tanto la arista Source->Medico (cap=C) se llenó.
+      bottlenecks.push_back(
+          {"Medico", medico, "Alcanzó el límite máximo de guardias totales"});
+    }
+  }
+
+  // 3. Médicos Saturados en Período
+  // Si Medico (Reachable) -> MedicoPeriodo (Unreachable)
+  // Significa que el médico tenía guardias totales disponibles, pero saturó el límite del período
+  for (const auto &[key, node] : medicoPeriodoToNode_) {
+    if (isReachable[medicoToNode_[key.first]] && !isReachable[node]) {
+      bottlenecks.push_back({"MedicoEnPeriodo", key.first + " en " + key.second,
+                             "Alcanzó el límite de guardias en este período"});
+    }
+  }
+
+  return bottlenecks;
 }

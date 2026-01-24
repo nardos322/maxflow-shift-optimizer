@@ -25,11 +25,21 @@ struct Asignacion {
 /**
  * Resultado del solver
  */
+struct Bottleneck {
+  std::string tipo; // "Medico", "Dia", "Periodo"
+  std::string id;
+  std::string razon; // "Saturado" o "No cubierto"
+};
+
+/**
+ * Resultado del solver
+ */
 struct ResultadoAsignacion {
   bool factible;
   int diasCubiertos;
   int diasRequeridos;
   std::vector<Asignacion> asignaciones;
+  std::vector<Bottleneck> bottlenecks; // Lista de cuellos de botella
 };
 
 /**
@@ -54,6 +64,7 @@ private:
   int maxGuardiasPorPeriodo_;                // máx por período (1 según enunciado)
   int maxGuardiasTotales_;                   // C: máx días totales por médico
   std::map<std::string, int> medicosPorDia_; // dia -> cantidad requerida
+  std::map<std::string, int> personalCapacities_; // Capacidad individual (opcional)
 
   // Mapeo de IDs a índices del grafo
   int source_;
@@ -82,6 +93,7 @@ public:
   void setMaxGuardiasPorPeriodo(int c);
   void setMaxGuardiasTotales(int c);
   void setMedicosPorDia(const std::map<std::string, int> &medicosPorDia);
+  void setPersonalCapacities(const std::map<std::string, int> &capacities);
   void setMedicosRequeridosTodosDias(
       int cantidad); // Shortcut: misma cantidad para todos
 
@@ -89,8 +101,12 @@ public:
   Graph build();
 
   // Extracción de resultados
+  // Extracción de resultados
   ResultadoAsignacion
   extraerResultado(const std::vector<std::vector<int>> &flowGraph);
+
+  // Analizar corte mínimo para encontrar cuellos de botella
+  std::vector<Bottleneck> analyzeMinCut(const std::vector<int> &reachableNodes);
 
   // Getters útiles
   int getSource() const { return source_; }

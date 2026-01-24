@@ -17,6 +17,11 @@ public:
   // Versión que también retorna el grafo con el flujo
   int maxFlowWithResult(Graph graph, int source, int sink,
                         std::vector<std::vector<int>> &flowGraph);
+
+  // Obtener nodos alcanzables en el grafo residual (para Min-Cut)
+  std::vector<int> getReachableNodes(const Graph &graph,
+                                     const std::vector<std::vector<int>> &flowGraph,
+                                     int source);
 };
 
 #endif

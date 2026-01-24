@@ -5,7 +5,8 @@ const medicosService = require('../services/medicos.service');
  */
 async function obtenerTodos(req, res, next) {
     try {
-        const medicos = await medicosService.obtenerTodos();
+        const soloActivos = req.query.soloActivos === 'true';
+        const medicos = await medicosService.obtenerTodos(soloActivos);
         res.json(medicos);
     } catch (error) {
         next(error);

@@ -3,8 +3,10 @@ const prisma = require('../lib/prisma');
 /**
  * Obtiene todos los médicos
  */
-async function obtenerTodos() {
+async function obtenerTodos(soloActivos = false) {
+    const where = soloActivos ? { activo: true } : {};
     return prisma.medico.findMany({
+        where,
         orderBy: { nombre: 'asc' },
     });
 }
@@ -51,8 +53,21 @@ async function actualizar(id, data) {
  * Elimina un médico (soft delete - lo desactiva)
  */
 async function eliminar(id) {
+    const medicoId = parseInt(id);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // 1. Eliminar asignaciones futuras
+    await prisma.asignacion.deleteMany({
+        where: {
+            medicoId: medicoId,
+            fecha: { gte: today }
+        }
+    });
+
+    // 2. Desactivar médico
     return prisma.medico.update({
-        where: { id: parseInt(id) },
+        where: { id: medicoId },
         data: { activo: false },
     });
 }

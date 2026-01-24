@@ -85,6 +85,13 @@ InputData JSONParser::parseInput(const std::string &jsonString) {
       }
     }
 
+    // Parsear capacidades personales (Opcional)
+    if (j.contains("capacidades") && j["capacidades"].is_object()) {
+      for (auto &[medico, cap] : j["capacidades"].items()) {
+        data.personalCapacities[medico] = cap.get<int>();
+      }
+    }
+
   } catch (const json::exception &e) {
     throw std::runtime_error("Error parseando JSON: " + std::string(e.what()));
   }
@@ -117,6 +124,14 @@ std::string JSONParser::toJson(const ResultadoAsignacion &resultado) {
     j["asignaciones"].push_back({{"medico", asig.medico}, {"dia", asig.dia}});
   }
 
+  if (!resultado.factible) {
+    j["bottlenecks"] = json::array();
+    for (const auto &b : resultado.bottlenecks) {
+      j["bottlenecks"].push_back(
+          {{"tipo", b.tipo}, {"id", b.id}, {"razon", b.razon}});
+    }
+  }
+
   return j.dump(2); // Indentado con 2 espacios
 }
 
@@ -129,4 +144,5 @@ void JSONParser::configureBuilder(GraphBuilder &builder,
   builder.setMaxGuardiasPorPeriodo(data.maxGuardiasPorPeriodo);
   builder.setMaxGuardiasTotales(data.maxGuardiasTotales);
   builder.setMedicosPorDia(data.medicosPorDia);
+  builder.setPersonalCapacities(data.personalCapacities);
 }
