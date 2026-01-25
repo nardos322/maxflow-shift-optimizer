@@ -1,8 +1,19 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const prisma = require('../../src/lib/prisma');
+const { seedAdmin } = require('../../prisma/seed');
+jest.setTimeout(30000);
+
+
+const AuthHelper = require('../utils/authHelper');
 
 describe('API Integration Tests - Configuracion', () => {
+    let adminToken;
+
+    beforeAll(async () => {
+        await seedAdmin();
+        adminToken = await AuthHelper.getAdminToken();
+    });
 
     afterAll(async () => {
         await prisma.$disconnect();
@@ -12,7 +23,9 @@ describe('API Integration Tests - Configuracion', () => {
      * Test 1: Obtener Configuración (y verificar creación por defecto)
      */
     test('GET /configuracion debe devolver la configuración por defecto o existente', async () => {
-        const res = await request(app).get('/configuracion');
+        const res = await request(app)
+            .get('/configuracion')
+            .set('Authorization', `Bearer ${adminToken}`);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body).toHaveProperty('id');
@@ -35,6 +48,7 @@ describe('API Integration Tests - Configuracion', () => {
 
         const res = await request(app)
             .put('/configuracion')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send(nuevosValores);
 
         expect(res.statusCode).toEqual(200);
@@ -46,7 +60,9 @@ describe('API Integration Tests - Configuracion', () => {
      * Test 3: Verificar Persistencia de la Actualización
      */
     test('GET /configuracion posterior debe devolver los valores actualizados', async () => {
-        const res = await request(app).get('/configuracion');
+        const res = await request(app)
+            .get('/configuracion')
+            .set('Authorization', `Bearer ${adminToken}`);
 
         expect(res.statusCode).toEqual(200);
         expect(res.body.maxGuardiasTotales).toBe(10);

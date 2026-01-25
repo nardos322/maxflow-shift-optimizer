@@ -1,11 +1,20 @@
+
 const { main } = require('./scenarios/feasible');
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+
+const prisma = new PrismaClient();
+
+const { seedAdmin } = require('./seedAdmin');
+
 
 if (require.main === module) {
-    main()
+    seedAdmin()
+        .then(() => main())
         .catch((e) => {
             console.error('❌ Error en seed default:', e);
             process.exit(1);
         });
 }
 
-module.exports = { main };
+module.exports = { main, seedAdmin };

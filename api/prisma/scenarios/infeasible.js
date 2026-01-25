@@ -1,31 +1,25 @@
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const prisma = require('../../src/lib/prisma');
+const { seedAdmin } = require('../seedAdmin');
+const Factories = require('../../src/lib/factories');
 
 async function main() {
     console.log('🔥 Iniciando seed: INFEASIBLE (Infactible)...');
+    await seedAdmin();
 
     // Limpiar datos existentes
-    await prisma.asignacion.deleteMany();
-    await prisma.disponibilidad.deleteMany();
-    await prisma.feriado.deleteMany();
-    await prisma.periodo.deleteMany();
-    await prisma.medico.deleteMany();
-    await prisma.configuracion.deleteMany();
+    await Factories.debugCleanDB();
 
     // Crear configuración global AMBICIOSA
-    await prisma.configuracion.create({
-        data: {
-            maxGuardiasTotales: 5,
-            medicosPorDia: 2, // Requerimos 2 médicos por día
-        },
+    await Factories.createConfiguracion({
+        maxGuardiasTotales: 5,
+        medicosPorDia: 2, // Requerimos 2 médicos por día
     });
     console.log('✅ Configuración creada (C=5, pero 2 médicos requeridos por día)');
 
     // Crear médicos (Solo 2 médicos para cubrir mucha demanda)
     const medicos = await Promise.all([
-        prisma.medico.create({ data: { nombre: 'Dr. Solitario', email: 'solitario@hospital.com' } }),
-        prisma.medico.create({ data: { nombre: 'Dra. Sobrecargada', email: 'sobrecargada@hospital.com' } }),
+        Factories.createMedico({ nombre: 'Dr. Solitario', email: 'solitario@hospital.com' }),
+        Factories.createMedico({ nombre: 'Dra. Sobrecargada', email: 'sobrecargada@hospital.com' }),
     ]);
     console.log(`✅ ${medicos.length} médicos creados (muy posos para la demanda)`);
 
@@ -50,12 +44,6 @@ async function main() {
     console.log('✅ Período de 5 días creado (con req de 2 medicos/dia = 10 turnos totales)');
 
     // Crear disponibilidad LIMITADA
-    // Dr. Solitario: Solo puede Lunes y Martes
-    // Dra. Sobrecargada: Puede Lunes, Miercoles y Viernes
-    // TOTAL OFERTA: 2 + 3 = 5 turnos.
-    // DEMANDA: 5 días * 2 médicos = 10 turnos.
-    // DÉFICIT: 5 turnos. INFACTIBLE.
-
     const disponibilidadData = [
         { medicoId: medicos[0].id, fecha: new Date('2026-06-01') },
         { medicoId: medicos[0].id, fecha: new Date('2026-06-02') },
@@ -65,7 +53,9 @@ async function main() {
         { medicoId: medicos[1].id, fecha: new Date('2026-06-05') },
     ];
 
-    await prisma.disponibilidad.createMany({ data: disponibilidadData });
+    for (const d of disponibilidadData) {
+        await Factories.createDisponibilidad(d.medicoId, d.fecha);
+    }
     console.log(`✅ ${disponibilidadData.length} registros de disponibilidad creados (Oferta insuficiente)`);
 
     console.log('');

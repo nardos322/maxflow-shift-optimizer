@@ -1,4 +1,4 @@
-const prisma = require('../../src/lib/prisma');
+const prisma = require('./prisma');
 
 const Factories = {
     async createMedico(data = {}) {
@@ -7,6 +7,7 @@ const Factories = {
                 nombre: data.nombre || `Medico ${Math.floor(Math.random() * 1000)}`,
                 email: data.email || `medico${Math.floor(Math.random() * 1000)}@test.com`,
                 activo: data.activo !== undefined ? data.activo : true,
+                ...(data.userId && { user: { connect: { id: data.userId } } })
             }
         });
     },
@@ -25,13 +26,11 @@ const Factories = {
     },
 
     async createPeriodoWithFeriados(dias = []) {
-        // dias debe ser array de Date objects
         if (dias.length === 0) {
             const hoy = new Date();
             dias = [hoy, new Date(hoy.getTime() + 86400000)];
         }
 
-        // Ensure sorted to get range
         dias.sort((a, b) => a - b);
 
         return prisma.periodo.create({
@@ -51,7 +50,6 @@ const Factories = {
     },
 
     async createConfiguracion(data = {}) {
-        // Upsert to ensure only one config exists
         const exists = await prisma.configuracion.findFirst();
         if (exists) {
             return prisma.configuracion.update({
@@ -90,6 +88,7 @@ const Factories = {
     },
 
     async debugCleanDB() {
+        // Warning: This deletes everything
         await prisma.asignacion.deleteMany();
         await prisma.disponibilidad.deleteMany();
         await prisma.feriado.deleteMany();

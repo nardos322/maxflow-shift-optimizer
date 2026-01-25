@@ -1,15 +1,22 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const prisma = require('../../src/lib/prisma');
-const Factories = require('../utils/factories');
+const Factories = require('../../src/lib/factories');
+const AuthHelper = require('../utils/authHelper');
+const { seedAdmin } = require('../../prisma/seed');
+
+jest.setTimeout(30000);
 
 describe('API Integration Tests - Medicos', () => {
-
-    afterAll(async () => {
-        await prisma.$disconnect();
-    });
+    // Moved to inner scope
 
     let medicoId; // Para guardar el ID del médico creado
+    let adminToken;
+
+    beforeAll(async () => {
+        await seedAdmin();
+        adminToken = await AuthHelper.getAdminToken();
+    });
 
     /**
      * Test 1: Crear Médico
@@ -22,6 +29,7 @@ describe('API Integration Tests - Medicos', () => {
 
         const res = await request(app)
             .post('/medicos')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send(nuevoMedico);
 
         expect(res.statusCode).toEqual(201);
@@ -36,7 +44,9 @@ describe('API Integration Tests - Medicos', () => {
      * Test 2: Listar (Verificación de creación)
      */
     test('GET /medicos debe listar el médico creado', async () => {
-        const res = await request(app).get('/medicos');
+        const res = await request(app)
+            .get('/medicos')
+            .set('Authorization', `Bearer ${adminToken}`);
 
         expect(res.statusCode).toEqual(200);
         const creado = res.body.find(m => m.id === medicoId);
@@ -48,7 +58,9 @@ describe('API Integration Tests - Medicos', () => {
      * Test 3: Eliminar (Soft Delete)
      */
     test('DELETE /medicos/:id debe desactivar al médico', async () => {
-        const res = await request(app).delete(`/medicos/${medicoId}`);
+        const res = await request(app)
+            .delete(`/medicos/${medicoId}`)
+            .set('Authorization', `Bearer ${adminToken}`);
         expect(res.statusCode).toEqual(204);
     });
 
@@ -56,7 +68,9 @@ describe('API Integration Tests - Medicos', () => {
      * Test 4: Listar con filtro de activos
      */
     test('GET /medicos?soloActivos=true NO debe mostrar al médico eliminado', async () => {
-        const res = await request(app).get('/medicos?soloActivos=true');
+        const res = await request(app)
+            .get('/medicos?soloActivos=true')
+            .set('Authorization', `Bearer ${adminToken}`);
 
         expect(res.statusCode).toEqual(200);
         const eliminado = res.body.find(m => m.id === medicoId);
@@ -68,10 +82,13 @@ describe('API Integration Tests - Medicos', () => {
      */
     test('DELETE debe borrar asignaciones futuras', async () => {
         // 1. Crear otro médico
-        const medicoRes = await request(app).post('/medicos').send({
-            nombre: 'Dra. Futura',
-            email: 'futura@hospital.com'
-        });
+        const medicoRes = await request(app)
+            .post('/medicos')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+                nombre: 'Dra. Futura',
+                email: 'futura@hospital.com'
+            });
         const idFutura = medicoRes.body.id;
 
         // 2. Crear asignación futura manual usando Factories
@@ -87,7 +104,9 @@ describe('API Integration Tests - Medicos', () => {
         await Factories.createAsignacion(idFutura, periodo.id, manana);
 
         // 3. Eliminar al médico
-        await request(app).delete(`/medicos/${idFutura}`);
+        await request(app)
+            .delete(`/medicos/${idFutura}`)
+            .set('Authorization', `Bearer ${adminToken}`);
 
         // 4. Verificar que la asignación ya no existe
         const asignacion = await prisma.asignacion.findFirst({
@@ -101,7 +120,9 @@ describe('API Integration Tests - Medicos', () => {
      * Test 5: Listar sin filtro (Historial)
      */
     test('GET /medicos (sin filtro) SÍ debe mostrar al médico eliminado pero inactivo', async () => {
-        const res = await request(app).get('/medicos');
+        const res = await request(app)
+            .get('/medicos')
+            .set('Authorization', `Bearer ${adminToken}`);
 
         expect(res.statusCode).toEqual(200);
         const historico = res.body.find(m => m.id === medicoId);

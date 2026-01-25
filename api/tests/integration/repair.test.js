@@ -1,12 +1,18 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const prisma = require('../../src/lib/prisma');
-const Factories = require('../utils/factories');
+const Factories = require('../../src/lib/factories');
+const AuthHelper = require('../utils/authHelper');
+const { seedAdmin } = require('../../prisma/seed');
+
+jest.setTimeout(30000);
 
 describe('Integration: Shift Repair', () => {
+    let adminToken;
 
     beforeAll(async () => {
-        // Necesitamos compilar el core si no está hecho, pero asumimos que el entorno de test ya lo hizo
+        await seedAdmin();
+        adminToken = await AuthHelper.getAdminToken();
     });
 
     beforeEach(async () => {
@@ -51,6 +57,7 @@ describe('Integration: Shift Repair', () => {
         // 2. Ejecutar Reparación (Sacar a Dr. A)
         const res = await request(app)
             .post('/asignaciones/reparar')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send({ medicoId: drA.id, darDeBaja: true });
 
         expect(res.status).toBe(200);
@@ -101,6 +108,7 @@ describe('Integration: Shift Repair', () => {
 
         const res = await request(app)
             .post('/asignaciones/reparar')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send({ medicoId: drA.id });
 
         expect(res.status).toBe(200);

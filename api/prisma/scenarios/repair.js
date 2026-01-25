@@ -1,40 +1,31 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../../src/lib/prisma');
+const { seedAdmin } = require('../seedAdmin');
+const Factories = require('../../src/lib/factories');
 
 async function main() {
     console.log('🌱 Iniciando seed: REPAIR SCENARIO...');
+    await seedAdmin();
 
     // 1. Limpiar DB
-    await prisma.asignacion.deleteMany();
-    await prisma.disponibilidad.deleteMany();
-    await prisma.feriado.deleteMany();
-    await prisma.periodo.deleteMany();
-    await prisma.medico.deleteMany();
-    await prisma.configuracion.deleteMany();
+    await Factories.debugCleanDB();
 
     // 2. Configuración Global (Critica)
-    await prisma.configuracion.create({
-        data: {
-            maxGuardiasTotales: 2, // Límite bajo para forzar el uso de todos
-            medicosPorDia: 1
-        }
+    await Factories.createConfiguracion({
+        maxGuardiasTotales: 2, // Límite bajo para forzar el uso de todos
+        medicosPorDia: 1
     });
 
     // 3. Crear Médicos
-    // Necesitamos suficientes médicos para cubrir todo, pero justos para que al sacar uno se note.
-    // 3 Periodos x 1 día = 3 días totales. C=2. Se necesitan 2 médicos mínimo (2+1).
-    // Crearemos 3 médicos: A (2), B (2), C (2). Total Capacidad = 6. Demanda = 3.
     const medicos = await Promise.all([
-        prisma.medico.create({ data: { nombre: 'Dr. A (Saliente)', email: 'a@h.com' } }),
-        prisma.medico.create({ data: { nombre: 'Dr. B (Queda)', email: 'b@h.com' } }),
-        prisma.medico.create({ data: { nombre: 'Dr. C (Queda)', email: 'c@h.com' } }),
+        Factories.createMedico({ nombre: 'Dr. A (Saliente)', email: 'a@h.com' }),
+        Factories.createMedico({ nombre: 'Dr. B (Queda)', email: 'b@h.com' }),
+        Factories.createMedico({ nombre: 'Dr. C (Queda)', email: 'c@h.com' }),
     ]);
 
     const drA = medicos[0];
     console.log(`✅ Creados 3 médicos (Dr. A con ID: ${drA.id})`);
 
     // 4. Crear Períodos (3 días distintos)
-    // Usamos fechas futuras
     const fechaBase = new Date();
     fechaBase.setDate(fechaBase.getDate() + 10); // +10 días
 
@@ -64,30 +55,17 @@ async function main() {
     // 5. Disponibilidad Total (Todos pueden ir todos los días)
     for (const medico of medicos) {
         for (const f of periodo.feriados) {
-            await prisma.disponibilidad.create({
-                data: {
-                    medicoId: medico.id,
-                    fecha: f.fecha
-                }
-            });
+            await Factories.createDisponibilidad(medico.id, f.fecha);
         }
     }
     console.log('✅ Disponibilidad total creada');
 
     // 6. Pre-Asignar manualmente para forzar un escenario conocido
-    // Dia 1: Dr. A
-    // Dia 2: Dr. B
-    // Dia 3: Dr. C
-    // Razón: Queremos borrar a Dr. A y ver que Dr. B o Dr. C tomen el Dia 1,
-    // SIN perder sus asignaciones de Dia 2 y Dia 3.
-
-    await prisma.asignacion.createMany({
-        data: [
-            { fecha: dias[0], medicoId: medicos[0].id, periodoId: periodo.id }, // Dr A -> Dia 1
-            { fecha: dias[1], medicoId: medicos[1].id, periodoId: periodo.id }, // Dr B -> Dia 2
-            { fecha: dias[2], medicoId: medicos[2].id, periodoId: periodo.id }, // Dr C -> Dia 3
-        ]
-    });
+    await Promise.all([
+        Factories.createAsignacion(medicos[0].id, periodo.id, dias[0]), // Dr A -> Dia 1
+        Factories.createAsignacion(medicos[1].id, periodo.id, dias[1]), // Dr B -> Dia 2
+        Factories.createAsignacion(medicos[2].id, periodo.id, dias[2]), // Dr C -> Dia 3
+    ]);
 
     console.log('✅ Asignaciones iniciales creadas manualmente:');
     console.log('   - Dia 1: Dr. A');
@@ -101,11 +79,15 @@ async function main() {
     console.log('   El Dr. B y C deben MANTENER sus días 2 y 3.');
 }
 
-main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+if (require.main === module) {
+    main()
+        .catch((e) => {
+            console.error(e);
+            process.exit(1);
+        })
+        .finally(async () => {
+            await prisma.$disconnect();
+        });
+}
+
+module.exports = { main };

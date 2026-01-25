@@ -1,9 +1,20 @@
+jest.setTimeout(30000);
+
 const request = require('supertest');
 const app = require('../../src/app');
 const prisma = require('../../src/lib/prisma');
-const Factories = require('../utils/factories');
+const Factories = require('../../src/lib/factories');
+const AuthHelper = require('../utils/authHelper');
+const { seedAdmin } = require('../../prisma/seed');
+
 
 describe('API Integration Tests', () => {
+    let adminToken;
+
+    beforeAll(async () => {
+        await seedAdmin();
+        adminToken = await AuthHelper.getAdminToken();
+    });
 
     beforeEach(async () => {
         await Factories.debugCleanDB();
@@ -45,6 +56,7 @@ describe('API Integration Tests', () => {
         // Ejecutamos el solver
         const res = await request(app)
             .post('/asignaciones/resolver')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send({}); // Body vacío o con parámetros opcionales
 
         expect(res.statusCode).toEqual(200);
@@ -60,10 +72,15 @@ describe('API Integration Tests', () => {
      */
     test('GET /asignaciones debe devolver los datos guardados', async () => {
         // Primero resolvemos
-        await request(app).post('/asignaciones/resolver').send({});
+        await request(app)
+            .post('/asignaciones/resolver')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({});
 
         // Luego consultamos
-        const res = await request(app).get('/asignaciones');
+        const res = await request(app)
+            .get('/asignaciones')
+            .set('Authorization', `Bearer ${adminToken}`);
 
         expect(res.statusCode).toEqual(200);
         expect(Array.isArray(res.body)).toBe(true);
@@ -88,6 +105,7 @@ describe('API Integration Tests', () => {
         // 2. Ejecutar solver
         const res = await request(app)
             .post('/asignaciones/resolver')
+            .set('Authorization', `Bearer ${adminToken}`)
             .send({});
 
         expect(res.statusCode).toEqual(200);

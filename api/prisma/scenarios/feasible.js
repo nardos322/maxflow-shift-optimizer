@@ -1,34 +1,28 @@
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const prisma = require('../../src/lib/prisma');
+const { seedAdmin } = require('../seedAdmin');
+const Factories = require('../../src/lib/factories');
 
 async function main() {
     console.log('🌱 Iniciando seed: FEASIBLE (Happy Path)...');
+    await seedAdmin();
 
     // Limpiar datos existentes
-    await prisma.asignacion.deleteMany();
-    await prisma.disponibilidad.deleteMany();
-    await prisma.feriado.deleteMany();
-    await prisma.periodo.deleteMany();
-    await prisma.medico.deleteMany();
-    await prisma.configuracion.deleteMany();
+    await Factories.debugCleanDB();
 
     // Crear configuración global
-    await prisma.configuracion.create({
-        data: {
-            maxGuardiasTotales: 3,  // C = 3 días máximo por médico en total
-            medicosPorDia: 1,
-        },
+    await Factories.createConfiguracion({
+        maxGuardiasTotales: 3,  // C = 3 días máximo por médico en total
+        medicosPorDia: 1,
     });
     console.log('✅ Configuración creada (C=3, 1 médico/día)');
 
     // Crear médicos
     const medicos = await Promise.all([
-        prisma.medico.create({ data: { nombre: 'Ana García', email: 'ana.garcia@hospital.com' } }),
-        prisma.medico.create({ data: { nombre: 'Luis Rodríguez', email: 'luis.rodriguez@hospital.com' } }),
-        prisma.medico.create({ data: { nombre: 'Carlos Martínez', email: 'carlos.martinez@hospital.com' } }),
-        prisma.medico.create({ data: { nombre: 'María López', email: 'maria.lopez@hospital.com' } }),
-        prisma.medico.create({ data: { nombre: 'Pedro Sánchez', email: 'pedro.sanchez@hospital.com' } }),
+        Factories.createMedico({ nombre: 'Ana García', email: 'ana.garcia@hospital.com' }),
+        Factories.createMedico({ nombre: 'Luis Rodríguez', email: 'luis.rodriguez@hospital.com' }),
+        Factories.createMedico({ nombre: 'Carlos Martínez', email: 'carlos.martinez@hospital.com' }),
+        Factories.createMedico({ nombre: 'María López', email: 'maria.lopez@hospital.com' }),
+        Factories.createMedico({ nombre: 'Pedro Sánchez', email: 'pedro.sanchez@hospital.com' }),
     ]);
     console.log(`✅ ${medicos.length} médicos creados`);
 
@@ -132,7 +126,9 @@ async function main() {
         { medicoId: medicos[4].id, fecha: new Date('2026-12-25') },
     ];
 
-    await prisma.disponibilidad.createMany({ data: disponibilidadData });
+    for (const d of disponibilidadData) {
+        await Factories.createDisponibilidad(d.medicoId, d.fecha);
+    }
     console.log(`✅ ${disponibilidadData.length} registros de disponibilidad creados`);
 
     console.log('');
