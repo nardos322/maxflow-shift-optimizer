@@ -6,7 +6,7 @@ const options = {
         info: {
             title: 'MaxFlow Shift Optimizer API',
             version: '1.0.0',
-            description: 'API para la optimización de asignacion de guardias medicas usando algoritmos de flujo máximo (Edmonds-Karp).',
+            description: 'API central del sistema de asignación de guardias. Gestiona la orquestación de datos, autenticación y comunicación con el Solver C++ (Edmonds-Karp). Incluye funcionalidades de reparación inteligente (Shift Repair) y diagnóstico de infactibilidad (Min-Cut Analysis).',
         },
         servers: [
             {

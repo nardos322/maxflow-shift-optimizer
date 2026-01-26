@@ -23,10 +23,8 @@ cd ..
 echo ""
 echo "🔧 [2/3] Configurando API..."
 cd api
-if [ ! -d "node_modules" ]; then
-    echo "   Installing dependencies..."
-    npm install
-fi
+echo "   Installing dependencies..."
+npm install
 
 echo "   Running DB setup..."
 npm run setup
