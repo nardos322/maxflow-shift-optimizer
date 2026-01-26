@@ -89,4 +89,4 @@ No empieces desde cero. Usa nuestros seeds para probar situaciones reales:
 *   `/scripts`: Utilities para automatizar el ciclo de vida del desarrollo.
 
 ---
-*Developed with ❤️ and C++ by [Tu Nombre]*
+*Developed with ❤️ and C++ by [Nahuel Prieto]*
