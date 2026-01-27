@@ -117,18 +117,6 @@ The system will start with a ready-to-use Admin user and base configuration:
 
 > **Note:** The production database (`prod.db`) is persistent and distinct from development (`dev.db`).
 
-### 🐳 Docker Management Cheat Sheet
-
-| Action | Command | Description |
-| :--- | :--- | :--- |
-| **Start** | `make prod` | Start the stack in background |
-| **Stop** | `make stop` | Stop and remove containers |
-| **View Logs** | `docker-compose logs -f` | Tail the application logs |
-| **Shell Access** | `docker-compose exec app bash` | Enter the running container |
-| **Reset DB** | `rm api/prisma/prod.db && make prod` | Wipe data and restart |
-
-> **Troubleshooting:** The `prod.db` file is created by Docker (root). If you cannot open it locally with Prisma Studio, fix permissions by running: `sudo chown $USER api/prisma/prod.db`.
-
 ### Loading Test Scenarios
 
 Don't start from scratch. Use our seeds to test real situations:
