@@ -7,12 +7,20 @@ This module implements the high-performance solver engine using C++17. It utiliz
 The core uses the **Edmonds-Karp** algorithm, which is a specific implementation of the Ford-Fulkerson method that uses **Breadth-First Search (BFS)** to find augmenting paths in the residual graph.
 
 - **Time Complexity**: $O(V E^2)$
-- **Space Complexity**: $O(V + E)$ (Adjacency List)
+- **Space Complexity**: $O(V^2)$ (Adjacency Matrix)
 
 ### Why Edmonds-Karp?
 Given the constraints of hospital shifts (typically < 1000 nodes/steps), Edmonds-Karp offers a perfect balance between implementation complexity and performance. It guarantees termination and provides the shortest augmenting path, ensuring efficient flow distribution.
 
-## 🏗️ Graph Topology (3-Layer Network)
+### Implementation Detail: Matrix over Adjacency List
+We deliberately chose an **Adjacency Matrix** (`vector<vector<int>>`) over an Adjacency List for this specific use case.
+
+*   **Direct Access O(1):** Edmonds-Karp requires frequent lookups and updates of *residual capacities*. With a matrix, checking `adj[u][v]` is instantaneous. An adjacency list would require iterating through neighbors to find the reverse edge, introducing overhead.
+*   **Scale Reality:** For a typical hospital scenario (100 doctors, 1 year), the graph size is $N < 2000$ nodes. A $2000 \times 2000$ integer matrix occupies only ~16 MB of RAM.
+*   **Conclusion:** The memory trade-off is negligible, while the O(1) access speed and code simplicity provide a significant robustness advantage.
+
+
+## ️ Graph Topology (3-Layer Network)
 
 To model the constraints, we construct a flow network with specific layers:
 
@@ -102,3 +110,14 @@ The solver is designed to be run as a child process. It reads **JSON from stdin*
   "bottlenecks": []
 }
 ```
+
+## 🔮 Future Roadmap: From Feasibility to Preference
+
+Currently, the system models the problem as a **Max-Flow** problem (Feasibility Constraint).
+
+To incorporate qualitative constraints (e.g., Doctor A *prefers* Saturdays over Sundays), the model is designed to be extensible to a **Min-Cost Max-Flow** problem:
+
+1.  **Cost Modeling**: Assign negative weights (costs) to edges between `Medico` -> `Medico-Periodo` based on preferences.
+2.  **Algorithm Upgrade**: Replace the Edmonds-Karp solver with **Successive Shortest Path** (using SPFA or Bellman-Ford) or **Push-Relabel**.
+
+This architectural decoupling allows upgrading the solver logic without changing the API contract or database schema.

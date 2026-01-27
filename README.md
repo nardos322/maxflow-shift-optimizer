@@ -2,91 +2,120 @@
 
 ![C++](https://img.shields.io/badge/Core-C++17-blue.svg) ![Node.js](https://img.shields.io/badge/API-Node.js-green.svg) ![Algorithm](https://img.shields.io/badge/Algorithm-Edmonds--Karp-orange.svg)
 
-> **Más que un simple script de asignación: Un sistema de gestión de personal resiliente, explicable y de alto rendimiento.**
+> **More than a simple assignment script: A resilient, explainable, and high-performance personnel management system.**
 
-Este proyecto resuelve el complejo problema de la asignación de guardias hospitalarias utilizando algoritmos de flujo máximo. A diferencia de soluciones tradicionales que simplemente "asignan huecos", MaxFlow Shift Optimizer garantiza una distribución matemática óptima, equitativa y transparente.
-
----
-
-## 🚀 ¿Por qué este sistema? (Value Proposition)
-
-### 1. Garantía de Justicia Matemática ⚖️
-Elimina el favoritismo y el error humano. El motor de asignación basado en **Edmonds-Karp** asegura que las reglas de capacidad máxima y disponibilidad se respeten estrictamente para todos los médicos.
-
-### 2. Diagnóstico Inteligente de Cuellos de Botella 🧠
-¿No cierran los números? La mayoría de los sistemas fallan en silencio. Este sistema implementa un análisis de **Min-Cut** (Corte Mínimo) para decirte *exactamente* por qué es imposible cubrir la demanda:
-> *"No se puede cubrir el turno porque el grupo de 'Pediatras' tiene un tope de 3 guardias totales, limitando el flujo máximo a 15 turnos cuando se requieren 20."*
-
-### 3. Resiliencia Operativa (Auto-Repair) 🛡️
-Las bajas médicas ocurren. Nuestra función de **Reparación Inteligente** permite dar de baja a un médico y reasignar *solo* sus turnos vacantes a otros profesionales disponibles, sin alterar el cronograma del resto del equipo.
+This project solves the complex problem of hospital shift assignment using maximum flow algorithms. Unlike traditional solutions that simply "fill gaps", MaxFlow Shift Optimizer ensures a mathematically optimal, equitable, and transparent distribution.
 
 ---
 
-## 🏗️ Arquitectura Híbrida
+## 🚀 Why this system? (Value Proposition)
 
-Este sistema utiliza una arquitectura de "lo mejor de dos mundos", desacoplando la lógica de negocio intensiva del cálculo computacional:
+### 🎯 Scope & Capabilities
 
-| Componente | Tecnología | Responsabilidad | Por qué se eligió |
+The system strictly operates as a **Feasibility Engine**. It answers a binary question: *"Is it mathematically possible to satisfy all hospital demand given the constraints?"*
+
+*   **In Scope (Features)**:
+    *   Hard Constraints (Maximum shifts per doctor).
+    *   Period Constraints (Fairness in weekend/holiday distribution).
+    *   Demand Satisfaction (Full coverage of required shifts).
+*   **Out of Scope (Future Roadmap)**:
+    *   Soft preferences (e.g., "I prefer not to work on Thursdays") (requires *Cost-Flow*).
+    *   Seniority weighting (Requires *Weighted Flow*).
+    *   Cost minimization.
+
+> *Note: The architecture is decoupled to allow future implementation of a Min-Cost Max-Flow solver that supports these soft constraints without rewriting the API.*
+
+### 1. Mathematical Fairness Guarantee ⚖️
+Eliminates favoritism and human error. The **Edmonds-Karp** based assignment engine ensures that maximum capacity and availability rules are strictly respected for all doctors.
+
+### 2. Intelligent Bottleneck Diagnosis 🧠
+Numbers don't add up? Most systems fail silently. This system implements a **Min-Cut** analysis to tell you *exactly* why it is impossible to cover demand:
+> *"Cannot cover the shift because the 'Pediatricians' group has a cap of 3 total shifts, limiting maximum flow to 15 shifts when 20 are required."*
+
+### 3. Operational Resilience (Auto-Repair) 🛡️
+Medical leaves happen. Our **Intelligent Repair** feature allows deactivating a doctor and reassigning *only* their vacant shifts to other available professionals, without altering the schedule of the rest of the team.
+
+---
+
+## 🧩 Model Universality (Adaptability)
+
+Although this implementation is configured for the hospital domain, the underlying design pattern (**Network Flow Resource Allocation**) is agnostic and adaptable to any industry that requires assigning finite resources to temporal demands under strict constraints.
+
+The current architecture can be easily refactored to solve problems in other fields:
+
+| Domain | "Source" (Resource) | "Sink" (Demand) | Capacity Constraint |
+|:-------:|:------------------:|:----------------:|:------------------------:|
+| **Hospitals** (Current) | Doctors | On-Call Shifts | Max shifts/month |
+| **Call Centers** | Agents | Time Slots | Max hours/week |
+| **Logistics** | Trucks | Delivery Routes | Cargo Capacity |
+| **Events** | Bands/Artists | Stages/Schedules | Show Duration |
+| **Education** | Teachers | Classrooms/Subjects | Schedule Availability |
+
+---
+
+## 🏗️ Hybrid Architecture
+
+This system uses a "best of both worlds" architecture, decoupling intensive business logic from computational calculation:
+
+| Component | Technology | Responsibility | Why it was chosen |
 |------------|------------|-----------------|-------------------|
-| **Core** | **C++ (C++17)** | Algoritmos de Grafos | **Rendimiento Puro:** Gestión manual de memoria y optimización de bajo nivel para recorrer grafos de miles de nodos en milisegundos. |
-| **API** | **Node.js + Express** | Orquestación y Datos | **Flexibilidad:** Rápido desarrollo de endpoints REST, fácil integración con bases de datos (Prisma) y manejo asíncrono de procesos. |
+| **Core** | **C++ (C++17)** | Graph Algorithms | **Pure Performance:** Manual memory management and low-level optimization to traverse graphs of thousands of nodes in milliseconds. |
+| **API** | **Node.js + Express** | Orchestration and Data | **Flexibility:** Rapid development of REST endpoints, easy database integration (Prisma), and asynchronous process handling. |
 
 ---
 
-## 🤓 Decisiones Técnicas y Trade-offs
+## 🤓 Technical Decisions and Trade-offs
 
-En el desarrollo de este sistema se tomaron decisiones ingenieriles conscientes priorizando la robustez y mantenibilidad sobre la optimización prematura.
+In developing this system, conscious engineering decisions were made prioritizing robustness and maintainability over premature optimization.
 
-### Representación del Grafo: ¿Matriz de Adyacencia o Lista de Adyacencia?
+### Implementation Details (Core C++)
+The resolution engine (Solver) is optimized for speed and robustness. A conscious decision was made to use an **Adjacency Matrix** instead of lists to guarantee O(1) access to residual capacities, sacrificing a negligible amount of RAM (~16MB for large cases) in exchange for performance and simplicity.
 
-Se eligió una **Matriz de Adyacencia** (`vector<vector<int>>`) para representar la red de flujo.
-
-*   **El Mito:** "Las listas de adyacencia son siempre mejores porque ahorran memoria".
-*   **La Realidad del Negocio:**
-    1.  **Acceso O(1):** El algoritmo de Edmonds-Karp requiere consultar y actualizar constantemente la *capacidad residual* de las aristas (ida y vuelta). En una matriz, esto es instantáneo (`adj[u][v]`). En una lista, requiere iterar sobre los vecinos, añadiendo overhead en grafos densos.
-    2.  **Escala del Problema:** Para un hospital con 100 médicos y un año de turnos, el grafo tendrá $N < 2000$ nodos. Una matriz de $2000 \times 2000$ enteros ocupa ~16 MB de RAM.
-    3.  **Conclusión:** El costo de memoria es despreciable para cualquier servidor moderno, mientras que la **simplicidad del código** y la velocidad de acceso garantizan un sistema más robusto y menos propenso a bugs de punteros.
+> 📖 For a detailed technical explanation on **Matrix vs List** and graph topology, consult the [Core README](./core/README.md#implementation-detail-matrix-over-adjacency-list).
 
 ---
 
-## 🛠️ Instalación y Uso
+## 🛠️ Installation and Usage
 
-### Requisitos Previos
+### Prerequisites
 -   **Node.js**: v16+
--   **C++ Compiler**: g++ (soporte C++17)
--   **Make**: Para scripts de automatización
+-   **C++ Compiler**: g++ (C++17 support)
+-   **Make**: For automation scripts
+-   **Operating System**: Linux or macOS.
+    > ⚠️ **Windows Users:** It is **mandatory** to use [WSL2 (Windows Subsystem for Linux)](https://learn.microsoft.com/en-us/windows/wsl/install) to run this project, as automation scripts (`.sh`) and system signal handling are not compatible with native PowerShell or CMD.
 
-### Inicio Rápido (Dev Environment)
+### Quick Start (Dev Environment)
 
-El proyecto incluye scripts que compilan el core C++ y levantan la API automáticamente.
+The project includes scripts that compile the C++ core and start the API automatically.
 
 ```bash
-# 1. Compilar Core y levantar API en modo desarrollo
+# 1. Compile Core and start API in development mode
 make dev
 
-# La API estará lista en http://localhost:3000
-# Documentación Swagger en http://localhost:3000/api-docs
+# The API will be ready at http://localhost:3000
+# Swagger Documentation at http://localhost:3000/api-docs
 ```
 
-### Carga de Escenarios de Prueba
+### Loading Test Scenarios
 
-No empieces desde cero. Usa nuestros seeds para probar situaciones reales:
+Don't start from scratch. Use our seeds to test real situations:
 
-*   **Escenario Ideal:** Carga médicos y turnos donde todo encaja perfectamente.
+*   **Ideal Scenario:** Loads doctors and shifts where everything fits perfectly.
     ```bash
     make feasible
     ```
 
-*   **Escenario de Estrés (Infactible):** Fuerza al sistema a fallar para probar el diagnóstico Min-Cut.
+*   **Stress Scenario (Infeasible):** Forces the system to fail to test Min-Cut diagnosis.
     ```bash
     make infeasible
     ```
 
-## 📂 Estructura del Proyecto
+## 📂 Project Structure
 
-*   `/core`: **The Brain.** Código fuente C++ (Solver Edmonds-Karp).
-*   `/api`: **The Nervous System.** API REST Node.js y gestión de DB (Prisma).
-*   `/scripts`: Utilities para automatizar el ciclo de vida del desarrollo.
+*   `/core`: **The Brain.** C++ source code (Edmonds-Karp Solver).
+    > 📖 [See technical documentation of the algorithm and data schemas](./core/README.md)
+*   `/api`: **The Nervous System.** Node.js REST API and DB management (Prisma).
+*   `/scripts`: Utilities to automate the development lifecycle.
 
 ---
 *Developed with ❤️ and C++ by [Nahuel Prieto]*
