@@ -8,6 +8,7 @@ help:
 	@echo "  make repair       -> Inicia escenario REPARACIÓN"
 	@echo "  make test         -> Inicia entorno de pruebas manuales"
 	@echo "  make prod         -> Inicia entorno de PRODUCCIÓN (Docker)"
+	@echo "  make stop         -> Detiene entorno de PRODUCCIÓN (Docker)"
 	@echo "  make clean        -> Limpia binarios generados"
 
 dev:
@@ -16,6 +17,10 @@ dev:
 prod:
 	docker-compose up --build -d
 	@echo "🐳 Producción iniciada en segundo plano."
+
+stop:
+	docker-compose down
+	@echo "🛑 Producción detenida."
 
 feasible:
 	./scripts/start_scenario_feasible.sh

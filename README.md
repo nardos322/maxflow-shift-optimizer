@@ -104,6 +104,10 @@ The project includes an optimized **Multi-stage Build** configuration to generat
 # Start production environment (Detached mode)
 make prod
 # Or manually: docker-compose up --build -d
+
+# Stop production environment
+make stop
+# Or manually: docker-compose down
 ```
 
 **Default Credentials:**
