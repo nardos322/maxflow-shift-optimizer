@@ -62,6 +62,20 @@ This system uses a "best of both worlds" architecture, decoupling intensive busi
 | **Core** | **C++ (C++17)** | Graph Algorithms | **Pure Performance:** Manual memory management and low-level optimization to traverse graphs of thousands of nodes in milliseconds. |
 | **API** | **Node.js + Express** | Orchestration and Data | **Flexibility:** Rapid development of REST endpoints, easy database integration (Prisma), and asynchronous process handling. |
 
+```mermaid
+graph LR
+    A[Client request] -->|POST /solve| B(Node.js API);
+    B -->|Generate JSON| C{input.json};
+    C -->|Read| D[C++ Core Solver];
+    D -->|Process (Edmonds-Karp)| D;
+    D -->|Write JSON| E{output.json};
+    E -->|Parse| B;
+    B -->|Persist| F[(SQLite DB)];
+    B -->|Response| A;
+    style D fill:#f96,stroke:#333,stroke-width:2px
+    style B fill:#69b3a2,stroke:#333,stroke-width:2px
+```
+
 ---
 
 ## 🤓 Technical Decisions and Trade-offs
@@ -95,6 +109,31 @@ make dev
 # The API will be ready at http://localhost:3000
 # Swagger Documentation at http://localhost:3000/api-docs
 ```
+
+### Loading Test Scenarios
+
+Don't start from scratch. Use our seeds to test real situations:
+
+*   **Ideal Scenario:** Loads doctors and shifts where everything fits perfectly.
+    ```bash
+    make feasible
+    ```
+
+*   **Stress Scenario (Infeasible):** Forces the system to fail to test Min-Cut diagnosis.
+    ```bash
+    make infeasible
+    ```
+
+*   **Repair Scenario:** Simulates a doctor dropping out to test the shift reassignment feature.
+    ```bash
+    make repair
+    ```
+    > *Follow the instructions in the terminal to trigger the repair.*
+
+*   **Clean Test Environment:** Starts an empty QA environment (`test.db`) for manual testing.
+    ```bash
+    make test
+    ```
 
 ### 🔌 API Snapshot (MVP)
 The API is designed to be the single interface for managing data and triggering the solver. These are the most relevant endpoints for the MVP flow:
@@ -150,19 +189,16 @@ environment:
 
 > **Note:** The production database (`prod.db`) is stored in a **Docker Volume** (`sqlite_data`) to ensure persistence and security. It is not directly accessible as a file on the host (unless you inspect the volume).
 
-### Loading Test Scenarios
 
-Don't start from scratch. Use our seeds to test real situations:
 
-*   **Ideal Scenario:** Loads doctors and shifts where everything fits perfectly.
-    ```bash
-    make feasible
-    ```
+## ❓ Troubleshooting
 
-*   **Stress Scenario (Infeasible):** Forces the system to fail to test Min-Cut diagnosis.
-    ```bash
-    make infeasible
-    ```
+*   **Error: `make: g++: Command not found`**
+    *   Ensure you have `g++` installed (`sudo apt install build-essential` on Ubuntu).
+*   **Error: `EADDRINUSE: address already in use :::3000`**
+    *   Another process is using port 3000. Kill it with `killall -9 node` or change the port in `.env`.
+*   **Docker: `permission denied` connecting to socket**
+    *   Ensure your user is in the docker group (`sudo usermod -aG docker $USER`) or run with `sudo`.
 
 ## 📂 Project Structure
 
