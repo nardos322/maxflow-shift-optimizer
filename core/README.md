@@ -90,13 +90,18 @@ The solver is designed to be run as a child process. It reads **JSON from stdin*
   "disponibilidad": {
     "ID1": ["2024-01-01"]
   },
-  "config": {
-    "maxGuardiasTotales": 5,
-    "maxGuardiasPorPeriodo": 1,
-    "medicosPorDia": 1
+  "maxGuardiasTotales": 5,
+  "maxGuardiasPorPeriodo": 1,
+  "medicosPorDia": 1,
+  "capacidades": {
+    "ID1": 2
   }
 }
 ```
+
+**Notes:**
+- `medicosPorDia` can be a single number (applies to all days) or an object keyed by date.
+- `capacidades` is optional and allows per-doctor remaining capacity overrides (used by repair flows).
 
 ### Output Schema
 ```json
