@@ -96,6 +96,21 @@ make dev
 # Swagger Documentation at http://localhost:3000/api-docs
 ```
 
+### 🔌 API Snapshot (MVP)
+The API is designed to be the single interface for managing data and triggering the solver. These are the most relevant endpoints for the MVP flow:
+
+| Action | Method | Endpoint | Notes |
+| --- | --- | --- | --- |
+| Authenticate | `POST` | `/auth/login` | Returns JWT token. |
+| List doctors | `GET` | `/medicos` | Requires auth. |
+| Create doctor | `POST` | `/medicos` | Admin-only. |
+| Configure global limits | `PUT` | `/configuracion` | Admin-only. |
+| Solve assignments | `POST` | `/asignaciones/resolver` | Runs core solver and persists results if feasible. |
+| Repair assignments | `POST` | `/asignaciones/reparar` | Reassigns only missing shifts. |
+| Get assignments | `GET` | `/asignaciones` | Returns current schedule. |
+
+> 📘 Full contract and request/response examples are documented in Swagger (`/api-docs`) and in the API README (`/api/README.md`).
+
 ### Docker Usage (Recommended for Production) 🐳
 
 The project includes an optimized **Multi-stage Build** configuration to generate a lightweight and secure image.
