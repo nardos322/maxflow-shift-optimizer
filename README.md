@@ -66,8 +66,7 @@ This system uses a "best of both worlds" architecture, decoupling intensive busi
 graph LR
     A["Client request"] -->|"POST /solve"| B("Node.js API")
     B -->|"Generate JSON"| C{"input.json"}
-    C -->|Read| D["C++ Core Solver"]
-    D -->|"Process (Edmonds-Karp)"| D
+    C -->|Read| D["C++ Core Solver<br>(Edmonds-Karp)"]
     D -->|"Write JSON"| E{"output.json"}
     E -->|Parse| B
     B -->|Persist| F[("SQLite DB")]
