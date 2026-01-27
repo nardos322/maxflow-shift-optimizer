@@ -19,7 +19,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "Optimizador de cobertura de personal para guardias hospitalarias usando algoritmos de flujo.",
   "dependencies": {
     "@prisma/client": "^5.22.0",
