@@ -64,14 +64,14 @@ This system uses a "best of both worlds" architecture, decoupling intensive busi
 
 ```mermaid
 graph LR
-    A[Client request] -->|POST /solve| B(Node.js API);
-    B -->|Generate JSON| C{input.json};
-    C -->|Read| D[C++ Core Solver];
-    D -->|Process (Edmonds-Karp)| D;
-    D -->|Write JSON| E{output.json};
-    E -->|Parse| B;
-    B -->|Persist| F[(SQLite DB)];
-    B -->|Response| A;
+    A["Client request"] -->|"POST /solve"| B("Node.js API")
+    B -->|"Generate JSON"| C{"input.json"}
+    C -->|Read| D["C++ Core Solver"]
+    D -->|"Process (Edmonds-Karp)"| D
+    D -->|"Write JSON"| E{"output.json"}
+    E -->|Parse| B
+    B -->|Persist| F[("SQLite DB")]
+    B -->|Response| A
     style D fill:#f96,stroke:#333,stroke-width:2px
     style B fill:#69b3a2,stroke:#333,stroke-width:2px
 ```
