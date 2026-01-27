@@ -100,6 +100,9 @@ make dev
 
 The project includes an optimized **Multi-stage Build** configuration to generate a lightweight and secure image.
 
+> **Tip (Linux):** To run these commands without `sudo`, ensure your user is in the docker group:
+> `sudo usermod -aG docker $USER` (requires re-login or `newgrp docker` to apply).
+
 ```bash
 # Start production environment (Detached mode)
 make prod
@@ -110,12 +113,27 @@ make stop
 # Or manually: docker-compose down
 ```
 
-**Default Credentials:**
-The system will start with a ready-to-use Admin user and base configuration:
+### Production Configuration (Security) 🛡️
+When deploying to production, you **should** configure the initial admin credentials using environment variables to avoid using the insecure defaults.
+
+Set the following variables in your `docker-compose.yml` or your deployment environment:
+*   `ADMIN_EMAIL`: Custom admin email.
+*   `ADMIN_PASSWORD`: Secure password.
+*   `ADMIN_NAME`: (Optional) Admin name.
+
+**Example in docker-compose:**
+```yaml
+environment:
+  - ADMIN_EMAIL=ops@hospital.com
+  - ADMIN_PASSWORD=StrongPassword123!
+```
+
+**If these variables are NOT set**, the system will default to:
 *   **Email**: `admin@hospital.com`
 *   **Password**: `admin123`
+*(Not recommended for public environments)*
 
-> **Note:** The production database (`prod.db`) is persistent and distinct from development (`dev.db`).
+> **Note:** The production database (`prod.db`) is stored in a **Docker Volume** (`sqlite_data`) to ensure persistence and security. It is not directly accessible as a file on the host (unless you inspect the volume).
 
 ### Loading Test Scenarios
 

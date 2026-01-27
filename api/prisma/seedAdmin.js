@@ -2,9 +2,9 @@ const prisma = require('../src/lib/prisma');
 const bcrypt = require('bcryptjs');
 
 async function seedAdmin() {
-    const email = 'admin@hospital.com';
-    const password = 'admin123';
-    const nombre = 'Super Admin';
+    const email = process.env.ADMIN_EMAIL || 'admin@hospital.com';
+    const password = process.env.ADMIN_PASSWORD || 'admin123';
+    const nombre = process.env.ADMIN_NAME || 'Super Admin';
     const rol = 'ADMIN';
     const passwordHash = await bcrypt.hash(password, 10);
     const exists = await prisma.user.findUnique({ where: { email } });
