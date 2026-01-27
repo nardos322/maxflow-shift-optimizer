@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+Makefile
+scripts
+core/build
+api/node_modules
+api/test.db
+api/test.db-journal
+.env
+.env.test

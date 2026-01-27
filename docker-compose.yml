@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: maxflow-optimizer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persistencia de la base de datos SQLite en el host
+      - ./api/prisma:/app/api/prisma
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/api/prisma/prod.db
+      - JWT_SECRET=supersecretkey_change_me_in_prod
+    restart: unless-stopped

@@ -96,6 +96,23 @@ make dev
 # Swagger Documentation at http://localhost:3000/api-docs
 ```
 
+### Docker Usage (Recommended for Production) 🐳
+
+The project includes an optimized **Multi-stage Build** configuration to generate a lightweight and secure image.
+
+```bash
+# Start production environment (Detached mode)
+make prod
+# Or manually: docker-compose up --build -d
+```
+
+**Default Credentials:**
+The system will start with a ready-to-use Admin user and base configuration:
+*   **Email**: `admin@hospital.com`
+*   **Password**: `admin123`
+
+> **Note:** The production database (`prod.db`) is persistent and distinct from development (`dev.db`). If you need to reset it from scratch, delete the `api/prisma/prod.db` file.
+
 ### Loading Test Scenarios
 
 Don't start from scratch. Use our seeds to test real situations:

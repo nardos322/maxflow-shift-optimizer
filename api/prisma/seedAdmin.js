@@ -16,6 +16,20 @@ async function seedAdmin() {
     } else {
         console.log('ℹ️  Usuario admin seed ya existe:', email);
     }
+
+    // Asegurar configuración por defecto
+    const config = await prisma.configuracion.findFirst();
+    if (!config) {
+        await prisma.configuracion.create({
+            data: {
+                maxGuardiasTotales: 3,
+                medicosPorDia: 1,
+            }
+        });
+        console.log('✅ Configuración por defecto creada');
+    } else {
+        console.log('ℹ️  Configuración ya existe');
+    }
 }
 
 if (require.main === module) {

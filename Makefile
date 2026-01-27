@@ -7,10 +7,15 @@ help:
 	@echo "  make infeasible   -> Inicia escenario INFACTIBLE (Min-Cut)"
 	@echo "  make repair       -> Inicia escenario REPARACIÓN"
 	@echo "  make test         -> Inicia entorno de pruebas manuales"
+	@echo "  make prod         -> Inicia entorno de PRODUCCIÓN (Docker)"
 	@echo "  make clean        -> Limpia binarios generados"
 
 dev:
 	./scripts/start_dev.sh
+
+prod:
+	docker-compose up --build -d
+	@echo "🐳 Producción iniciada en segundo plano."
 
 feasible:
 	./scripts/start_scenario_feasible.sh
