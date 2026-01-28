@@ -35,7 +35,7 @@ graph LR
     D --> T((Sink))
 ```
 </details>
-[![Graph Topology](https://mermaid.ink/img/Z3JhcGggTFIKICAgIFMoKFNvdXJjZSkpIC0tPiBNe01lZGljb3N9CiAgICBNIC0tPiBNUFtNZWRpY28tUGVyaW9kb10KICAgIE1QIC0tPiBEKERpYXMpCiAgICBEIC0tPiBUKChTaW5rKSk=)](https://mermaid.live/edit#pako:eNpVj0FvwjAMhf8K8nFa4T9wKDBhw4AdCrTSDi1CgW6JjSxiQFNOLaL89yVt065-fp_tZz9pSfx08VFLOSprpDIU-E3kN99UHLk3WuOsfkz4xMUE-d2BTfnMvzh-ef36-v363fLH9fuX75bzX8uTn8q1u2FRYoA_f8Dn5bc5vs_xk2fDJRa8mvB_4VsXeMCEN0Hv6PABH_AR97HDR3zAJ3zCR3zAJ7zACd_xER_xAR_wDh_xAW94g3f4iPe44Q3e4RM-4wu-4Au-4gu-4jO-4FM-4xM-5hM-5hPe5SPe5SPe5QPe5QPe4T3e4R3e4i3e4i3e4FV_wam_4NRfcOovOPUXnPoLTv0Fp_6CU3_Bqb_g1F9w6i849Rec-gtO_QWn_oJTf8GpvenU3nRqbzq1N53am07tTaf2plN706m96dTedGpvOrU3ndqbTu1Np_amU3vTqb3p1Lfr1Lfr1Lfr1Lfr1Lfr1Le_qW9_U9_-pr79TX37m_r2N_Xtb-rb39S3v6lvf1Pf_qa-_U19-5v6_23qfwH4O45o)
+![Graph Topology](https://mermaid.ink/img/Z3JhcGggTFIKICAgIFMoKFNvdXJjZSkpIC0tPiBNe01lZGljb3N9CiAgICBNIC0tPiBNUFtNZWRpY28tUGVyaW9kb10KICAgIE1QIC0tPiBEKERpYXMpCiAgICBEIC0tPiBUKChTaW5rKSk=)
 
 1.  **Source → Medico**:
     *   **Capacity**: `maxGuardiasTotales` (Global Limit, e.g., 5).
