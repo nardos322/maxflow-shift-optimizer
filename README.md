@@ -63,7 +63,7 @@ This system uses a "best of both worlds" architecture, decoupling intensive busi
 | **API** | **Node.js + Express** | Orchestration and Data | **Flexibility:** Rapid development of REST endpoints, easy database integration (Prisma), and asynchronous process handling. |
 
 <details>
-<summary>Click to view Mermaid source</summary>
+<summary>View Architecture Diagram Source</summary>
 
 ```mermaid
 graph LR
@@ -78,7 +78,10 @@ graph LR
     style B fill:#69b3a2,stroke:#333,stroke-width:2px
 ```
 </details>
-![Architecture Diagram](https://mermaid.ink/img/Z3JhcGggTFIKICAgIEFbIkNsaWVudCByZXF1ZXN0Il0gLS0+fCJQT1NUIC9zb2x2ZSJ8IEIoIk5vZGUuanMgQVBJIikKICAgIEIgLS0+fCJHZW5lcmF0ZSBKU09OInwgQ3siaW5wdXQuanNvbiJ9CiAgICBDIC0tPnxSZWFkfCBEWyJDKysgQ29yZSBTb2x2ZXI8YnI+KEVkbW9uZHMtS2FycCkiXQogICAgRCAtLT58IldyaXRlIEpTT04ifCBFeyJvdXRwdXQuanNvbiJ9CiAgICBFIC0tPnxQYXJzZXwgQgogICAgQiAtLT58UGVyc2lzdHwgRlsoIlNRTGl0ZSBEQiIpXQogICAgQiAtLT58UmVzcG9uc2V8IEEKICAgIHN0eWxlIEQgZmlsbDojZjk2LHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHgKICAgIHN0eWxlIEIgZmlsbDojNjliM2EyLHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHg=)
+
+> *Diagram rendered as image for mobile compatibility.*
+
+![Architecture Diagram][architecture-diagram]
 
 ---
 
@@ -213,3 +216,6 @@ environment:
 
 ---
 *Developed with ❤️ and C++ by [Nahuel Prieto]*
+
+<!-- Links -->
+[architecture-diagram]: https://mermaid.ink/img/Z3JhcGggTFIKICAgIEFbIkNsaWVudCByZXF1ZXN0Il0gLS0+fCJQT1NUIC9zb2x2ZSJ8IEIoIk5vZGUuanMgQVBJIikKICAgIEIgLS0+fCJHZW5lcmF0ZSBKU09OInwgQ3siaW5wdXQuanNvbiJ9CiAgICBDIC0tPnxSZWFkfCBEWyJDKysgQ29yZSBTb2x2ZXI8YnI+KEVkbW9uZHMtS2FycCkiXQogICAgRCAtLT58IldyaXRlIEpTT04ifCBFeyJvdXRwdXQuanNvbiJ9CiAgICBFIC0tPnxQYXJzZXwgQgogICAgQiAtLT58UGVyc2lzdHwgRlsoIlNRTGl0ZSBEQiIpXQogICAgQiAtLT58UmVzcG9uc2V8IEEKICAgIHN0eWxlIEQgZmlsbDojZjk2LHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHgKICAgIHN0eWxlIEIgZmlsbDojNjliM2EyLHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHg=

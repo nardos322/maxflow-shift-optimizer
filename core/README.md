@@ -25,7 +25,7 @@ We deliberately chose an **Adjacency Matrix** (`vector<vector<int>>`) over an Ad
 To model the constraints, we construct a flow network with specific layers:
 
 <details>
-<summary>Click to view Mermaid source</summary>
+<summary>View Graph Topology Source</summary>
 
 ```mermaid
 graph LR
@@ -35,7 +35,10 @@ graph LR
     D --> T((Sink))
 ```
 </details>
-![Graph Topology](https://mermaid.ink/img/Z3JhcGggTFIKICAgIFMoKFNvdXJjZSkpIC0tPiBNe01lZGljb3N9CiAgICBNIC0tPiBNUFtNZWRpY28tUGVyaW9kb10KICAgIE1QIC0tPiBEKERpYXMpCiAgICBEIC0tPiBUKChTaW5rKSk=)
+
+> *Diagram rendered as image for mobile compatibility.*
+
+![Graph Topology][graph-topology]
 
 1.  **Source → Medico**:
     *   **Capacity**: `maxGuardiasTotales` (Global Limit, e.g., 5).
@@ -131,3 +134,6 @@ To incorporate qualitative constraints (e.g., Doctor A *prefers* Saturdays over 
 2.  **Algorithm Upgrade**: Replace the Edmonds-Karp solver with **Successive Shortest Path** (using SPFA or Bellman-Ford) or **Push-Relabel**.
 
 This architectural decoupling allows upgrading the solver logic without changing the API contract or database schema.
+
+<!-- Links -->
+[graph-topology]: https://mermaid.ink/img/Z3JhcGggTFIKICAgIFMoKFNvdXJjZSkpIC0tPiBNe01lZGljb3N9CiAgICBNIC0tPiBNUFtNZWRpY28tUGVyaW9kb10KICAgIE1QIC0tPiBEKERpYXMpCiAgICBEIC0tPiBUKChTaW5rKSk=
