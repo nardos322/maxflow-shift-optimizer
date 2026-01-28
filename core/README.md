@@ -24,19 +24,7 @@ We deliberately chose an **Adjacency Matrix** (`vector<vector<int>>`) over an Ad
 
 To model the constraints, we construct a flow network with specific layers:
 
-<details>
-<summary>View Graph Topology Source</summary>
 
-```mermaid
-graph LR
-    S((Source)) --> M{Medicos}
-    M --> MP[Medico-Periodo]
-    MP --> D(Dias)
-    D --> T((Sink))
-```
-</details>
-
-> *Diagram rendered as image for mobile compatibility.*
 
 ![Graph Topology][graph-topology]
 

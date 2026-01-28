@@ -62,24 +62,7 @@ This system uses a "best of both worlds" architecture, decoupling intensive busi
 | **Core** | **C++ (C++17)** | Graph Algorithms | **Pure Performance:** Manual memory management and low-level optimization to traverse graphs of thousands of nodes in milliseconds. |
 | **API** | **Node.js + Express** | Orchestration and Data | **Flexibility:** Rapid development of REST endpoints, easy database integration (Prisma), and asynchronous process handling. |
 
-<details>
-<summary>View Architecture Diagram Source</summary>
 
-```mermaid
-graph LR
-    A["Client request"] -->|"POST /solve"| B("Node.js API")
-    B -->|"Generate JSON"| C{"input.json"}
-    C -->|Read| D["C++ Core Solver<br>(Edmonds-Karp)"]
-    D -->|"Write JSON"| E{"output.json"}
-    E -->|Parse| B
-    B -->|Persist| F[("SQLite DB")]
-    B -->|Response| A
-    style D fill:#f96,stroke:#333,stroke-width:2px
-    style B fill:#69b3a2,stroke:#333,stroke-width:2px
-```
-</details>
-
-> *Diagram rendered as image for mobile compatibility.*
 
 ![Architecture Diagram][architecture-diagram]
 
