@@ -62,7 +62,7 @@ This system uses a "best of both worlds" architecture, decoupling intensive busi
 | **Core** | **C++ (C++17)** | Graph Algorithms | **Pure Performance:** Manual memory management and low-level optimization to traverse graphs of thousands of nodes in milliseconds. |
 | **API** | **Node.js + Express** | Orchestration and Data | **Flexibility:** Rapid development of REST endpoints, easy database integration (Prisma), and asynchronous process handling. |
 
-```mermaid
+<!--
 graph LR
     A["Client request"] -->|"POST /solve"| B("Node.js API")
     B -->|"Generate JSON"| C{"input.json"}
@@ -73,7 +73,8 @@ graph LR
     B -->|Response| A
     style D fill:#f96,stroke:#333,stroke-width:2px
     style B fill:#69b3a2,stroke:#333,stroke-width:2px
-```
+-->
+[![Architecture Diagram](https://mermaid.ink/img/Z3JhcGggTFIKICAgIEFbIkNsaWVudCByZXF1ZXN0Il0gLS0+fCJQT1NUIC9zb2x2ZSJ8IEIoIk5vZGUuanMgQVBJIikKICAgIEIgLS0+fCJHZW5lcmF0ZSBKU09OInwgQ3siaW5wdXQuanNvbiJ9CiAgICBDIC0tPnxSZWFkfCBEWyJDKysgQ29yZSBTb2x2ZXI8YnI+KEVkbW9uZHMtS2FycCkiXQogICAgRCAtLT58IldyaXRlIEpTT04ifCBFeyJvdXRwdXQuanNvbiJ9CiAgICBFIC0tPnxQYXJzZXwgQgogICAgQiAtLT58UGVyc2lzdHwgRlsoIlNRTGl0ZSBEQiIpXQogICAgQiAtLT58UmVzcG9uc2V8IEEKICAgIHN0eWxlIEQgZmlsbDojZjk2LHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHgKICAgIHN0eWxlIEIgZmlsbDojNjliM2EyLHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHg=)](https://mermaid.live/edit#pako:eNpVt01v2zAMgP8KoXM6bH_AQ4EBGwbsUFBphy6CgG6JbSyiQFNOi6L891F26rp1w2CfYkn88vGRSzkqa6QyFPhN5DdfFRy5N0bgvH5v-MTFBPntgU35zL84fnv59vr98t3yx-X7n--W8--WJz-Wa3fHokQAzz_g_frjHN_n-Muz4RILXk34v_CtCzxgwjtB7-jxEZ_wAfexw0e8xyd8wke8xyf8gie8x0d8wid8wHt8wie84Q3e4zM-44Y3vMfnfMFXvMFXvMVXvMMXvMcXvM8L3ucF3-IF3-IlX_IlX_ElX_M1X_MNS75hyTd8wzd8yzd8y3d8y3d8x1J_Qal_oNS_UOpfKPUvlPoXSv0Lpf6FUv9CqX-h1L9Q6l8o9S-U-hdK_Qul_oVS_0Kpf6HUv1DqXyj1L5T6F0r9C6X-hVL_Qql_odS_UOpfKPUvlPoXSv0Lpf6FUv9CqX-h1L9Q6l8o9S-U-hdK_Qul_oVS_0Kpf6HUv1DqXyj1L5T6F0r9C6X-hVL_Qql_odS_UOpfKPUvlPoXSv0Lpf6FUv9CqX_5L6X-lVb_Sqt_pdW_0uqP72E_voX9-Bb241vYj29hP76F_fgW9uNb2I9vYT--hf34FvbjW9iPb2E_voX9-Bb241vYj29hP76F_fgW9uNb2I9vYT--hf34FvbjG_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fjW_fkfwC8O45k)
 
 ---
 
