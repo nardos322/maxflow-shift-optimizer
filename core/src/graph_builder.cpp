@@ -52,14 +52,14 @@ void GraphBuilder::calcularIndices() {
   // Source
   source_ = currentNode++;
 
-  // Capa 1: Médicos
+  // Layer 1: Doctors
   for (const auto &medico : medicos_) {
     medicoToNode_[medico] = currentNode;
     nodeToMedico_[currentNode] = medico;
     currentNode++;
   }
 
-  // Capa 2: Médico-Periodo
+  // Layer 2: Doctor-Period
   for (const auto &medico : medicos_) {
     for (const auto &periodo : periodos_) {
       auto key = std::make_pair(medico, periodo.id);
@@ -69,7 +69,7 @@ void GraphBuilder::calcularIndices() {
     }
   }
 
-  // Capa 3: Días
+  // Layer 3: Days
   for (const auto &dia : dias_) {
     diaToNode_[dia] = currentNode;
     nodeToDia_[currentNode] = dia;
@@ -104,14 +104,14 @@ std::string GraphBuilder::getPeriodoDeDia(const std::string &dia) const {
 }
 
 Graph GraphBuilder::build() {
-  // Calcular índices de nodos
+  // Calculate node indices
   calcularIndices();
 
   Graph g(numVertices_);
 
-  // CAPA 1: Source -> Médicos
-  // Capacidad = min(C, días disponibles del médico)
-  // C = maxGuardiasTotales_ (límite total de guardias por médico)
+  // LAYER 1: Source -> Doctors
+  // Capacity = min(C, available days of doctor)
+  // C = maxGuardiasTotales_ (total shift limit per doctor)
   for (const auto &medico : medicos_) {
     int diasDisponibles = 0;
     auto it = disponibilidad_.find(medico);
@@ -119,8 +119,8 @@ Graph GraphBuilder::build() {
       diasDisponibles = it->second.size();
     }
 
-    // Aplicar límite C: el médico no puede trabajar más de C días en total
-    // Si tiene capacidad personal definida, usar esa. Si no, usar la global C.
+    // Apply limit C: the doctor cannot work more than C days in total
+    // If personal capacity is defined, use it. Otherwise, use global C.
     int limit = maxGuardiasTotales_;
     if (personalCapacities_.count(medico)) {
       limit = personalCapacities_[medico];
@@ -129,8 +129,8 @@ Graph GraphBuilder::build() {
     g.addEdge(source_, medicoToNode_[medico], capacidad);
   }
 
-  // CAPA 2: Médicos -> Médico-Periodo
-  // Capacidad = maxGuardiasPorPeriodo (máximo 1 día por período según enunciado)
+  // LAYER 2: Doctors -> Doctor-Period
+  // Capacity = maxGuardiasPorPeriodo (max 1 day per period per specs)
   for (const auto &medico : medicos_) {
     for (const auto &periodo : periodos_) {
       auto key = std::make_pair(medico, periodo.id);
@@ -139,8 +139,8 @@ Graph GraphBuilder::build() {
     }
   }
 
-  // CAPA 3: Médico-Periodo -> Días
-  // Capacidad = 1 si el médico está disponible ese día
+  // LAYER 3: Doctor-Period -> Days
+  // Capacity = 1 if the doctor is available that day
   for (const auto &medico : medicos_) {
     for (const auto &periodo : periodos_) {
       auto mpKey = std::make_pair(medico, periodo.id);
@@ -154,10 +154,10 @@ Graph GraphBuilder::build() {
     }
   }
 
-  // FINAL: Días -> Sink
-  // Capacidad = médicos requeridos ese día
+  // FINAL: Days -> Sink
+  // Capacity = doctors required that day
   for (const auto &dia : dias_) {
-    int requeridos = 1; // Default: 1 médico por día
+    int requeridos = 1; // Default: 1 doctor per day
     auto it = medicosPorDia_.find(dia);
     if (it != medicosPorDia_.end()) {
       requeridos = it->second;
@@ -175,13 +175,13 @@ GraphBuilder::extraerResultado(const std::vector<std::vector<int>> &flowGraph) {
   resultado.diasCubiertos = 0;
   resultado.diasRequeridos = 0;
 
-  // Calcular días requeridos
+  // Calculate required days
   for (const auto &dia : dias_) {
     auto it = medicosPorDia_.find(dia);
     resultado.diasRequeridos += (it != medicosPorDia_.end()) ? it->second : 1;
   }
 
-  // Extraer asignaciones desde Médico-Periodo -> Días
+  // Extract assignments from Doctor-Period -> Days
   for (const auto &[mpNode, mpPair] : nodeToMedicoPeriodo_) {
     const std::string &medico = mpPair.first;
 
@@ -209,32 +209,32 @@ GraphBuilder::analyzeMinCut(const std::vector<int> &reachableNodes) {
     isReachable[node] = true;
   }
 
-  // 1. Días no cubiertos
-  // Si un nodo DÍA no es alcanzable desde Source, significa que no llegó flujo a él.
+  // 1. Uncovered Days
+  // If a DAY node is not reachable from Source, it means flow didn't reach it.
   for (const auto &[dia, node] : diaToNode_) {
     if (!isReachable[node]) {
-      bottlenecks.push_back({"Dia", dia, "No se pudo asignar médico suficiente"});
+      bottlenecks.push_back({"Day", dia, "Could not assign enough doctors"});
     }
   }
 
-  // 2. Médicos Saturados Globalmente
-  // Si Source (Reachable) -> Medico (Unreachable)
-  // Significa que la arista Source->Medico está saturada (Capacidad Total agotada)
+  // 2. Globally Saturated Doctors
+  // If Source (Reachable) -> Doctor (Unreachable)
+  // Means the Source->Doctor edge is saturated (Total Capacity exhausted)
   for (const auto &[medico, node] : medicoToNode_) {
     if (!isReachable[node]) {
-      // El nodo Médico no es alcanzable, por lo tanto la arista Source->Medico (cap=C) se llenó.
+      // The Doctor node is unreachable, so the Source->Doctor edge (cap=C) is full.
       bottlenecks.push_back(
-          {"Medico", medico, "Alcanzó el límite máximo de guardias totales"});
+          {"Doctor", medico, "Reached maximum total shifts limit"});
     }
   }
 
-  // 3. Médicos Saturados en Período
-  // Si Medico (Reachable) -> MedicoPeriodo (Unreachable)
-  // Significa que el médico tenía guardias totales disponibles, pero saturó el límite del período
+  // 3. Period Saturated Doctors
+  // If Doctor (Reachable) -> DoctorPeriod (Unreachable)
+  // Means the doctor had total shifts available, but saturated the period limit
   for (const auto &[key, node] : medicoPeriodoToNode_) {
     if (isReachable[medicoToNode_[key.first]] && !isReachable[node]) {
-      bottlenecks.push_back({"MedicoEnPeriodo", key.first + " en " + key.second,
-                             "Alcanzó el límite de guardias en este período"});
+      bottlenecks.push_back({"DoctorInPeriod", key.first + " in " + key.second,
+                             "Reached shift limit in this period"});
     }
   }
 

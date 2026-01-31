@@ -5,7 +5,7 @@
 #include <string>
 
 /**
- * Estructura con todos los datos de entrada parseados
+ * Structure with all parsed input data
  */
 struct InputData {
   std::vector<std::string> medicos;
@@ -19,7 +19,7 @@ struct InputData {
 };
 
 /**
- * Estructura para el JSON de salida
+ * Structure for output JSON
  */
 struct OutputData {
   bool factible;
@@ -29,29 +29,29 @@ struct OutputData {
 };
 
 /**
- * JSONParser: Parsea JSON de entrada y serializa JSON de salida
+ * JSONParser: Parses input JSON and serializes output JSON
  */
 class JSONParser {
 public:
   /**
-   * Parsea un string JSON y retorna los datos de entrada
-   * @throws std::runtime_error si el JSON es inválido
+   * Parses a JSON string and returns input data
+   * @throws std::runtime_error if JSON is invalid
    */
   static InputData parseInput(const std::string &jsonString);
 
   /**
-   * Parsea un archivo JSON y retorna los datos de entrada
-   * @throws std::runtime_error si el archivo no existe o el JSON es inválido
+   * Parses a JSON file and returns input data
+   * @throws std::runtime_error if file does not exist or JSON is invalid
    */
   static InputData parseInputFromFile(const std::string &filePath);
 
   /**
-   * Convierte el resultado a JSON string
+   * Converts result to JSON string
    */
   static std::string toJson(const ResultadoAsignacion &resultado);
 
   /**
-   * Configura el GraphBuilder con los datos parseados
+   * Configures GraphBuilder with parsed data
    */
   static void configureBuilder(GraphBuilder &builder, const InputData &data);
 };

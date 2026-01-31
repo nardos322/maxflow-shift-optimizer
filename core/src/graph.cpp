@@ -3,7 +3,7 @@
 #include <iostream>
 
 Graph::Graph(int vertices) : numVertices(vertices) {
-  // Inicializar matriz de capacidades con ceros
+  // Initialize capacity matrix with zeros
   capacity.resize(vertices, std::vector<int>(vertices, 0));
 }
 
@@ -29,7 +29,7 @@ void Graph::setCapacity(int from, int to, int cap) {
 }
 
 void Graph::printGraph() const {
-  std::cout << "Grafo (Matriz de Capacidades):\n";
+  std::cout << "Graph (Capacity Matrix):\n";
   std::cout << "    ";
   for (int i = 0; i < numVertices; i++) {
     std::cout << std::setw(4) << i;

@@ -17,13 +17,13 @@ bool EdmondsKarp::bfs(const Graph &residualGraph, int source, int sink,
     q.pop();
 
     for (int v = 0; v < n; v++) {
-      // Si no ha sido visitado y hay capacidad residual
+      // If not visited and residual capacity exists
       if (!visited[v] && residualGraph.getCapacity(u, v) > 0) {
         visited[v] = true;
         parent[v] = u;
         q.push(v);
 
-        // Si llegamos al sink, encontramos un camino
+        // If we reach the sink, we found a path
         if (v == sink) {
           return true;
         }
@@ -37,15 +37,15 @@ bool EdmondsKarp::bfs(const Graph &residualGraph, int source, int sink,
 int EdmondsKarp::maxFlow(Graph graph, int source, int sink) {
   int n = graph.getNumVertices();
 
-  // Crear grafo residual (copia del original)
+  // Create residual graph (copy of original)
   Graph residualGraph = graph;
 
   std::vector<int> parent(n);
   int maxFlowValue = 0;
 
-  // Mientras exista un camino aumentante
+  // While an augmenting path exists
   while (bfs(residualGraph, source, sink, parent)) {
-    // Encontrar la capacidad mínima en el camino encontrado
+    // Find minimum capacity in the found path
     int pathFlow = std::numeric_limits<int>::max();
 
     for (int v = sink; v != source; v = parent[v]) {
@@ -53,20 +53,20 @@ int EdmondsKarp::maxFlow(Graph graph, int source, int sink) {
       pathFlow = std::min(pathFlow, residualGraph.getCapacity(u, v));
     }
 
-    // Actualizar capacidades residuales
+    // Update residual capacities
     for (int v = sink; v != source; v = parent[v]) {
       int u = parent[v];
 
-      // Reducir capacidad en dirección forward
+      // Reduce capacity in forward direction
       int currentCap = residualGraph.getCapacity(u, v);
       residualGraph.setCapacity(u, v, currentCap - pathFlow);
 
-      // Aumentar capacidad en dirección backward
+      // Increase capacity in backward direction
       int reverseCap = residualGraph.getCapacity(v, u);
       residualGraph.setCapacity(v, u, reverseCap + pathFlow);
     }
 
-    // Agregar flujo del camino al flujo total
+    // Add path flow to total flow
     maxFlowValue += pathFlow;
   }
 
@@ -77,10 +77,10 @@ int EdmondsKarp::maxFlowWithResult(Graph graph, int source, int sink,
                                    std::vector<std::vector<int>> &flowGraph) {
   int n = graph.getNumVertices();
 
-  // Inicializar matriz de flujo
+  // Initialize flow matrix
   flowGraph.resize(n, std::vector<int>(n, 0));
 
-  // Crear grafo residual
+  // Create residual graph
   Graph residualGraph = graph;
 
   std::vector<int> parent(n);
@@ -97,11 +97,11 @@ int EdmondsKarp::maxFlowWithResult(Graph graph, int source, int sink,
     for (int v = sink; v != source; v = parent[v]) {
       int u = parent[v];
 
-      // Actualizar flujo
+      // Update flow
       flowGraph[u][v] += pathFlow;
       flowGraph[v][u] -= pathFlow;
 
-      // Actualizar capacidad residual
+      // Update residual capacity
       int currentCap = residualGraph.getCapacity(u, v);
       residualGraph.setCapacity(u, v, currentCap - pathFlow);
 
@@ -133,8 +133,8 @@ std::vector<int> EdmondsKarp::getReachableNodes(
 
     for (int v = 0; v < n; v++) {
       if (!visited[v]) {
-        // Capacidad residual = Capacidad original - Flujo neto
-        // Nota: flowGraph[u][v] puede ser negativo si el flujo va de v a u
+        // Residual capacity = Original capacity - Net flow
+        // Note: flowGraph[u][v] can be negative if flow goes from v to u
         int residualCap = graph.getCapacity(u, v) - flowGraph[u][v];
 
         if (residualCap > 0) {

@@ -11,21 +11,21 @@ InputData JSONParser::parseInput(const std::string &jsonString) {
   try {
     json j = json::parse(jsonString);
 
-    // Parsear médicos
+    // Parse doctors
     if (j.contains("medicos") && j["medicos"].is_array()) {
       for (const auto &medico : j["medicos"]) {
         data.medicos.push_back(medico.get<std::string>());
       }
     }
 
-    // Parsear días
+    // Parse days
     if (j.contains("dias") && j["dias"].is_array()) {
       for (const auto &dia : j["dias"]) {
         data.dias.push_back(dia.get<std::string>());
       }
     }
 
-    // Parsear periodos
+    // Parse periods
     if (j.contains("periodos") && j["periodos"].is_array()) {
       for (const auto &p : j["periodos"]) {
         Periodo periodo;
@@ -39,7 +39,7 @@ InputData JSONParser::parseInput(const std::string &jsonString) {
       }
     }
 
-    // Parsear disponibilidad
+    // Parse availability
     if (j.contains("disponibilidad") && j["disponibilidad"].is_object()) {
       for (auto &[medico, dias] : j["disponibilidad"].items()) {
         std::vector<std::string> diasDisponibles;
@@ -50,42 +50,42 @@ InputData JSONParser::parseInput(const std::string &jsonString) {
       }
     }
 
-    // Parsear maxGuardiasPorPeriodo (máximo días por período, default 1)
+    // Parse maxGuardiasPorPeriodo (max days per period, default 1)
     if (j.contains("maxGuardiasPorPeriodo")) {
       data.maxGuardiasPorPeriodo = j["maxGuardiasPorPeriodo"].get<int>();
     } else {
-      data.maxGuardiasPorPeriodo = 1; // Default según enunciado
+      data.maxGuardiasPorPeriodo = 1; // Default per specs
     }
 
-    // Parsear maxGuardiasTotales (C: máximo días totales por médico)
+    // Parse maxGuardiasTotales (C: max total days per doctor)
     if (j.contains("maxGuardiasTotales")) {
       data.maxGuardiasTotales = j["maxGuardiasTotales"].get<int>();
     } else {
-      data.maxGuardiasTotales = 999; // Sin límite por default
+      data.maxGuardiasTotales = 999; // No limit by default
     }
 
-    // Parsear medicosPorDia
+    // Parse medicosPorDia
     if (j.contains("medicosPorDia")) {
       if (j["medicosPorDia"].is_number()) {
-        // Un solo valor para todos los días
+        // Single value for all days
         int cantidad = j["medicosPorDia"].get<int>();
         for (const auto &dia : data.dias) {
           data.medicosPorDia[dia] = cantidad;
         }
       } else if (j["medicosPorDia"].is_object()) {
-        // Valor específico por día
+        // Specific value per day
         for (auto &[dia, cantidad] : j["medicosPorDia"].items()) {
           data.medicosPorDia[dia] = cantidad.get<int>();
         }
       }
     } else {
-      // Default: 1 médico por día
+      // Default: 1 doctor per day
       for (const auto &dia : data.dias) {
         data.medicosPorDia[dia] = 1;
       }
     }
 
-    // Parsear capacidades personales (Opcional)
+    // Parse personal capacities (Optional)
     if (j.contains("capacidades") && j["capacidades"].is_object()) {
       for (auto &[medico, cap] : j["capacidades"].items()) {
         data.personalCapacities[medico] = cap.get<int>();
@@ -93,7 +93,7 @@ InputData JSONParser::parseInput(const std::string &jsonString) {
     }
 
   } catch (const json::exception &e) {
-    throw std::runtime_error("Error parseando JSON: " + std::string(e.what()));
+    throw std::runtime_error("Error parsing JSON: " + std::string(e.what()));
   }
 
   return data;
@@ -102,7 +102,7 @@ InputData JSONParser::parseInput(const std::string &jsonString) {
 InputData JSONParser::parseInputFromFile(const std::string &filePath) {
   std::ifstream file(filePath);
   if (!file.is_open()) {
-    throw std::runtime_error("No se pudo abrir el archivo: " + filePath);
+    throw std::runtime_error("Could not open file: " + filePath);
   }
 
   std::string content((std::istreambuf_iterator<char>(file)),
@@ -132,7 +132,7 @@ std::string JSONParser::toJson(const ResultadoAsignacion &resultado) {
     }
   }
 
-  return j.dump(2); // Indentado con 2 espacios
+  return j.dump(2); // Indented with 2 spaces
 }
 
 void JSONParser::configureBuilder(GraphBuilder &builder,

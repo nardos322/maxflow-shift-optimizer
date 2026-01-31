@@ -112,6 +112,29 @@ The solver is designed to be run as a child process. It reads **JSON from stdin*
 }
 ```
 
+### Output Schema (Infeasible Case)
+When the system fails to cover all required shifts, `factible` is `false`, and `bottlenecks` contains the Min-Cut diagnosis explaining the failure.
+```json
+{
+  "factible": false,
+  "diasCubiertos": 8,
+  "diasRequeridos": 10,
+  "asignaciones": [],
+  "bottlenecks": [
+    {
+       "tipo": "SOURCE",
+       "id": "ID1",
+       "razon": "Alcanzó el límite máximo de guardias totales"
+    },
+    {
+       "tipo": "Dia",
+       "id": "2024-01-02",
+       "razon": "No se pudo asignar médico suficiente"
+    }
+  ]
+}
+```
+
 ## 🔮 Future Roadmap: From Feasibility to Preference
 
 Currently, the system models the problem as a **Max-Flow** problem (Feasibility Constraint).
