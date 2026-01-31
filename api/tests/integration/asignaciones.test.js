@@ -119,8 +119,8 @@ describe('API Integration Tests', () => {
         expect(Array.isArray(res.body.bottlenecks)).toBe(true);
         expect(res.body.bottlenecks.length).toBeGreaterThan(0);
 
-        // Al no haber disponibilidad, el bottleneck es de tipo "Dia"
-        const diaBottleneck = res.body.bottlenecks.find(b => b.tipo === 'Dia');
+        // Al no haber disponibilidad, el bottleneck es de tipo "Day"
+        const diaBottleneck = res.body.bottlenecks.find(b => b.tipo === 'Day');
         expect(diaBottleneck).toBeDefined();
     });
 
