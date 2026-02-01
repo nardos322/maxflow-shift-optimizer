@@ -74,6 +74,7 @@ model Disponibilidad {
 model Configuracion {
   id                   Int @id @default(autoincrement())
   maxGuardiasTotales   Int @default(3)  // C: máximo días asignados por médico en total
+  maxGuardiasPorPeriodo Int @default(1) // Máximo días asignados por médico dentro de un mismo período
   medicosPorDia        Int @default(1)  // Cuántos médicos se necesitan por día
 }
 

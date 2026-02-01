@@ -221,7 +221,7 @@ function construirInputParaCore(medicos, periodos, disponibilidades, config, per
         dias: dias,
         periodos: periodosFormat,
         disponibilidad: disponibilidad,
-        maxGuardiasPorPeriodo: 1,
+        maxGuardiasPorPeriodo: config.maxGuardiasPorPeriodo,
         maxGuardiasTotales: config.maxGuardiasTotales,
         medicosPorDia: config.medicosPorDia,
     };

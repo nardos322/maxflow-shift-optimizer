@@ -11,6 +11,7 @@ async function getConfiguracion() {
         config = await prisma.configuracion.create({
             data: {
                 maxGuardiasTotales: 3,
+                maxGuardiasPorPeriodo: 1,
                 medicosPorDia: 1,
             },
         });
@@ -30,6 +31,7 @@ async function actualizarConfiguracion(data) {
         where: { id: config.id },
         data: {
             maxGuardiasTotales: data.maxGuardiasTotales,
+            maxGuardiasPorPeriodo: data.maxGuardiasPorPeriodo,
             medicosPorDia: data.medicosPorDia,
         },
     });
