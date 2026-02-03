@@ -27,9 +27,7 @@ async function generarAsignaciones(periodoIds = null) {
   }
 
   // 3. Obtener todos los días de todos los períodos
-  const todosDias = periodos.flatMap((p) =>
-    p.feriados.map((f) => f.fecha.toISOString().split("T")[0]),
-  );
+  // (todosDias eliminado por no uso)
 
   // 4. Obtener médicos activos
   const medicos = await prisma.medico.findMany({
