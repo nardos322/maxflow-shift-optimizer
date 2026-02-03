@@ -1,10 +1,10 @@
-const { Router } = require("express");
-const asignacionesController = require("../controllers/asignaciones.controller");
-const { authenticateJWT } = require("../middlewares/authenticateJWT");
-const { authorizeRoles } = require("../middlewares/authorizeRoles");
+const { Router } = require('express');
+const asignacionesController = require('../controllers/asignaciones.controller');
+const { authenticateJWT } = require('../middlewares/authenticateJWT');
+const { authorizeRoles } = require('../middlewares/authorizeRoles');
 
-const validate = require("../middlewares/validate");
-const { repararAsignacionSchema } = require("../schemas/asignacion.schema");
+const validate = require('../middlewares/validate');
+const { repararAsignacionSchema } = require('../schemas/asignacion.schema');
 
 /**
  * @swagger
@@ -31,10 +31,10 @@ const router = Router();
  *         description: Error en el cálculo
  */
 router.post(
-  "/resolver",
+  '/resolver',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
-  asignacionesController.calcular,
+  authorizeRoles('ADMIN'),
+  asignacionesController.calcular
 );
 
 /**
@@ -61,11 +61,11 @@ router.post(
  *         description: Asignación reparada
  */
 router.post(
-  "/reparar",
+  '/reparar',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   validate(repararAsignacionSchema),
-  asignacionesController.reparar,
+  asignacionesController.reparar
 );
 
 /**
@@ -81,10 +81,10 @@ router.post(
  *         description: Asignaciones eliminadas
  */
 router.delete(
-  "/",
+  '/',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
-  asignacionesController.limpiar,
+  authorizeRoles('ADMIN'),
+  asignacionesController.limpiar
 );
 
 // Todos los autenticados pueden consultar resultados
@@ -101,10 +101,10 @@ router.delete(
  *         description: Lista de asignaciones
  */
 router.get(
-  "/",
+  '/',
   authenticateJWT,
-  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
-  asignacionesController.obtenerResultados,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  asignacionesController.obtenerResultados
 );
 
 module.exports = router;

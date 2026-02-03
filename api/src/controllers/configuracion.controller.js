@@ -1,4 +1,4 @@
-const configuracionService = require("../services/configuracion.service");
+const configuracionService = require('../services/configuracion.service');
 
 async function obtenerConfiguracion(req, res, next) {
   try {
@@ -12,7 +12,7 @@ async function obtenerConfiguracion(req, res, next) {
 async function actualizarConfiguracion(req, res, next) {
   try {
     const configuracion = await configuracionService.actualizarConfiguracion(
-      req.body,
+      req.body
     );
     res.json(configuracion);
   } catch (error) {

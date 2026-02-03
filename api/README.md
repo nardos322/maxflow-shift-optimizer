@@ -4,18 +4,19 @@ This is the orchestration and data management layer of the system. It acts as th
 
 ## 🛠️ Tech Stack
 
-*   **Runtime:** Node.js
-*   **Framework:** Express.js
-*   **ORM:** Prisma (SQLite by default)
-*   **Validation:** Zod
-*   **Docs:** Swagger / OpenAPI
-*   **Testing:** Jest + Supertest
+- **Runtime:** Node.js
+- **Framework:** Express.js
+- **ORM:** Prisma (SQLite by default)
+- **Validation:** Zod
+- **Docs:** Swagger / OpenAPI
+- **Testing:** Jest + Supertest
 
 ## ⚡ Key Commands
 
 These commands are executed inside the `/api` folder:
 
 ### Development
+
 ```bash
 # Start server in watch mode (Node 18+)
 npm run dev
@@ -25,6 +26,7 @@ npm run db:studio
 ```
 
 ### Database Management & Seeds
+
 The project includes predefined scenarios to test the algorithm:
 
 ```bash
@@ -39,6 +41,7 @@ npm run db:reset
 ```
 
 ### Testing
+
 Integration tests spin up a test database (isolated) and verify the endpoints.
 
 ```bash
@@ -47,22 +50,25 @@ npm test
 
 ## 📂 Structure
 
-*   `src/controllers`: Endpoint logic.
-*   `src/routes`: API route definitions.
-*   `prisma/schema.prisma`: Data model definition.
-*   `prisma/scenarios`: Seed scripts to recreate edge cases.
+- `src/controllers`: Endpoint logic.
+- `src/routes`: API route definitions.
+- `prisma/schema.prisma`: Data model definition.
+- `prisma/scenarios`: Seed scripts to recreate edge cases.
 
 ## 🔗 Core Integration (C++)
 
 The API invokes the C++ executable (`../core/build/solver`) as a child process.
+
 1.  **Input:** The API queries Prisma and generates a JSON that is injected into the `stdin` of the C++ process.
 2.  **Output:** Reads the JSON response from the C++ `stdout`.
 3.  **Error Handling:** Captures outputs in `stderr` for diagnostics.
 
 ### 🧾 Solver Contract (JSON)
+
 The API builds the solver payload automatically based on database data, but this is the exact format sent to the core.
 
 **Input (sent to solver):**
+
 ```json
 {
   "medicos": ["Dra. Perez", "Dr. Lopez"],
@@ -82,6 +88,7 @@ The API builds the solver payload automatically based on database data, but this
 ```
 
 **Output (returned by solver):**
+
 ```json
 {
   "factible": true,
@@ -96,5 +103,6 @@ The API builds the solver payload automatically based on database data, but this
 ```
 
 > Notes:
+>
 > - `medicosPorDia` can be a number (same for every day) or an object with per-day requirements.
 > - `capacidades` is optional and used by the repair flow to cap remaining shifts per doctor.

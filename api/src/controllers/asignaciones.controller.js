@@ -1,5 +1,5 @@
-const asignacionesService = require("../services/asignaciones.service");
-const prisma = require("../lib/prisma");
+const asignacionesService = require('../services/asignaciones.service');
+const prisma = require('../lib/prisma');
 
 /**
  * POST /asignaciones/calcular
@@ -25,7 +25,7 @@ async function obtenerResultados(req, res, next) {
         medico: { select: { id: true, nombre: true } },
         periodo: { select: { id: true, nombre: true } },
       },
-      orderBy: { fecha: "asc" },
+      orderBy: { fecha: 'asc' },
     });
 
     res.json(asignaciones);
@@ -41,7 +41,7 @@ async function obtenerResultados(req, res, next) {
 async function limpiar(req, res, next) {
   try {
     await prisma.asignacion.deleteMany();
-    res.json({ message: "Asignaciones eliminadas" });
+    res.json({ message: 'Asignaciones eliminadas' });
   } catch (error) {
     next(error);
   }
@@ -55,11 +55,11 @@ async function reparar(req, res, next) {
   try {
     const { medicoId, darDeBaja } = req.body;
     if (!medicoId)
-      return res.status(400).json({ error: "medicoId es requerido" });
+      return res.status(400).json({ error: 'medicoId es requerido' });
 
     const resultado = await asignacionesService.repararAsignaciones(
       medicoId,
-      darDeBaja,
+      darDeBaja
     );
     res.json(resultado);
   } catch (error) {

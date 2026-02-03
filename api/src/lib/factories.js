@@ -1,4 +1,4 @@
-const prisma = require("./prisma");
+const prisma = require('./prisma');
 
 const Factories = {
   async createMedico(data = {}) {
@@ -20,7 +20,7 @@ const Factories = {
 
     return prisma.periodo.create({
       data: {
-        nombre: data.nombre || "Periodo Test",
+        nombre: data.nombre || 'Periodo Test',
         fechaInicio,
         fechaFin,
       },

@@ -1,4 +1,4 @@
-const prisma = require("../lib/prisma");
+const prisma = require('../lib/prisma');
 
 /**
  * Obtiene todos los médicos
@@ -7,7 +7,7 @@ async function obtenerTodos(soloActivos = false) {
   const where = soloActivos ? { activo: true } : {};
   return prisma.medico.findMany({
     where,
-    orderBy: { nombre: "asc" },
+    orderBy: { nombre: 'asc' },
   });
 }
 
@@ -117,7 +117,7 @@ async function eliminarDisponibilidad(medicoId, fechas) {
 async function obtenerDisponibilidad(medicoId) {
   return prisma.disponibilidad.findMany({
     where: { medicoId: parseInt(medicoId) },
-    orderBy: { fecha: "asc" },
+    orderBy: { fecha: 'asc' },
   });
 }
 

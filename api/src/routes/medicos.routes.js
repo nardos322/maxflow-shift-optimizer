@@ -1,14 +1,14 @@
-const { Router } = require("express");
-const medicosController = require("../controllers/medicos.controller");
-const { authenticateJWT } = require("../middlewares/authenticateJWT");
-const { authorizeRoles } = require("../middlewares/authorizeRoles");
+const { Router } = require('express');
+const medicosController = require('../controllers/medicos.controller');
+const { authenticateJWT } = require('../middlewares/authenticateJWT');
+const { authorizeRoles } = require('../middlewares/authorizeRoles');
 
-const validate = require("../middlewares/validate");
+const validate = require('../middlewares/validate');
 const {
   createMedicoSchema,
   updateMedicoSchema,
-} = require("../schemas/medico.schema");
-const { createDisponibilidadSchema } = require("../schemas/asignacion.schema"); // Reusing availability schema
+} = require('../schemas/medico.schema');
+const { createDisponibilidadSchema } = require('../schemas/asignacion.schema'); // Reusing availability schema
 
 /**
  * @swagger
@@ -51,11 +51,11 @@ const router = Router();
  *         description: Médico creado
  */
 router.post(
-  "/",
+  '/',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   validate(createMedicoSchema),
-  medicosController.crear,
+  medicosController.crear
 );
 
 /**
@@ -92,11 +92,11 @@ router.post(
  *         description: Médico actualizado
  */
 router.put(
-  "/:id",
+  '/:id',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   validate(updateMedicoSchema),
-  medicosController.actualizar,
+  medicosController.actualizar
 );
 
 /**
@@ -118,10 +118,10 @@ router.put(
  *         description: Médico eliminado
  */
 router.delete(
-  "/:id",
+  '/:id',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
-  medicosController.eliminar,
+  authorizeRoles('ADMIN'),
+  medicosController.eliminar
 );
 
 // Médicos autenticados pueden gestionar su disponibilidad
@@ -144,10 +144,10 @@ router.delete(
  *         description: Lista de fechas disponibles
  */
 router.get(
-  "/:id/disponibilidad",
+  '/:id/disponibilidad',
   authenticateJWT,
-  authorizeRoles("MEDICO", "ADMIN"),
-  medicosController.obtenerDisponibilidad,
+  authorizeRoles('MEDICO', 'ADMIN'),
+  medicosController.obtenerDisponibilidad
 );
 
 /**
@@ -181,11 +181,11 @@ router.get(
  *         description: Disponibilidad agregada
  */
 router.post(
-  "/:id/disponibilidad",
+  '/:id/disponibilidad',
   authenticateJWT,
-  authorizeRoles("MEDICO", "ADMIN"),
+  authorizeRoles('MEDICO', 'ADMIN'),
   validate(createDisponibilidadSchema),
-  medicosController.agregarDisponibilidad,
+  medicosController.agregarDisponibilidad
 );
 
 /**
@@ -219,10 +219,10 @@ router.post(
  *         description: Disponibilidad eliminada
  */
 router.delete(
-  "/:id/disponibilidad",
+  '/:id/disponibilidad',
   authenticateJWT,
-  authorizeRoles("MEDICO", "ADMIN"),
-  medicosController.eliminarDisponibilidad,
+  authorizeRoles('MEDICO', 'ADMIN'),
+  medicosController.eliminarDisponibilidad
 );
 
 // Todos los autenticados pueden consultar médicos
@@ -239,10 +239,10 @@ router.delete(
  *         description: Lista de médicos
  */
 router.get(
-  "/",
+  '/',
   authenticateJWT,
-  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
-  medicosController.obtenerTodos,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  medicosController.obtenerTodos
 );
 
 /**
@@ -266,10 +266,10 @@ router.get(
  *         description: Médico no encontrado
  */
 router.get(
-  "/:id",
+  '/:id',
   authenticateJWT,
-  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
-  medicosController.obtenerPorId,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  medicosController.obtenerPorId
 );
 
 module.exports = router;

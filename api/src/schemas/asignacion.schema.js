@@ -1,4 +1,4 @@
-const { z } = require("zod");
+const { z } = require('zod');
 
 const createDisponibilidadSchema = z.object({
   body: z.object({
@@ -11,15 +11,15 @@ const createDisponibilidadSchema = z.object({
 
 const createAsignacionSchema = z.object({
   body: z.object({
-    medicoId: z.number().int("ID de médico inválido"),
-    periodoId: z.number().int("ID de período inválido"),
+    medicoId: z.number().int('ID de médico inválido'),
+    periodoId: z.number().int('ID de período inválido'),
     fecha: z.coerce.date(),
   }),
 });
 
 const repararAsignacionSchema = z.object({
   body: z.object({
-    medicoId: z.number().int("ID de médico inválido"),
+    medicoId: z.number().int('ID de médico inválido'),
   }),
 });
 

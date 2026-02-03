@@ -1,10 +1,10 @@
-const { Router } = require("express");
-const periodosController = require("../controllers/periodos.controller");
-const { authenticateJWT } = require("../middlewares/authenticateJWT");
-const { authorizeRoles } = require("../middlewares/authorizeRoles");
+const { Router } = require('express');
+const periodosController = require('../controllers/periodos.controller');
+const { authenticateJWT } = require('../middlewares/authenticateJWT');
+const { authorizeRoles } = require('../middlewares/authorizeRoles');
 
-const validate = require("../middlewares/validate");
-const { createPeriodoSchema } = require("../schemas/periodo.schema");
+const validate = require('../middlewares/validate');
+const { createPeriodoSchema } = require('../schemas/periodo.schema');
 
 /**
  * @swagger
@@ -48,11 +48,11 @@ const router = Router();
  *         description: Período creado
  */
 router.post(
-  "/",
+  '/',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
+  authorizeRoles('ADMIN'),
   validate(createPeriodoSchema),
-  periodosController.crear,
+  periodosController.crear
 );
 
 /**
@@ -89,10 +89,10 @@ router.post(
  *         description: Período actualizado
  */
 router.put(
-  "/:id",
+  '/:id',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
-  periodosController.actualizar,
+  authorizeRoles('ADMIN'),
+  periodosController.actualizar
 );
 
 /**
@@ -114,10 +114,10 @@ router.put(
  *         description: Período eliminado
  */
 router.delete(
-  "/:id",
+  '/:id',
   authenticateJWT,
-  authorizeRoles("ADMIN"),
-  periodosController.eliminar,
+  authorizeRoles('ADMIN'),
+  periodosController.eliminar
 );
 
 // Todos los autenticados pueden consultar periodos
@@ -134,10 +134,10 @@ router.delete(
  *         description: Lista de períodos
  */
 router.get(
-  "/",
+  '/',
   authenticateJWT,
-  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
-  periodosController.obtenerTodos,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  periodosController.obtenerTodos
 );
 
 /**
@@ -161,10 +161,10 @@ router.get(
  *         description: Período no encontrado
  */
 router.get(
-  "/:id",
+  '/:id',
   authenticateJWT,
-  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
-  periodosController.obtenerPorId,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  periodosController.obtenerPorId
 );
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const prisma = require("../lib/prisma");
+const prisma = require('../lib/prisma');
 
 /**
  * Obtiene todos los períodos
@@ -9,7 +9,7 @@ async function obtenerTodos() {
       feriados: true,
       _count: { select: { asignaciones: true } },
     },
-    orderBy: { fechaInicio: "asc" },
+    orderBy: { fechaInicio: 'asc' },
   });
 }
 
@@ -23,7 +23,7 @@ async function obtenerPorId(id) {
       feriados: true,
       asignaciones: {
         include: { medico: true },
-        orderBy: { fecha: "asc" },
+        orderBy: { fecha: 'asc' },
       },
     },
   });

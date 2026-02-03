@@ -1,5 +1,5 @@
-const prisma = require("../lib/prisma");
-const coreService = require("./core.service");
+const prisma = require('../lib/prisma');
+const coreService = require('./core.service');
 
 /**
  * Genera asignaciones para los períodos especificados usando datos de la DB
@@ -10,7 +10,7 @@ async function generarAsignaciones(periodoIds = null) {
   // 1. Obtener configuración global
   const config = await prisma.configuracion.findFirst();
   if (!config) {
-    throw new Error("No hay configuración definida en el sistema");
+    throw new Error('No hay configuración definida en el sistema');
   }
 
   // 2. Obtener períodos con sus feriados
@@ -23,7 +23,7 @@ async function generarAsignaciones(periodoIds = null) {
   });
 
   if (periodos.length === 0) {
-    throw new Error("No hay períodos para resolver");
+    throw new Error('No hay períodos para resolver');
   }
 
   // 3. Obtener todos los días de todos los períodos
@@ -35,7 +35,7 @@ async function generarAsignaciones(periodoIds = null) {
   });
 
   if (medicos.length === 0) {
-    throw new Error("No hay médicos activos en el sistema");
+    throw new Error('No hay médicos activos en el sistema');
   }
 
   // 5. Obtener disponibilidad para los días relevantes
@@ -58,7 +58,7 @@ async function generarAsignaciones(periodoIds = null) {
     medicos,
     periodos,
     disponibilidades,
-    config,
+    config
   );
 
   // 7. Ejecutar el solver
@@ -81,7 +81,7 @@ async function generarAsignaciones(periodoIds = null) {
 async function repararAsignaciones(medicoSalienteId, darDeBaja = false) {
   // 1. Obtener configuración
   const config = await prisma.configuracion.findFirst();
-  if (!config) throw new Error("No hay configuración definida");
+  if (!config) throw new Error('No hay configuración definida');
 
   // 2. Obtener todas las asignaciones futuras
   const hoy = new Date();
@@ -94,7 +94,7 @@ async function repararAsignaciones(medicoSalienteId, darDeBaja = false) {
 
   // 3. Identificar huecos (asignaciones del médico saliente)
   const asignacionesBorrables = asignacionesExistentes.filter(
-    (a) => a.medicoId === parseInt(medicoSalienteId),
+    (a) => a.medicoId === parseInt(medicoSalienteId)
   );
 
   // Si no hay asignaciones futuras, igual procesamos la baja si se solicitó
@@ -106,12 +106,12 @@ async function repararAsignaciones(medicoSalienteId, darDeBaja = false) {
       });
       return {
         message:
-          "El médico no tenía asignaciones futuras. Se ha dado de baja correctamente.",
+          'El médico no tenía asignaciones futuras. Se ha dado de baja correctamente.',
       };
     }
     return {
       message:
-        "El médico no tenía asignaciones futuras. No se requiere reparación.",
+        'El médico no tenía asignaciones futuras. No se requiere reparación.',
     };
   }
 
@@ -132,12 +132,12 @@ async function repararAsignaciones(medicoSalienteId, darDeBaja = false) {
 
   const capacidadesPersonales = {};
   const asignacionesConservadas = asignacionesExistentes.filter(
-    (a) => a.medicoId !== parseInt(medicoSalienteId),
+    (a) => a.medicoId !== parseInt(medicoSalienteId)
   );
 
   for (const medico of medicosActivos) {
     const usadas = asignacionesConservadas.filter(
-      (a) => a.medicoId === medico.id,
+      (a) => a.medicoId === medico.id
     ).length;
     const restante = Math.max(0, config.maxGuardiasTotales - usadas);
     capacidadesPersonales[medico.nombre] = restante; // Pasamos al core cuánto le queda
@@ -146,7 +146,7 @@ async function repararAsignaciones(medicoSalienteId, darDeBaja = false) {
   // 6. Preparar datos para solver (SOLO para los huecos)
   // Buscamos los períodos afectados por los huecos
   const fechasHuecos = asignacionesBorrables.map(
-    (a) => a.fecha.toISOString().split("T")[0],
+    (a) => a.fecha.toISOString().split('T')[0]
   );
   const periodosAfectadosIds = [
     ...new Set(asignacionesBorrables.map((a) => a.periodoId)),
@@ -163,7 +163,7 @@ async function repararAsignaciones(medicoSalienteId, darDeBaja = false) {
     .map((p) => ({
       ...p,
       feriados: p.feriados.filter((f) =>
-        fechasHuecos.includes(f.fecha.toISOString().split("T")[0]),
+        fechasHuecos.includes(f.fecha.toISOString().split('T')[0])
       ),
     }))
     .filter((p) => p.feriados.length > 0); // Solo periodos que tengan huecos
@@ -185,7 +185,7 @@ async function repararAsignaciones(medicoSalienteId, darDeBaja = false) {
     periodosParaSolver,
     disponibilidades,
     config,
-    capacidadesPersonales, // Nuevo parámetro
+    capacidadesPersonales // Nuevo parámetro
   );
 
   // 7. Ejecutar solver
@@ -218,20 +218,20 @@ function construirInputParaCore(
   periodos,
   disponibilidades,
   config,
-  personalCapacities = null,
+  personalCapacities = null
 ) {
   // Nombres de médicos
   const nombresMedicos = medicos.map((m) => m.nombre);
 
   // Todos los días (fechas)
   const dias = periodos.flatMap((p) =>
-    p.feriados.map((f) => f.fecha.toISOString().split("T")[0]),
+    p.feriados.map((f) => f.fecha.toISOString().split('T')[0])
   );
 
   // Períodos en formato del solver
   const periodosFormat = periodos.map((p) => ({
     id: p.nombre,
-    dias: p.feriados.map((f) => f.fecha.toISOString().split("T")[0]),
+    dias: p.feriados.map((f) => f.fecha.toISOString().split('T')[0]),
   }));
 
   // Disponibilidad por médico
@@ -239,7 +239,7 @@ function construirInputParaCore(
   for (const medico of medicos) {
     const diasDisponibles = disponibilidades
       .filter((d) => d.medicoId === medico.id)
-      .map((d) => d.fecha.toISOString().split("T")[0]);
+      .map((d) => d.fecha.toISOString().split('T')[0]);
 
     if (diasDisponibles.length > 0) {
       disponibilidad[medico.nombre] = diasDisponibles;
@@ -275,7 +275,7 @@ async function guardarAsignaciones(asignaciones, periodos) {
   const fechaPeriodoMap = new Map();
   for (const periodo of periodos) {
     for (const feriado of periodo.feriados) {
-      const fechaStr = feriado.fecha.toISOString().split("T")[0];
+      const fechaStr = feriado.fecha.toISOString().split('T')[0];
       fechaPeriodoMap.set(fechaStr, periodo.id);
     }
   }
@@ -310,7 +310,7 @@ async function guardarAsignacionesAppend(asignaciones, periodos) {
   const fechaPeriodoMap = new Map();
   for (const periodo of periodos) {
     for (const feriado of periodo.feriados) {
-      const fechaStr = feriado.fecha.toISOString().split("T")[0];
+      const fechaStr = feriado.fecha.toISOString().split('T')[0];
       fechaPeriodoMap.set(fechaStr, periodo.id);
     }
   }
@@ -336,7 +336,7 @@ async function obtenerPorPeriodo(periodoId) {
       medico: true,
       periodo: true,
     },
-    orderBy: { fecha: "asc" },
+    orderBy: { fecha: 'asc' },
   });
 }
 
@@ -349,7 +349,7 @@ async function obtenerTodas() {
       medico: true,
       periodo: true,
     },
-    orderBy: { fecha: "asc" },
+    orderBy: { fecha: 'asc' },
   });
 }
 

@@ -1,4 +1,4 @@
-const { ZodError } = require("zod");
+const { ZodError } = require('zod');
 
 /**
  * Middleware genérico para validar esquemas Zod
@@ -15,18 +15,18 @@ const validate = (schema) => (req, res, next) => {
     });
     next();
   } catch (error) {
-    if (error instanceof ZodError || error.name === "ZodError") {
+    if (error instanceof ZodError || error.name === 'ZodError') {
       const issues = error.issues || error.errors || [];
       return res.status(400).json({
-        error: "Error de validación",
+        error: 'Error de validación',
         details: issues.map((err) => ({
-          path: err.path.join("."),
+          path: err.path.join('.'),
           message: err.message,
         })),
       });
     }
-    console.error("Validate Middleware Error:", error);
-    return res.status(500).json({ error: "Error interno de validación" });
+    console.error('Validate Middleware Error:', error);
+    return res.status(500).json({ error: 'Error interno de validación' });
   }
 };
 

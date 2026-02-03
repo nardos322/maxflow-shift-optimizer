@@ -1,4 +1,4 @@
-const periodosService = require("../services/periodos.service");
+const periodosService = require('../services/periodos.service');
 
 /**
  * GET /periodos
@@ -19,7 +19,7 @@ async function obtenerPorId(req, res, next) {
   try {
     const periodo = await periodosService.obtenerPorId(req.params.id);
     if (!periodo) {
-      return res.status(404).json({ error: "Período no encontrado" });
+      return res.status(404).json({ error: 'Período no encontrado' });
     }
     res.json(periodo);
   } catch (error) {
@@ -44,10 +44,10 @@ async function crear(req, res, next) {
     const periodo = await periodosService.crear(req.body);
     res.status(201).json(periodo);
   } catch (error) {
-    if (error.code === "P2002") {
+    if (error.code === 'P2002') {
       return res
         .status(400)
-        .json({ error: "Ya existe un feriado en esa fecha" });
+        .json({ error: 'Ya existe un feriado en esa fecha' });
     }
     next(error);
   }
@@ -61,8 +61,8 @@ async function actualizar(req, res, next) {
     const periodo = await periodosService.actualizar(req.params.id, req.body);
     res.json(periodo);
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Período no encontrado" });
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Período no encontrado' });
     }
     next(error);
   }
@@ -76,8 +76,8 @@ async function eliminar(req, res, next) {
     await periodosService.eliminar(req.params.id);
     res.status(204).send();
   } catch (error) {
-    if (error.code === "P2025") {
-      return res.status(404).json({ error: "Período no encontrado" });
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Período no encontrado' });
     }
     next(error);
   }
