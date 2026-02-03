@@ -24,7 +24,8 @@ async function main() {
     console.log(`✅ ${medicos.length} médicos creados (muy posos para la demanda)`);
 
     // Crear un solo período pero exigente
-    const periodo = await prisma.periodo.create({
+    // Creamos periodo (sin asignar a variable)
+    await prisma.periodo.create({
         data: {
             nombre: 'Semana Imposible 2026',
             fechaInicio: new Date('2026-06-01'),

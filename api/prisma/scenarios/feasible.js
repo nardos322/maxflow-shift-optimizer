@@ -28,7 +28,7 @@ async function main() {
 
     // Crear períodos con sus feriados
     // Período 1: Semana Santa 2026
-    const semanaSanta = await prisma.periodo.create({
+    await prisma.periodo.create({
         data: {
             nombre: 'Semana Santa 2026',
             fechaInicio: new Date('2026-04-02'),
@@ -45,7 +45,7 @@ async function main() {
     });
 
     // Período 2: Carnaval 2026
-    const carnaval = await prisma.periodo.create({
+    await prisma.periodo.create({
         data: {
             nombre: 'Carnaval 2026',
             fechaInicio: new Date('2026-02-16'),
@@ -60,7 +60,7 @@ async function main() {
     });
 
     // Período 3: Navidad y Año Nuevo
-    const navidad = await prisma.periodo.create({
+    await prisma.periodo.create({
         data: {
             nombre: 'Navidad y Año Nuevo 2026',
             fechaInicio: new Date('2026-12-24'),

@@ -15,7 +15,7 @@ describe('Input Validation Tests', () => {
         const passwordHash = await bcrypt.hash('password123', 10);
 
         // Create Admin for authenticated routes
-        const admin = await prisma.user.create({
+        await prisma.user.create({
             data: {
                 nombre: 'Super Admin',
                 email: 'admin@valid.com',
