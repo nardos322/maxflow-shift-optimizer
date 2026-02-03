@@ -3,7 +3,7 @@
 #include <queue>
 
 bool EdmondsKarp::bfs(const Graph &residualGraph, int source, int sink,
-                      std::vector<int> &parent) {
+                    std::vector<int> &parent) {
   int n = residualGraph.getNumVertices();
   std::vector<bool> visited(n, false);
 
@@ -13,22 +13,22 @@ bool EdmondsKarp::bfs(const Graph &residualGraph, int source, int sink,
   parent[source] = -1;
 
   while (!q.empty()) {
-    int u = q.front();
-    q.pop();
+  int u = q.front();
+  q.pop();
 
-    for (int v = 0; v < n; v++) {
-      // If not visited and residual capacity exists
-      if (!visited[v] && residualGraph.getCapacity(u, v) > 0) {
-        visited[v] = true;
-        parent[v] = u;
-        q.push(v);
+  for (int v = 0; v < n; v++) {
+    // If not visited and residual capacity exists
+    if (!visited[v] && residualGraph.getCapacity(u, v) > 0) {
+      visited[v] = true;
+      parent[v] = u;
+      q.push(v);
 
-        // If we reach the sink, we found a path
-        if (v == sink) {
-          return true;
-        }
+      // If we reach the sink, we found a path
+      if (v == sink) {
+        return true;
       }
     }
+  }
   }
 
   return false;
@@ -45,36 +45,36 @@ int EdmondsKarp::maxFlow(Graph graph, int source, int sink) {
 
   // While an augmenting path exists
   while (bfs(residualGraph, source, sink, parent)) {
-    // Find minimum capacity in the found path
-    int pathFlow = std::numeric_limits<int>::max();
+  // Find minimum capacity in the found path
+  int pathFlow = std::numeric_limits<int>::max();
 
-    for (int v = sink; v != source; v = parent[v]) {
-      int u = parent[v];
-      pathFlow = std::min(pathFlow, residualGraph.getCapacity(u, v));
-    }
+  for (int v = sink; v != source; v = parent[v]) {
+    int u = parent[v];
+    pathFlow = std::min(pathFlow, residualGraph.getCapacity(u, v));
+  }
 
-    // Update residual capacities
-    for (int v = sink; v != source; v = parent[v]) {
-      int u = parent[v];
+  // Update residual capacities
+  for (int v = sink; v != source; v = parent[v]) {
+    int u = parent[v];
 
-      // Reduce capacity in forward direction
-      int currentCap = residualGraph.getCapacity(u, v);
-      residualGraph.setCapacity(u, v, currentCap - pathFlow);
+    // Reduce capacity in forward direction
+    int currentCap = residualGraph.getCapacity(u, v);
+    residualGraph.setCapacity(u, v, currentCap - pathFlow);
 
-      // Increase capacity in backward direction
-      int reverseCap = residualGraph.getCapacity(v, u);
-      residualGraph.setCapacity(v, u, reverseCap + pathFlow);
-    }
+    // Increase capacity in backward direction
+    int reverseCap = residualGraph.getCapacity(v, u);
+    residualGraph.setCapacity(v, u, reverseCap + pathFlow);
+  }
 
-    // Add path flow to total flow
-    maxFlowValue += pathFlow;
+  // Add path flow to total flow
+  maxFlowValue += pathFlow;
   }
 
   return maxFlowValue;
 }
 
 int EdmondsKarp::maxFlowWithResult(Graph graph, int source, int sink,
-                                   std::vector<std::vector<int>> &flowGraph) {
+                                 std::vector<std::vector<int>> &flowGraph) {
   int n = graph.getNumVertices();
 
   // Initialize flow matrix
@@ -87,37 +87,37 @@ int EdmondsKarp::maxFlowWithResult(Graph graph, int source, int sink,
   int maxFlowValue = 0;
 
   while (bfs(residualGraph, source, sink, parent)) {
-    int pathFlow = std::numeric_limits<int>::max();
+  int pathFlow = std::numeric_limits<int>::max();
 
-    for (int v = sink; v != source; v = parent[v]) {
-      int u = parent[v];
-      pathFlow = std::min(pathFlow, residualGraph.getCapacity(u, v));
-    }
+  for (int v = sink; v != source; v = parent[v]) {
+    int u = parent[v];
+    pathFlow = std::min(pathFlow, residualGraph.getCapacity(u, v));
+  }
 
-    for (int v = sink; v != source; v = parent[v]) {
-      int u = parent[v];
+  for (int v = sink; v != source; v = parent[v]) {
+    int u = parent[v];
 
-      // Update flow
-      flowGraph[u][v] += pathFlow;
-      flowGraph[v][u] -= pathFlow;
+    // Update flow
+    flowGraph[u][v] += pathFlow;
+    flowGraph[v][u] -= pathFlow;
 
-      // Update residual capacity
-      int currentCap = residualGraph.getCapacity(u, v);
-      residualGraph.setCapacity(u, v, currentCap - pathFlow);
+    // Update residual capacity
+    int currentCap = residualGraph.getCapacity(u, v);
+    residualGraph.setCapacity(u, v, currentCap - pathFlow);
 
-      int reverseCap = residualGraph.getCapacity(v, u);
-      residualGraph.setCapacity(v, u, reverseCap + pathFlow);
-    }
+    int reverseCap = residualGraph.getCapacity(v, u);
+    residualGraph.setCapacity(v, u, reverseCap + pathFlow);
+  }
 
-    maxFlowValue += pathFlow;
+  maxFlowValue += pathFlow;
   }
 
   return maxFlowValue;
 }
 
 std::vector<int> EdmondsKarp::getReachableNodes(
-    const Graph &graph, const std::vector<std::vector<int>> &flowGraph,
-    int source) {
+  const Graph &graph, const std::vector<std::vector<int>> &flowGraph,
+  int source) {
   int n = graph.getNumVertices();
   std::vector<bool> visited(n, false);
   std::vector<int> reachable;
@@ -128,22 +128,22 @@ std::vector<int> EdmondsKarp::getReachableNodes(
   reachable.push_back(source);
 
   while (!q.empty()) {
-    int u = q.front();
-    q.pop();
+  int u = q.front();
+  q.pop();
 
-    for (int v = 0; v < n; v++) {
-      if (!visited[v]) {
-        // Residual capacity = Original capacity - Net flow
-        // Note: flowGraph[u][v] can be negative if flow goes from v to u
-        int residualCap = graph.getCapacity(u, v) - flowGraph[u][v];
+  for (int v = 0; v < n; v++) {
+    if (!visited[v]) {
+      // Residual capacity = Original capacity - Net flow
+      // Note: flowGraph[u][v] can be negative if flow goes from v to u
+      int residualCap = graph.getCapacity(u, v) - flowGraph[u][v];
 
-        if (residualCap > 0) {
-          visited[v] = true;
-          reachable.push_back(v);
-          q.push(v);
-        }
+      if (residualCap > 0) {
+        visited[v] = true;
+        reachable.push_back(v);
+        q.push(v);
       }
     }
+  }
   }
 
   return reachable;

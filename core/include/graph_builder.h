@@ -60,7 +60,7 @@ private:
   std::vector<std::string> dias_;
   std::vector<Periodo> periodos_;
   std::map<std::string, std::vector<std::string>>
-      disponibilidad_;                       // doctor -> [days]
+    disponibilidad_;                       // doctor -> [days]
   int maxGuardiasPorPeriodo_;                // max per period (1 per statement)
   int maxGuardiasTotales_;                   // C: max total days per doctor
   std::map<std::string, int> medicosPorDia_; // day -> required amount
@@ -71,7 +71,7 @@ private:
   int sink_;
   std::map<std::string, int> medicoToNode_;
   std::map<std::pair<std::string, std::string>, int>
-      medicoPeriodoToNode_; // (doctor, period) -> node
+    medicoPeriodoToNode_; // (doctor, period) -> node
   std::map<std::string, int> diaToNode_;
 
   // Reverse mapping (for result extraction)
@@ -89,13 +89,13 @@ public:
   void setDias(const std::vector<std::string> &dias);
   void setPeriodos(const std::vector<Periodo> &periodos);
   void setDisponibilidad(
-      const std::map<std::string, std::vector<std::string>> &disponibilidad);
+    const std::map<std::string, std::vector<std::string>> &disponibilidad);
   void setMaxGuardiasPorPeriodo(int c);
   void setMaxGuardiasTotales(int c);
   void setMedicosPorDia(const std::map<std::string, int> &medicosPorDia);
   void setPersonalCapacities(const std::map<std::string, int> &capacities);
   void setMedicosRequeridosTodosDias(
-      int cantidad); // Shortcut: same amount for everyone
+    int cantidad); // Shortcut: same amount for everyone
 
   // Construction
   Graph build();

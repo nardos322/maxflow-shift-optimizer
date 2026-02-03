@@ -1,10 +1,10 @@
-const { Router } = require('express');
-const periodosController = require('../controllers/periodos.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+const { Router } = require("express");
+const periodosController = require("../controllers/periodos.controller");
+const { authenticateJWT } = require("../middlewares/authenticateJWT");
+const { authorizeRoles } = require("../middlewares/authorizeRoles");
 
-const validate = require('../middlewares/validate');
-const { createPeriodoSchema } = require('../schemas/periodo.schema');
+const validate = require("../middlewares/validate");
+const { createPeriodoSchema } = require("../schemas/periodo.schema");
 
 /**
  * @swagger
@@ -47,7 +47,13 @@ const router = Router();
  *       201:
  *         description: Período creado
  */
-router.post('/', authenticateJWT, authorizeRoles('ADMIN'), validate(createPeriodoSchema), periodosController.crear);
+router.post(
+  "/",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  validate(createPeriodoSchema),
+  periodosController.crear,
+);
 
 /**
  * @swagger
@@ -82,7 +88,12 @@ router.post('/', authenticateJWT, authorizeRoles('ADMIN'), validate(createPeriod
  *       200:
  *         description: Período actualizado
  */
-router.put('/:id', authenticateJWT, authorizeRoles('ADMIN'), periodosController.actualizar);
+router.put(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  periodosController.actualizar,
+);
 
 /**
  * @swagger
@@ -102,7 +113,12 @@ router.put('/:id', authenticateJWT, authorizeRoles('ADMIN'), periodosController.
  *       200:
  *         description: Período eliminado
  */
-router.delete('/:id', authenticateJWT, authorizeRoles('ADMIN'), periodosController.eliminar);
+router.delete(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  periodosController.eliminar,
+);
 
 // Todos los autenticados pueden consultar periodos
 /**
@@ -117,7 +133,12 @@ router.delete('/:id', authenticateJWT, authorizeRoles('ADMIN'), periodosControll
  *       200:
  *         description: Lista de períodos
  */
-router.get('/', authenticateJWT, authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'), periodosController.obtenerTodos);
+router.get(
+  "/",
+  authenticateJWT,
+  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
+  periodosController.obtenerTodos,
+);
 
 /**
  * @swagger
@@ -139,6 +160,11 @@ router.get('/', authenticateJWT, authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'), pe
  *       404:
  *         description: Período no encontrado
  */
-router.get('/:id', authenticateJWT, authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'), periodosController.obtenerPorId);
+router.get(
+  "/:id",
+  authenticateJWT,
+  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
+  periodosController.obtenerPorId,
+);
 
 module.exports = router;

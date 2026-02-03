@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 /**
@@ -47,14 +47,14 @@ const router = express.Router();
  *       401:
  *         description: Credenciales incorrectas
  */
-const { login, register } = require('../controllers/auth.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+const { login, register } = require("../controllers/auth.controller");
+const { authenticateJWT } = require("../middlewares/authenticateJWT");
+const { authorizeRoles } = require("../middlewares/authorizeRoles");
 
-const validate = require('../middlewares/validate');
-const { loginSchema, registerSchema } = require('../schemas/auth.schema');
+const validate = require("../middlewares/validate");
+const { loginSchema, registerSchema } = require("../schemas/auth.schema");
 
-router.post('/login', validate(loginSchema), login);
+router.post("/login", validate(loginSchema), login);
 /**
  * @swagger
  * /auth/register:
@@ -92,6 +92,12 @@ router.post('/login', validate(loginSchema), login);
  *       403:
  *         description: No autorizado
  */
-router.post('/register', authenticateJWT, authorizeRoles('ADMIN'), validate(registerSchema), register);
+router.post(
+  "/register",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  validate(registerSchema),
+  register,
+);
 
 module.exports = router;

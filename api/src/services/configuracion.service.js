@@ -1,23 +1,23 @@
-const prisma = require('../lib/prisma');
+const prisma = require("../lib/prisma");
 
 /**
  * Obtiene la configuración global del sistema.
  * Si no existe, crea una por defecto.
  */
 async function getConfiguracion() {
-    let config = await prisma.configuracion.findFirst();
+  let config = await prisma.configuracion.findFirst();
 
-    if (!config) {
-        config = await prisma.configuracion.create({
-            data: {
-                maxGuardiasTotales: 3,
-                maxGuardiasPorPeriodo: 1,
-                medicosPorDia: 1,
-            },
-        });
-    }
+  if (!config) {
+    config = await prisma.configuracion.create({
+      data: {
+        maxGuardiasTotales: 3,
+        maxGuardiasPorPeriodo: 1,
+        medicosPorDia: 1,
+      },
+    });
+  }
 
-    return config;
+  return config;
 }
 
 /**
@@ -25,19 +25,19 @@ async function getConfiguracion() {
  * @param {Object} data - Datos a actualizar (maxGuardiasTotales, medicosPorDia)
  */
 async function actualizarConfiguracion(data) {
-    const config = await getConfiguracion();
+  const config = await getConfiguracion();
 
-    return prisma.configuracion.update({
-        where: { id: config.id },
-        data: {
-            maxGuardiasTotales: data.maxGuardiasTotales,
-            maxGuardiasPorPeriodo: data.maxGuardiasPorPeriodo,
-            medicosPorDia: data.medicosPorDia,
-        },
-    });
+  return prisma.configuracion.update({
+    where: { id: config.id },
+    data: {
+      maxGuardiasTotales: data.maxGuardiasTotales,
+      maxGuardiasPorPeriodo: data.maxGuardiasPorPeriodo,
+      medicosPorDia: data.medicosPorDia,
+    },
+  });
 }
 
 module.exports = {
-    getConfiguracion,
-    actualizarConfiguracion,
+  getConfiguracion,
+  actualizarConfiguracion,
 };

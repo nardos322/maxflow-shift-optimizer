@@ -1,7 +1,7 @@
-const { Router } = require('express');
-const configuracionController = require('../controllers/configuracion.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+const { Router } = require("express");
+const configuracionController = require("../controllers/configuracion.controller");
+const { authenticateJWT } = require("../middlewares/authenticateJWT");
+const { authorizeRoles } = require("../middlewares/authorizeRoles");
 
 /**
  * @swagger
@@ -38,7 +38,12 @@ const router = Router();
  *       200:
  *         description: Configuración actualizada
  */
-router.put('/', authenticateJWT, authorizeRoles('ADMIN'), configuracionController.actualizarConfiguracion);
+router.put(
+  "/",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  configuracionController.actualizarConfiguracion,
+);
 
 // Todos los autenticados pueden consultar configuración
 /**
@@ -53,6 +58,11 @@ router.put('/', authenticateJWT, authorizeRoles('ADMIN'), configuracionControlle
  *       200:
  *         description: Objeto de configuración
  */
-router.get('/', authenticateJWT, authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'), configuracionController.obtenerConfiguracion);
+router.get(
+  "/",
+  authenticateJWT,
+  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
+  configuracionController.obtenerConfiguracion,
+);
 
 module.exports = router;

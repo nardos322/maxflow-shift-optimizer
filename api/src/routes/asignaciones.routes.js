@@ -1,10 +1,10 @@
-const { Router } = require('express');
-const asignacionesController = require('../controllers/asignaciones.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+const { Router } = require("express");
+const asignacionesController = require("../controllers/asignaciones.controller");
+const { authenticateJWT } = require("../middlewares/authenticateJWT");
+const { authorizeRoles } = require("../middlewares/authorizeRoles");
 
-const validate = require('../middlewares/validate');
-const { repararAsignacionSchema } = require('../schemas/asignacion.schema');
+const validate = require("../middlewares/validate");
+const { repararAsignacionSchema } = require("../schemas/asignacion.schema");
 
 /**
  * @swagger
@@ -30,7 +30,12 @@ const router = Router();
  *       500:
  *         description: Error en el cálculo
  */
-router.post('/resolver', authenticateJWT, authorizeRoles('ADMIN'), asignacionesController.calcular);
+router.post(
+  "/resolver",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  asignacionesController.calcular,
+);
 
 /**
  * @swagger
@@ -55,7 +60,13 @@ router.post('/resolver', authenticateJWT, authorizeRoles('ADMIN'), asignacionesC
  *       200:
  *         description: Asignación reparada
  */
-router.post('/reparar', authenticateJWT, authorizeRoles('ADMIN'), validate(repararAsignacionSchema), asignacionesController.reparar);
+router.post(
+  "/reparar",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  validate(repararAsignacionSchema),
+  asignacionesController.reparar,
+);
 
 /**
  * @swagger
@@ -69,7 +80,12 @@ router.post('/reparar', authenticateJWT, authorizeRoles('ADMIN'), validate(repar
  *       200:
  *         description: Asignaciones eliminadas
  */
-router.delete('/', authenticateJWT, authorizeRoles('ADMIN'), asignacionesController.limpiar);
+router.delete(
+  "/",
+  authenticateJWT,
+  authorizeRoles("ADMIN"),
+  asignacionesController.limpiar,
+);
 
 // Todos los autenticados pueden consultar resultados
 /**
@@ -84,6 +100,11 @@ router.delete('/', authenticateJWT, authorizeRoles('ADMIN'), asignacionesControl
  *       200:
  *         description: Lista de asignaciones
  */
-router.get('/', authenticateJWT, authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'), asignacionesController.obtenerResultados);
+router.get(
+  "/",
+  authenticateJWT,
+  authorizeRoles("ADMIN", "MEDICO", "LECTOR"),
+  asignacionesController.obtenerResultados,
+);
 
 module.exports = router;
