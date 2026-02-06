@@ -231,7 +231,7 @@ This system uses a "best of both worlds" architecture, decoupling intensive busi
 In developing this system, conscious engineering decisions were made prioritizing robustness and maintainability over premature optimization.
 
 ### Implementation Details (Core C++)
-The resolution engine (Solver) is optimized for speed and robustness. A conscious decision was made to use an **Adjacency Matrix** instead of lists to guarantee O(1) access to residual capacities, sacrificing a negligible amount of RAM (~16MB for large cases) in exchange for performance and simplicity.
+The resolution engine (Solver) is optimized for speed and robustness. A conscious decision was made to use an **Adjacency Matrix** instead of lists. This prioritizes **code simplicity and cache locality** over theoretical traversal speed, as the performance trade-off is negligible at our scale (~1000 nodes).
 
 > 📖 For a detailed technical explanation on **Matrix vs List** and graph topology, consult the [Core README](./core/README.md#implementation-detail-matrix-over-adjacency-list).
 

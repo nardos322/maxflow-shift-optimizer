@@ -15,9 +15,10 @@ Given the constraints of hospital shifts (typically < 1000 nodes/steps), Edmonds
 ### Implementation Detail: Matrix over Adjacency List
 We deliberately chose an **Adjacency Matrix** (`vector<vector<int>>`) over an Adjacency List for this specific use case.
 
-*   **Direct Access O(1):** Edmonds-Karp requires frequent lookups and updates of *residual capacities*. With a matrix, checking `adj[u][v]` is instantaneous. An adjacency list would require iterating through neighbors to find the reverse edge, introducing overhead.
-*   **Scale Reality:** For a typical hospital scenario (100 doctors, 1 year), the graph size is $N < 2000$ nodes. A $2000 \times 2000$ integer matrix occupies only ~16 MB of RAM.
-*   **Conclusion:** The memory trade-off is negligible, while the O(1) access speed and code simplicity provide a significant robustness advantage.
+*   **Simplicity & Robustness**: Implementing reverse edge tracking with Adjacency Lists adds significant complexity. Flattening the graph to a matrix simplifies state management and reduces bugs.
+*   **Performance Reality**: While Adjacency Lists provide $O(V+E)$ BFS (better than Matrix $O(V^2)$ for sparse graphs), for our scale ($N < 2000$), the difference is practically negligible (milliseconds).
+*   **Cache Locality**: Accessing a contiguous memory block (~16MB for 2000 nodes) offers superior CPU cache coherence compared to pointer-heavy list structures.
+*   **Conclusion**: We prioritize code maintainability and robustness over theoretical optimality, given that the constraints fit comfortably within modern hardware limits.
 
 
 ## ️ Graph Topology (3-Layer Network)
@@ -122,14 +123,14 @@ When the system fails to cover all required shifts, `factible` is `false`, and `
   "asignaciones": [],
   "bottlenecks": [
     {
-       "tipo": "SOURCE",
+       "tipo": "Doctor",
        "id": "ID1",
-       "razon": "Alcanzó el límite máximo de guardias totales"
+       "razon": "Reached maximum total shifts limit"
     },
     {
-       "tipo": "Dia",
+       "tipo": "Day",
        "id": "2024-01-02",
-       "razon": "No se pudo asignar médico suficiente"
+       "razon": "Could not assign enough doctors"
     }
   ]
 }
