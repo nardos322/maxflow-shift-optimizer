@@ -134,19 +134,21 @@ void testFlujoCompleto() {
   std::cout << "\nResultado JSON:\n" << outputJson << "\n";
 }
 
-int main() {
-  std::cout << "═══════════════════════════════════════\n";
-  std::cout << "       Tests JSON Parser\n";
-  std::cout << "═══════════════════════════════════════\n";
+// Runner para tests de JSONParser
+void run_json_parser_tests() {
+  std::cout << "════════════════════════════════════════════\n";
+  std::cout << "       Tests Unitarios: JSON Parser\n";
+  std::cout << "════════════════════════════════════════════\n";
 
-  resetCounters();
+  // En el runner global, resetCounters se llama al inicio de main_test,
+  // pero como JSONParser tests pueden querer sus propios contadores limpios
+  // o agregarse al global, aquí asumimos que se suman al global.
+  // Si quisiéramos aislarlos, deberíamos guardar el estado anterior, pero
+  // para simplificar, dejamos que se acumulen.
 
   testParseBasico();
   testParseFromFile();
   testConfigureBuilder();
   testToJson();
   testFlujoCompleto();
-
-  printSummary();
-  return tests_failed > 0 ? 1 : 0;
 }

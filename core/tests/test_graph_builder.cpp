@@ -96,8 +96,8 @@ void test_multiples_periodos() {
   printResult("4 asignaciones", resultado.asignaciones.size() == 4);
 }
 
-// Test: Caso no factible
-void test_caso_no_factible() {
+// Test: Caso donde no es factible cubrir la demanda
+void builder_test_caso_no_factible() {
   std::cout << "\n=== Test: Caso No Factible ===\n";
 
   GraphBuilder builder;
@@ -125,8 +125,8 @@ void test_caso_no_factible() {
   printResult("Solo 1 día cubierto", resultado.diasCubiertos == 1);
 }
 
-// Test: Múltiples médicos por día
-void test_multiples_medicos_por_dia() {
+// Test: Múltiples médicos disponibles el mismo día
+void builder_test_multiples_medicos_por_dia() {
   std::cout << "\n=== Test: Múltiples Médicos por Día ===\n";
 
   GraphBuilder builder;
@@ -173,14 +173,17 @@ void test_restriccion_c() {
   Graph g = builder.build();
 
   EdmondsKarp ek;
-  int maxFlow = ek.maxFlow(g, builder.getSource(), builder.getSink());
+  std::vector<std::vector<int>> flowGraph;
+  int maxFlow = ek.maxFlowWithResult(g, builder.getSource(), builder.getSink(),
+                                     flowGraph);
 
   std::cout << "  Flujo máximo: " << maxFlow
             << " (esperado: 1, limitado por C)\n";
   printResult("C=1 limita a 1 guardia", maxFlow == 1);
 }
 
-int main() {
+// Runner para tests de GraphBuilder
+void run_graph_builder_tests() {
   std::cout << "╔════════════════════════════════════════════╗\n";
   std::cout << "║       Tests Unitarios: GraphBuilder        ║\n";
   std::cout << "╚════════════════════════════════════════════╝\n";
@@ -188,11 +191,7 @@ int main() {
   test_construccion_basica();
   test_resolver_con_builder();
   test_multiples_periodos();
-  test_caso_no_factible();
-  test_multiples_medicos_por_dia();
+  builder_test_caso_no_factible();
+  builder_test_multiples_medicos_por_dia();
   test_restriccion_c();
-
-  printSummary();
-
-  return tests_failed > 0 ? 1 : 0;
 }

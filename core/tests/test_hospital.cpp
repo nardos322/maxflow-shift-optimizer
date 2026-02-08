@@ -166,7 +166,8 @@ void test_caso_no_factible() {
   g.addEdge(4, 5, 1); // D2 -> Sink
 
   EdmondsKarp ek;
-  int maxFlowValue = ek.maxFlow(g, 0, 5);
+  std::vector<std::vector<int>> flowGraph;
+  int maxFlowValue = ek.maxFlowWithResult(g, 0, 5, flowGraph);
 
   std::cout << "  Flujo máximo: " << maxFlowValue << " (días requeridos: 2)\n";
   printResult("Detecta asignación no factible", maxFlowValue < 2);
@@ -199,7 +200,8 @@ void test_restriccion_capacidad() {
   g.addEdge(5, 6, 1);
 
   EdmondsKarp ek;
-  int maxFlowValue = ek.maxFlow(g, 0, 6);
+  std::vector<std::vector<int>> flowGraph;
+  int maxFlowValue = ek.maxFlowWithResult(g, 0, 6, flowGraph);
 
   std::cout << "  Flujo máximo: " << maxFlowValue
             << " (esperado: 1, limitado por C)\n";
@@ -248,13 +250,15 @@ void test_multiples_medicos_por_dia() {
   g.addEdge(8, 9, 2);
 
   EdmondsKarp ek;
-  int maxFlowValue = ek.maxFlow(g, 0, 9);
+  std::vector<std::vector<int>> flowGraph;
+  int maxFlowValue = ek.maxFlowWithResult(g, 0, 9, flowGraph);
 
   std::cout << "  Flujo máximo: " << maxFlowValue << " (esperado: 4)\n";
   printResult("4 asignaciones (2 médicos x 2 días)", maxFlowValue == 4);
 }
 
-int main() {
+// Runner para tests de asignación médica (hospital)
+void run_hospital_tests() {
   std::cout << "╔════════════════════════════════════════════╗\n";
   std::cout << "║  Tests: Asignación de Médicos a Guardias   ║\n";
   std::cout << "║          Modelo de 3 Capas                 ║\n";
@@ -265,8 +269,4 @@ int main() {
   test_caso_no_factible();
   test_restriccion_capacidad();
   test_multiples_medicos_por_dia();
-
-  printSummary();
-
-  return tests_failed > 0 ? 1 : 0;
 }

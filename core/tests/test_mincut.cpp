@@ -1,11 +1,11 @@
 #include "../include/edmonds_karp.h"
 #include "../include/graph.h"
-#include <cassert>
+#include "test_utils.h"
 #include <iostream>
 #include <vector>
 
 void testSimpleBottleneck() {
-  std::cout << "Test: Simple Bottleneck..." << std::endl;
+  std::cout << "\n=== Test: Simple Bottleneck ===\n";
 
   // Grafo simple: Source -> Node1 -> Sink
   // Cap(Source->Node1) = 10
@@ -28,7 +28,7 @@ void testSimpleBottleneck() {
   std::vector<std::vector<int>> flowGraph;
   int maxFlow = ek.maxFlowWithResult(g, source, sink, flowGraph);
 
-  assert(maxFlow == 5);
+  printResult("Max Flow correcto (5)", maxFlow == 5);
 
   std::vector<int> reachable = ek.getReachableNodes(g, flowGraph, source);
 
@@ -38,20 +38,21 @@ void testSimpleBottleneck() {
   bool sinkReachable = false;
 
   for (int u : reachable) {
-    if (u == source) sourceReachable = true;
-    if (u == node1) node1Reachable = true;
-    if (u == sink) sinkReachable = true;
+    if (u == source)
+      sourceReachable = true;
+    if (u == node1)
+      node1Reachable = true;
+    if (u == sink)
+      sinkReachable = true;
   }
 
-  assert(sourceReachable == true);
-  assert(node1Reachable == true);
-  assert(sinkReachable == false); // Cut is between Node1 and Sink
-
-  std::cout << "PASSED" << std::endl;
+  printResult("Source Reachable", sourceReachable == true);
+  printResult("Node1 Reachable", node1Reachable == true);
+  printResult("Sink Unreachable (Cut Found)", sinkReachable == false);
 }
 
 void testSourceBottleneck() {
-  std::cout << "Test: Source Bottleneck..." << std::endl;
+  std::cout << "\n=== Test: Source Bottleneck ===\n";
   // Grafo: Source -> Node1 -> Sink
   // Cap(Source->Node1) = 2
   // Cap(Node1->Sink) = 10
@@ -70,26 +71,30 @@ void testSourceBottleneck() {
   std::vector<std::vector<int>> flowGraph;
   int maxFlow = ek.maxFlowWithResult(g, source, sink, flowGraph);
 
-  assert(maxFlow == 2);
+  printResult("Max Flow correcto (2)", maxFlow == 2);
 
   std::vector<int> reachable = ek.getReachableNodes(g, flowGraph, source);
-  
+
   bool sourceReachable = false;
   bool node1Reachable = false;
 
   for (int u : reachable) {
-    if (u == source) sourceReachable = true;
-    if (u == node1) node1Reachable = true;
+    if (u == source)
+      sourceReachable = true;
+    if (u == node1)
+      node1Reachable = true;
   }
 
-  assert(sourceReachable == true);
-  assert(node1Reachable == false);
-
-  std::cout << "PASSED" << std::endl;
+  printResult("Source Reachable", sourceReachable == true);
+  printResult("Node1 Unreachable (Cut Found)", node1Reachable == false);
 }
 
-int main() {
+// Runner para tests de Min-Cut
+void run_mincut_tests() {
+  std::cout << "╔════════════════════════════════════════════╗\n";
+  std::cout << "║       Tests Unitarios: Min-Cut             ║\n";
+  std::cout << "╚════════════════════════════════════════════╝\n";
+
   testSimpleBottleneck();
   testSourceBottleneck();
-  return 0;
 }

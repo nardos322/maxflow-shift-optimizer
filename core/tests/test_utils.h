@@ -8,12 +8,17 @@
 inline int tests_passed = 0;
 inline int tests_failed = 0;
 
+// ANSI Color Codes
+inline const std::string GREEN = "\033[1;32m";
+inline const std::string RED = "\033[1;31m";
+inline const std::string RESET = "\033[0m";
+
 inline void printResult(const std::string &testName, bool passed) {
   if (passed) {
-    std::cout << "[PASS] " << testName << "\n";
+    std::cout << GREEN << "[PASS] " << RESET << testName << "\n";
     tests_passed++;
   } else {
-    std::cout << "[FAIL] " << testName << "\n";
+    std::cout << RED << "[FAIL] " << RESET << testName << "\n";
     tests_failed++;
   }
 }

@@ -8,20 +8,17 @@ class EdmondsKarp {
 private:
   // BFS to find augmenting path
   bool bfs(const Graph &residualGraph, int source, int sink,
-         std::vector<int> &parent);
+           std::vector<int> &parent);
 
 public:
-  // Execute algorithm and return max flow
-  int maxFlow(Graph graph, int source, int sink);
-
   // Version that also returns the graph with flow
   int maxFlowWithResult(Graph graph, int source, int sink,
-                      std::vector<std::vector<int>> &flowGraph);
+                        std::vector<std::vector<int>> &flowGraph);
 
   // Get reachable nodes in residual graph (for Min-Cut)
-  std::vector<int> getReachableNodes(const Graph &graph,
-                                   const std::vector<std::vector<int>> &flowGraph,
-                                   int source);
+  std::vector<int>
+  getReachableNodes(const Graph &graph,
+                    const std::vector<std::vector<int>> &flowGraph, int source);
 };
 
 #endif

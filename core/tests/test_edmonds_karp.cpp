@@ -18,7 +18,8 @@ void test_flujo_simple() {
   g.addEdge(1, 2, 10);
 
   EdmondsKarp ek;
-  int flow = ek.maxFlow(g, 0, 2);
+  std::vector<std::vector<int>> flowGraph;
+  int flow = ek.maxFlowWithResult(g, 0, 2, flowGraph);
 
   printResult("Flujo máximo = 10", flow == 10);
 }
@@ -35,7 +36,8 @@ void test_cuello_de_botella() {
   g.addEdge(2, 3, 10);
 
   EdmondsKarp ek;
-  int flow = ek.maxFlow(g, 0, 3);
+  std::vector<std::vector<int>> flowGraph;
+  int flow = ek.maxFlowWithResult(g, 0, 3, flowGraph);
 
   printResult("Flujo limitado por cuello de botella = 5", flow == 5);
 }
@@ -53,7 +55,8 @@ void test_rutas_paralelas() {
   g.addEdge(2, 3, 10);
 
   EdmondsKarp ek;
-  int flow = ek.maxFlow(g, 0, 3);
+  std::vector<std::vector<int>> flowGraph;
+  int flow = ek.maxFlowWithResult(g, 0, 3, flowGraph);
 
   printResult("Flujo por dos rutas = 20", flow == 20);
 }
@@ -69,7 +72,8 @@ void test_sin_camino() {
   g.addEdge(2, 3, 10);
 
   EdmondsKarp ek;
-  int flow = ek.maxFlow(g, 0, 3);
+  std::vector<std::vector<int>> flowGraph;
+  int flow = ek.maxFlowWithResult(g, 0, 3, flowGraph);
 
   printResult("Flujo sin camino = 0", flow == 0);
 }
@@ -88,7 +92,8 @@ void test_grafo_clasico() {
   g.addEdge(2, 3, 14);
 
   EdmondsKarp ek;
-  int flow = ek.maxFlow(g, 0, 3);
+  std::vector<std::vector<int>> flowGraph;
+  int flow = ek.maxFlowWithResult(g, 0, 3, flowGraph);
 
   std::cout << "  Flujo calculado: " << flow << " (esperado: 26)\n";
   printResult("Flujo máximo grafo clásico = 26", flow == 26);
@@ -124,12 +129,14 @@ void test_source_igual_sink() {
   g.addEdge(1, 2, 10);
 
   EdmondsKarp ek;
-  int flow = ek.maxFlow(g, 0, 0);
+  std::vector<std::vector<int>> flowGraph;
+  int flow = ek.maxFlowWithResult(g, 0, 0, flowGraph);
 
   printResult("Flujo source=sink = 0", flow == 0);
 }
 
-int main() {
+// Runner para tests de Edmonds-Karp
+void run_edmonds_karp_tests() {
   std::cout << "╔════════════════════════════════════════════╗\n";
   std::cout << "║       Tests Unitarios: Edmonds-Karp        ║\n";
   std::cout << "╚════════════════════════════════════════════╝\n";
@@ -141,8 +148,4 @@ int main() {
   test_grafo_clasico();
   test_flow_result();
   test_source_igual_sink();
-
-  printSummary();
-
-  return tests_failed > 0 ? 1 : 0;
 }

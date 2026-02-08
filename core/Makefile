@@ -16,11 +16,8 @@ SOURCES = $(SRC_DIR)/main.cpp $(SRC_DIR)/graph.cpp $(SRC_DIR)/edmonds_karp.cpp $
 OBJECTS = $(BUILD_DIR)/main.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o $(BUILD_DIR)/graph_builder.o $(BUILD_DIR)/json_parser.o
 
 # Archivos tests
-TEST_GRAPH_TARGET = $(BUILD_DIR)/test_graph
-TEST_EK_TARGET = $(BUILD_DIR)/test_edmonds_karp
-TEST_HOSPITAL_TARGET = $(BUILD_DIR)/test_hospital
-TEST_BUILDER_TARGET = $(BUILD_DIR)/test_graph_builder
-TEST_JSON_TARGET = $(BUILD_DIR)/test_json_parser
+# Test unificado
+TEST_SUITE_TARGET = $(BUILD_DIR)/test_suite
 
 # Regla principal
 all: $(BUILD_DIR) $(TARGET)
@@ -50,22 +47,14 @@ $(BUILD_DIR)/json_parser.o: $(SRC_DIR)/json_parser.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # Tests individuales
-$(TEST_GRAPH_TARGET): $(BUILD_DIR)/test_graph.o $(BUILD_DIR)/graph.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-$(TEST_EK_TARGET): $(BUILD_DIR)/test_edmonds_karp.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-$(TEST_HOSPITAL_TARGET): $(BUILD_DIR)/test_hospital.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-$(TEST_BUILDER_TARGET): $(BUILD_DIR)/test_graph_builder.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o $(BUILD_DIR)/graph_builder.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-$(TEST_JSON_TARGET): $(BUILD_DIR)/test_json_parser.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o $(BUILD_DIR)/graph_builder.o $(BUILD_DIR)/json_parser.o
+# Compilar Test Suite Unificada
+$(TEST_SUITE_TARGET): $(BUILD_DIR)/main_test.o $(BUILD_DIR)/test_graph.o $(BUILD_DIR)/test_edmonds_karp.o $(BUILD_DIR)/test_hospital.o $(BUILD_DIR)/test_graph_builder.o $(BUILD_DIR)/test_json_parser.o $(BUILD_DIR)/test_mincut.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o $(BUILD_DIR)/graph_builder.o $(BUILD_DIR)/json_parser.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 # Compilar archivos de tests/
+$(BUILD_DIR)/main_test.o: $(TEST_DIR)/main_test.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
 $(BUILD_DIR)/test_graph.o: $(TEST_DIR)/test_graph.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
@@ -81,6 +70,9 @@ $(BUILD_DIR)/test_graph_builder.o: $(TEST_DIR)/test_graph_builder.cpp
 $(BUILD_DIR)/test_json_parser.o: $(TEST_DIR)/test_json_parser.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
+$(BUILD_DIR)/test_mincut.o: $(TEST_DIR)/test_mincut.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
 # Limpiar
 clean:
 	rm -rf $(BUILD_DIR)
@@ -89,44 +81,13 @@ clean:
 run: $(TARGET)
 	./$(TARGET)
 
-# Ejecutar todos los tests
-test: $(BUILD_DIR) $(TEST_GRAPH_TARGET) $(TEST_EK_TARGET) $(TEST_HOSPITAL_TARGET) $(TEST_BUILDER_TARGET) $(TEST_JSON_TARGET)
+# Ejecutar todos los tests (usando la suite unificada)
+test: $(BUILD_DIR) $(TEST_SUITE_TARGET)
 	@echo ""
-	@echo "========================================"
-	@echo "       Ejecutando todos los tests"
-	@echo "========================================"
-	@echo ""
-	@./$(TEST_GRAPH_TARGET)
-	@echo ""
-	@./$(TEST_EK_TARGET)
-	@echo ""
-	@./$(TEST_HOSPITAL_TARGET)
-	@echo ""
-	@./$(TEST_BUILDER_TARGET)
-	@echo ""
-	@./$(TEST_JSON_TARGET)
+	@./$(TEST_SUITE_TARGET)
 
 # Tests individuales
-test-graph: $(BUILD_DIR) $(TEST_GRAPH_TARGET)
-	./$(TEST_GRAPH_TARGET)
 
-test-ek: $(BUILD_DIR) $(TEST_EK_TARGET)
-	./$(TEST_EK_TARGET)
-
-test-mincut: $(BUILD_DIR)/test_mincut
-	./$(BUILD_DIR)/test_mincut
-
-$(BUILD_DIR)/test_mincut: $(BUILD_DIR)/test_mincut.o $(BUILD_DIR)/graph.o $(BUILD_DIR)/edmonds_karp.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-$(BUILD_DIR)/test_mincut.o: $(TEST_DIR)/test_mincut.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
-
-test-hospital: $(BUILD_DIR) $(TEST_HOSPITAL_TARGET)
-	./$(TEST_HOSPITAL_TARGET)
-
-test-builder: $(BUILD_DIR) $(TEST_BUILDER_TARGET)
-	./$(TEST_BUILDER_TARGET)
 
 # Para debugging: mostrar variables
 debug-makefile:

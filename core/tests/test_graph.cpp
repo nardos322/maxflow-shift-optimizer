@@ -97,7 +97,8 @@ void test_multiples_aristas() {
   printResult("0->4 = 20", g.getCapacity(0, 4) == 20);
 }
 
-int main() {
+// Runner para tests de Graph
+void run_graph_tests() {
   std::cout << "╔════════════════════════════════════════════╗\n";
   std::cout << "║         Tests Unitarios: Graph             ║\n";
   std::cout << "╚════════════════════════════════════════════╝\n";
@@ -108,8 +109,4 @@ int main() {
   test_indices_invalidos();
   test_grafo_dirigido();
   test_multiples_aristas();
-
-  printSummary();
-
-  return tests_failed > 0 ? 1 : 0;
 }
