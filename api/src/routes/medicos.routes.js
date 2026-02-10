@@ -7,6 +7,9 @@ const validate = require('../middlewares/validate');
 const {
   createMedicoSchema,
   updateMedicoSchema,
+  getMedicoSchema,
+  deleteMedicoSchema,
+  deleteDisponibilidadSchema,
 } = require('../schemas/medico.schema');
 const { createDisponibilidadSchema } = require('../schemas/asignacion.schema'); // Reusing availability schema
 
@@ -121,6 +124,7 @@ router.delete(
   '/:id',
   authenticateJWT,
   authorizeRoles('ADMIN'),
+  validate(deleteMedicoSchema),
   medicosController.eliminar
 );
 
@@ -222,6 +226,7 @@ router.delete(
   '/:id/disponibilidad',
   authenticateJWT,
   authorizeRoles('MEDICO', 'ADMIN'),
+  validate(deleteDisponibilidadSchema),
   medicosController.eliminarDisponibilidad
 );
 
@@ -269,6 +274,7 @@ router.get(
   '/:id',
   authenticateJWT,
   authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(getMedicoSchema),
   medicosController.obtenerPorId
 );
 

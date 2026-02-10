@@ -10,6 +10,7 @@
     "db:seed": "node prisma/seed.js",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
+    "db:studio:test": "dotenv -e .env.test -- prisma studio",
     "test": "dotenv -e .env.test -- npx prisma migrate reset --force --skip-seed && dotenv -e .env.test -- jest --runInBand",
     "db:scenario:feasible": "prisma migrate reset --force --skip-seed && node prisma/scenarios/feasible.js",
     "db:scenario:infeasible": "prisma migrate reset --force --skip-seed && node prisma/scenarios/infeasible.js",

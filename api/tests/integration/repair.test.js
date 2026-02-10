@@ -64,8 +64,8 @@ describe('Integration: Shift Repair', () => {
       .send({ medicoId: drA.id, darDeBaja: true });
 
     expect(res.status).toBe(200);
-    expect(res.body.factible).toBe(true);
-    expect(res.body.asignaciones.length).toBeGreaterThan(0); // Debería haber reasignado el hueco
+    expect(['OPTIMAL', 'FEASIBLE']).toContain(res.body.status);
+    expect(res.body.reasignaciones).toBeGreaterThan(0);
 
     // 3. Verificar estado final en DB
     const asignacionesFinales = await prisma.asignacion.findMany({
@@ -123,8 +123,9 @@ describe('Integration: Shift Repair', () => {
       .send({ medicoId: drA.id });
 
     expect(res.status).toBe(200);
-    expect(res.body.factible).toBe(false);
-    // Debe devolver explicación
-    expect(res.body.bottlenecks).toBeDefined();
+    expect(['OPTIMAL', 'FEASIBLE']).not.toContain(res.body.status);
+
+    // Debe devolver explicación (minCut)
+    expect(res.body.minCut).toBeDefined();
   });
 });

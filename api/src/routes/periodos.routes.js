@@ -4,7 +4,12 @@ const { authenticateJWT } = require('../middlewares/authenticateJWT');
 const { authorizeRoles } = require('../middlewares/authorizeRoles');
 
 const validate = require('../middlewares/validate');
-const { createPeriodoSchema } = require('../schemas/periodo.schema');
+const {
+  createPeriodoSchema,
+  updatePeriodoSchema,
+  getPeriodoSchema,
+  deletePeriodoSchema,
+} = require('../schemas/periodo.schema');
 
 /**
  * @swagger
@@ -92,6 +97,7 @@ router.put(
   '/:id',
   authenticateJWT,
   authorizeRoles('ADMIN'),
+  validate(updatePeriodoSchema),
   periodosController.actualizar
 );
 
@@ -117,6 +123,7 @@ router.delete(
   '/:id',
   authenticateJWT,
   authorizeRoles('ADMIN'),
+  validate(deletePeriodoSchema),
   periodosController.eliminar
 );
 
@@ -164,6 +171,7 @@ router.get(
   '/:id',
   authenticateJWT,
   authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(getPeriodoSchema),
   periodosController.obtenerPorId
 );
 

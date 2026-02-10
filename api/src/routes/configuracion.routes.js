@@ -2,6 +2,10 @@ const { Router } = require('express');
 const configuracionController = require('../controllers/configuracion.controller');
 const { authenticateJWT } = require('../middlewares/authenticateJWT');
 const { authorizeRoles } = require('../middlewares/authorizeRoles');
+const validate = require('../middlewares/validate');
+const {
+  updateConfiguracionSchema,
+} = require('../schemas/configuracion.schema');
 
 /**
  * @swagger
@@ -42,6 +46,7 @@ router.put(
   '/',
   authenticateJWT,
   authorizeRoles('ADMIN'),
+  validate(updateConfiguracionSchema),
   configuracionController.actualizarConfiguracion
 );
 
