@@ -10,6 +10,7 @@ router.use('/auth', authRoutes);
 router.use('/medicos', medicosRoutes);
 router.use('/periodos', periodosRoutes);
 router.use('/asignaciones', asignacionesRoutes);
+router.use('/export', require('./export.routes'));
 router.use('/configuracion', require('./configuracion.routes'));
 
 module.exports = router;
