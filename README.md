@@ -205,7 +205,7 @@ While the Core engine is feature-complete for the MVP, the Application layer is 
 
 *   [ ] **Visual Dashboard (Frontend)**: High Priority. A dedicated web frontend is needed soon to visualize the schedule, manage doctors, and run the solver without relying on raw API calls.
 *   [ ] **Smart Simulation Mode (What-If)**: Run safe scenarios ("what if Dr. X is unvailable?") without affecting the production schedule.
-*   [ ] **Multi-Format Export**: Download schedules as `.ics` (Calendar), `.csv`, or `.xlsx` (Excel).
+*   [x] **Multi-Format Export**: Download schedules as `.ics` (Calendar), `.csv`, or `.xlsx` (Excel).
 *   [x] **Dynamic Configuration**: Expose operational parameters (like holidays periods) via API.
 *   [ ] **Fairness Report**: Statistical endpoints to prove equitable distribution of shifts.
 
