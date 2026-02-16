@@ -34,11 +34,13 @@ const repararAsignacionSchema = z.object({
 const simulacionSchema = z.object({
   body: z.object({
     excluirMedicos: z.array(z.number().int()).optional(),
-    config: z.object({
-      maxGuardiasTotales: z.number().int().optional(),
-      maxGuardiasPorPeriodo: z.number().int().optional(),
-      medicosPorDia: z.number().int().optional(),
-    }).optional(),
+    config: z
+      .object({
+        maxGuardiasTotales: z.number().int().optional(),
+        maxGuardiasPorPeriodo: z.number().int().optional(),
+        medicosPorDia: z.number().int().optional(),
+      })
+      .optional(),
   }),
 });
 

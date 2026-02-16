@@ -59,10 +59,10 @@ const router = Router();
  *                           type: string
  */
 router.get(
-    '/equidad',
-    authenticateJWT,
-    authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
-    reportesController.obtenerReporteEquidad
+  '/equidad',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  reportesController.obtenerReporteEquidad
 );
 
 module.exports = router;

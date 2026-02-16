@@ -41,8 +41,8 @@ class CoreService {
     const disponibilidad = {};
     for (const medico of medicos) {
       if (medico.disponibilidad && medico.disponibilidad.length > 0) {
-        const diasDisponibles = medico.disponibilidad.map((d) =>
-          d.fecha.toISOString().split('T')[0]
+        const diasDisponibles = medico.disponibilidad.map(
+          (d) => d.fecha.toISOString().split('T')[0]
         );
         disponibilidad[medico.nombre] = diasDisponibles;
       }

@@ -22,7 +22,12 @@ class AuthService {
     }
 
     const token = jwt.sign(
-      { userId: user.id, rol: user.rol, nombre: user.nombre, email: user.email },
+      {
+        userId: user.id,
+        rol: user.rol,
+        nombre: user.nombre,
+        email: user.email,
+      },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );

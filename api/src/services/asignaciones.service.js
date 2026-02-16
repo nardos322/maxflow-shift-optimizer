@@ -100,7 +100,11 @@ class AsignacionesService {
    * @param {boolean} darDeBaja - Si true, marca al médico como inactivo en la DB
    * @param {string} usuarioEmail - Email del usuario que ejecuta la acción
    */
-  async repararAsignaciones(medicoId, darDeBaja = false, usuarioEmail = 'system') {
+  async repararAsignaciones(
+    medicoId,
+    darDeBaja = false,
+    usuarioEmail = 'system'
+  ) {
     medicoId = parseInt(medicoId);
     if (isNaN(medicoId)) throw new Error('ID de médico inválido');
 
@@ -259,7 +263,6 @@ class AsignacionesService {
         status: 'FEASIBLE',
         reasignaciones: output.asignaciones.length, // Número de reasignaciones
       };
-
     } else {
       return {
         status: 'INFEASIBLE',

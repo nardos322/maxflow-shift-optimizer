@@ -6,10 +6,13 @@ function errorHandler(err, req, res, _next) {
   const statusCode = err.status || 500;
 
   // Loguear solo errores graves (500) o si estamos en desarrollo
-  if (statusCode === 500) {
-    console.error('Error Crítico:', err);
-  } else {
-    console.warn(`Error Controlado (${statusCode}):`, err.message);
+  // Evitar logs en tests para no ensuciar la salida
+  if (process.env.NODE_ENV !== 'test') {
+    if (statusCode === 500) {
+      console.error('Error Crítico:', err);
+    } else {
+      console.warn(`Error Controlado (${statusCode}):`, err.message);
+    }
   }
 
   res.status(statusCode).json({

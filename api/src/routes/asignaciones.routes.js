@@ -2,7 +2,7 @@ const { Router } = require('express');
 const asignacionesController = require('../controllers/asignaciones.controller');
 const { authenticateJWT } = require('../middlewares/authenticateJWT');
 const { authorizeRoles } = require('../middlewares/authorizeRoles');
-
+const { solverLimiter } = require('../middlewares/rateLimiter');
 const validate = require('../middlewares/validate');
 const {
   repararAsignacionSchema,
@@ -37,6 +37,7 @@ router.post(
   '/resolver',
   authenticateJWT,
   authorizeRoles('ADMIN'),
+  solverLimiter,
   asignacionesController.calcular
 );
 
@@ -100,6 +101,7 @@ router.post(
   '/simular',
   authenticateJWT,
   authorizeRoles('ADMIN'),
+  solverLimiter,
   validate(simulacionSchema),
   asignacionesController.simular
 );

@@ -8,7 +8,8 @@ const prisma = require('../lib/prisma');
 async function calcular(req, res, next) {
   try {
     const usuarioEmail = req.user ? req.user.email : 'system';
-    const resultado = await asignacionesService.generarAsignaciones(usuarioEmail);
+    const resultado =
+      await asignacionesService.generarAsignaciones(usuarioEmail);
     res.json(resultado);
   } catch (error) {
     next(error);

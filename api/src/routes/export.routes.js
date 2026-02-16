@@ -6,17 +6,17 @@ const router = Router();
 
 // Allow access to exports for ADMIN, MEDICO, and LECTOR roles
 router.get(
-    '/excel',
-    authenticateJWT,
-    authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
-    exportController.downloadExcel
+  '/excel',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  exportController.downloadExcel
 );
 
 router.get(
-    '/ics',
-    authenticateJWT,
-    authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
-    exportController.downloadICS
+  '/ics',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  exportController.downloadICS
 );
 
 module.exports = router;

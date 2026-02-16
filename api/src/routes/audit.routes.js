@@ -43,10 +43,10 @@ const router = Router();
  *                     format: date-time
  */
 router.get(
-    '/',
-    authenticateJWT,
-    authorizeRoles('ADMIN'),
-    auditController.obtenerLogs
+  '/',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  auditController.obtenerLogs
 );
 
 module.exports = router;

@@ -26,7 +26,7 @@ class MedicosService {
       },
     });
   }
-  
+
   /**
    * Crea un nuevo médico
    */
