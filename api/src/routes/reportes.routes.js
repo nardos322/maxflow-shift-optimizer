@@ -26,37 +26,7 @@ const router = Router();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 fechaGeneracion:
- *                   type: string
- *                   format: date-time
- *                 estadisticasGlobales:
- *                   type: object
- *                   properties:
- *                     totalGuardias:
- *                       type: integer
- *                     medicosActivos:
- *                       type: integer
- *                     promedioPorMedico:
- *                       type: number
- *                     desviacionEstandar:
- *                       type: number
- *                 detallePorMedico:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                       nombre:
- *                         type: string
- *                       totalGuardias:
- *                         type: integer
- *                       periodosCubiertos:
- *                         type: array
- *                         items:
- *                           type: string
+ *               $ref: '#/components/schemas/ReporteEquidad'
  */
 router.get(
   '/equidad',

@@ -52,6 +52,10 @@ const router = Router();
  *     responses:
  *       201:
  *         description: Médico creado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Medico'
  */
 router.post(
   '/',
@@ -93,6 +97,10 @@ router.post(
  *     responses:
  *       200:
  *         description: Médico actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Medico'
  */
 router.put(
   '/:id',
@@ -119,6 +127,13 @@ router.put(
  *     responses:
  *       200:
  *         description: Médico eliminado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.delete(
   '/:id',
@@ -146,6 +161,12 @@ router.delete(
  *     responses:
  *       200:
  *         description: Lista de fechas disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Disponibilidad'
  */
 router.get(
   '/:id/disponibilidad',
@@ -183,6 +204,10 @@ router.get(
  *     responses:
  *       201:
  *         description: Disponibilidad agregada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Disponibilidad'
  */
 router.post(
   '/:id/disponibilidad',
@@ -221,6 +246,13 @@ router.post(
  *     responses:
  *       200:
  *         description: Disponibilidad eliminada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
  */
 router.delete(
   '/:id/disponibilidad',
@@ -242,6 +274,12 @@ router.delete(
  *     responses:
  *       200:
  *         description: Lista de médicos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Medico'
  */
 router.get(
   '/',
@@ -267,6 +305,10 @@ router.get(
  *     responses:
  *       200:
  *         description: Detalles del médico
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Medico'
  *       404:
  *         description: Médico no encontrado
  */

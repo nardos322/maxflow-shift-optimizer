@@ -30,8 +30,16 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Asignación calculada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ResultadoSolver'
  *       500:
  *         description: Error en el cálculo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post(
   '/resolver',
@@ -60,9 +68,21 @@ router.post(
  *             properties:
  *               medicoId:
  *                 type: integer
+ *               darDeBaja:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Asignación reparada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ResultadoSolver'
+ *       400:
+ *         description: Error en la solicitud
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post(
   '/reparar',
@@ -96,6 +116,21 @@ router.post(
  *     responses:
  *       200:
  *         description: Resultado de la simulación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 parametros:
+ *                   type: object
+ *                 resultado:
+ *                   $ref: '#/components/schemas/ResultadoSolver'
+ *       400:
+ *         description: Error en la solicitud
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post(
   '/simular',
@@ -117,6 +152,15 @@ router.post(
  *     responses:
  *       200:
  *         description: Asignaciones eliminadas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
  */
 router.delete(
   '/',
@@ -137,6 +181,14 @@ router.delete(
  *     responses:
  *       200:
  *         description: Lista de asignaciones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Asignacion'
+ *       401:
+ *         description: No autorizado
  */
 router.get(
   '/',

@@ -42,6 +42,8 @@ const router = express.Router();
  *               properties:
  *                 token:
  *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
  *       400:
  *         description: Datos inválidos
  *       401:
@@ -89,6 +91,10 @@ router.post('/login', validate(loginSchema), login);
  *     responses:
  *       201:
  *         description: Usuario creado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       403:
  *         description: No autorizado
  */
