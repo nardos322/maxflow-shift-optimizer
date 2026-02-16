@@ -7,7 +7,8 @@ const prisma = require('../lib/prisma');
  */
 async function calcular(req, res, next) {
   try {
-    const resultado = await asignacionesService.generarAsignaciones();
+    const usuarioEmail = req.user ? req.user.email : 'system';
+    const resultado = await asignacionesService.generarAsignaciones(usuarioEmail);
     res.json(resultado);
   } catch (error) {
     next(error);
@@ -57,9 +58,12 @@ async function reparar(req, res, next) {
     if (!medicoId)
       return res.status(400).json({ error: 'medicoId es requerido' });
 
+    const usuarioEmail = req.user ? req.user.email : 'system';
+
     const resultado = await asignacionesService.repararAsignaciones(
       medicoId,
-      darDeBaja
+      darDeBaja,
+      usuarioEmail
     );
     res.json(resultado);
   } catch (error) {

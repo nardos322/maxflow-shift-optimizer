@@ -1,11 +1,12 @@
 const prisma = require('../lib/prisma');
+const auditService = require('./audit.service');
 const coreService = require('./core.service');
 
 class AsignacionesService {
   /**
    * Genera las asignaciones llamando al core (C++) y guardando resultados
    */
-  async generarAsignaciones() {
+  async generarAsignaciones(usuarioEmail) {
     // 1. Obtener datos de la DB
     const medicos = await prisma.medico.findMany({
       where: { activo: true },
@@ -69,6 +70,10 @@ class AsignacionesService {
         });
       }
 
+      await auditService.log('RESOLVER_TURNOS', usuarioEmail, {
+        asignacionesCreadas: asignacionesParaGuardar.length,
+      });
+
       return {
         status: 'FEASIBLE', // Mapear 'factible: true' a 'FEASIBLE'
         asignacionesCreadas: asignacionesParaGuardar.length,
@@ -93,8 +98,9 @@ class AsignacionesService {
    *
    * @param {number} medicoId - ID del médico que se da de baja
    * @param {boolean} darDeBaja - Si true, marca al médico como inactivo en la DB
+   * @param {string} usuarioEmail - Email del usuario que ejecuta la acción
    */
-  async repararAsignaciones(medicoId, darDeBaja = false) {
+  async repararAsignaciones(medicoId, darDeBaja = false, usuarioEmail = 'system') {
     medicoId = parseInt(medicoId);
     if (isNaN(medicoId)) throw new Error('ID de médico inválido');
 
@@ -241,6 +247,12 @@ class AsignacionesService {
             data: { activo: false },
           });
         }
+      });
+
+      await auditService.log('REPARAR_TURNOS', usuarioEmail, {
+        medicoId,
+        reasignaciones: output.asignaciones.length,
+        darDeBaja,
       });
 
       return {

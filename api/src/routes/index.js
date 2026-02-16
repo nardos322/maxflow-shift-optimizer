@@ -12,5 +12,7 @@ router.use('/periodos', periodosRoutes);
 router.use('/asignaciones', asignacionesRoutes);
 router.use('/export', require('./export.routes'));
 router.use('/configuracion', require('./configuracion.routes'));
+router.use('/reportes', require('./reportes.routes'));
+router.use('/auditoria', require('./audit.routes'));
 
 module.exports = router;
