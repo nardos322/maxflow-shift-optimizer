@@ -204,10 +204,11 @@ The current architecture can be easily refactored to solve problems in other fie
 While the Core engine is feature-complete for the MVP, the Application layer is evolving to improve the user experience:
 
 *   [ ] **Visual Dashboard (Frontend)**: High Priority. A dedicated web frontend is needed soon to visualize the schedule, manage doctors, and run the solver without relying on raw API calls.
-*   [ ] **Smart Simulation Mode (What-If)**: Run safe scenarios ("what if Dr. X is unvailable?") without affecting the production schedule.
+*   [x] **Smart Simulation Mode (What-If)**: Run safe scenarios ("what if Dr. X is unvailable?") without affecting the production schedule.
 *   [x] **Multi-Format Export**: Download schedules as `.ics` (Calendar), `.csv`, or `.xlsx` (Excel).
 *   [x] **Dynamic Configuration**: Expose operational parameters (like holidays periods) via API.
-*   [ ] **Fairness Report**: Statistical endpoints to prove equitable distribution of shifts.
+*   [x] **Fairness Report**: Statistical endpoints to prove equitable distribution of shifts.
+*   [x] **Audit System**: Track critical actions and changes for security and accountability.
 
 ---
 
@@ -294,7 +295,10 @@ The API is designed to be the single interface for managing data and triggering 
 | Configure global limits | `PUT` | `/configuracion` | Admin-only. |
 | Solve assignments | `POST` | `/asignaciones/resolver` | Runs core solver and persists results if feasible. |
 | Repair assignments | `POST` | `/asignaciones/reparar` | Reassigns only missing shifts. |
+| **Simulate scenarios** | `POST` | `/asignaciones/simular` | "What-if" analysis without saving. |
 | Get assignments | `GET` | `/asignaciones` | Returns current schedule. |
+| **Fairness Report** | `GET` | `/reportes/equidad` | Statistics on shift distribution. |
+| **Audit Logs** | `GET` | `/auditoria` | Admin-only security logs. |
 
 > 📘 Full contract and request/response examples are documented in Swagger (`/api-docs`) and in the API README (`/api/README.md`).
 
