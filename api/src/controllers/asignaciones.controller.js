@@ -67,9 +67,28 @@ async function reparar(req, res, next) {
   }
 }
 
+/**
+ * POST /asignaciones/simular
+ * Ejecuta una simulación con parámetros modificados sin persistir cambios.
+ * Body: {
+ *   excluirMedicos: [id1, id2],
+ *   config: { maxGuardiasTotales: 5, ... }
+ * }
+ */
+async function simular(req, res, next) {
+  try {
+    const options = req.body || {};
+    const resultado = await asignacionesService.simularAsignaciones(options);
+    res.json(resultado);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   calcular,
   obtenerResultados,
   limpiar,
   reparar,
+  simular,
 };

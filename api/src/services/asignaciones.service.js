@@ -256,6 +256,67 @@ class AsignacionesService {
       };
     }
   }
+
+  /**
+   * Ejecuta una simulación del solver con opciones personalizadas.
+   * No guarda resultados en la base de datos.
+   *
+   * @param {object} options
+   * @param {number[]} options.excluirMedicos - IDs de médicos a excluir
+   * @param {object} options.config - Sobreescritura de configuración
+   */
+  async simularAsignaciones(options = {}) {
+    const { excluirMedicos = [], config: configOverride = {} } = options;
+
+    // 1. Obtener datos base
+    let medicos = await prisma.medico.findMany({
+      where: { activo: true },
+      include: { disponibilidad: true },
+    });
+
+    const periodos = await prisma.periodo.findMany({
+      include: { feriados: true },
+      orderBy: { fechaInicio: 'asc' },
+    });
+
+    let config = await prisma.configuracion.findFirst();
+
+    if (!config) throw new Error('Configuración no encontrada');
+
+    // 2. Aplicar filtros y overrides
+    if (excluirMedicos.length > 0) {
+      medicos = medicos.filter((m) => !excluirMedicos.includes(m.id));
+    }
+
+    if (medicos.length === 0) {
+      return {
+        factible: false,
+        message: 'No hay médicos disponibles para la simulación',
+      };
+    }
+
+    // Mezclar config base con overrides
+    const configSimulacion = { ...config, ...configOverride };
+
+    // 3. Preparar input
+    const inputJson = coreService.prepareInput(
+      medicos,
+      periodos,
+      configSimulacion
+    );
+
+    // 4. Ejecutar solver
+    const output = await coreService.runSolver(inputJson);
+
+    // 5. Retornar resultado directo (sin persistir)
+    return {
+      parametros: {
+        medicosExcluidos: excluirMedicos.length,
+        config: configSimulacion,
+      },
+      resultado: output,
+    };
+  }
 }
 
 module.exports = new AsignacionesService();

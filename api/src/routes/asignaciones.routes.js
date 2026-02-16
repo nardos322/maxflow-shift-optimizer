@@ -4,7 +4,10 @@ const { authenticateJWT } = require('../middlewares/authenticateJWT');
 const { authorizeRoles } = require('../middlewares/authorizeRoles');
 
 const validate = require('../middlewares/validate');
-const { repararAsignacionSchema } = require('../schemas/asignacion.schema');
+const {
+  repararAsignacionSchema,
+  simulacionSchema,
+} = require('../schemas/asignacion.schema');
 
 /**
  * @swagger
@@ -66,6 +69,39 @@ router.post(
   authorizeRoles('ADMIN'),
   validate(repararAsignacionSchema),
   asignacionesController.reparar
+);
+
+/**
+ * @swagger
+ * /asignaciones/simular:
+ *   post:
+ *     summary: Simular asignación con parámetros modificados (What-If)
+ *     tags: [Asignaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               excluirMedicos:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               config:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Resultado de la simulación
+ */
+router.post(
+  '/simular',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(simulacionSchema),
+  asignacionesController.simular
 );
 
 /**
