@@ -2,14 +2,16 @@ const prisma = require('../lib/prisma');
 
 class AuditService {
   /**
-   * Registra una acción en el log de auditoría.
-   * @param {string} accion - Tipo de acción (e.g., 'RESOLVER', 'REPARAR')
-   * @param {string} usuario - Email del usuario que realizó la acción
-   * @param {object} detalles - Objeto con detalles adicionales (opcional)
-   */
-  async log(accion, usuario, detalles = null) {
+  * Registra una acción en el log de auditoría.
+  * @param {string} accion - Tipo de acción (e.g., 'RESOLVER', 'REPARAR')
+  * @param {string} usuario - Email del usuario que realizó la acción
+  * @param {object} detalles - Objeto con detalles adicionales (opcional)
+  * @param {object} tx - Cliente de transacción Prisma (opcional)
+  */
+  async log(accion, usuario, detalles = null, tx = null) {
+    const client = tx || prisma;
     try {
-      await prisma.auditLog.create({
+      await client.auditLog.create({
         data: {
           accion,
           usuario,

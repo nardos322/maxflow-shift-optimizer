@@ -77,12 +77,19 @@ class CoreService {
    * }
    */
   async runSolver(inputData) {
+    const TIMEOUT_MS = 30000; // 30 segundos de timeout
+
     return new Promise((resolve, reject) => {
       const inputJson = JSON.stringify(inputData);
       const process = spawn(CORE_PATH);
 
       let stdout = '';
       let stderr = '';
+
+      const timer = setTimeout(() => {
+        process.kill();
+        reject(new Error('Timeout: El core C++ tardó demasiado en responder'));
+      }, TIMEOUT_MS);
 
       process.stdout.on('data', (data) => {
         stdout += data.toString();
@@ -93,26 +100,35 @@ class CoreService {
       });
 
       process.on('close', (code, signal) => {
+        clearTimeout(timer);
         if (code === 0) {
           try {
-            resolve(JSON.parse(stdout));
+            // Intentar encontrar el inicio del JSON si hay basura antes
+            const jsonStart = stdout.indexOf('{');
+            if (jsonStart === -1) {
+              throw new Error('No se encontró un objeto JSON en la salida');
+            }
+            const cleanOutput = stdout.substring(jsonStart);
+            resolve(JSON.parse(cleanOutput));
           } catch (parseError) {
             reject(
               new Error(
-                `Error parseando respuesta del core: ${parseError.message}`
+                `Error parseando respuesta del core: ${parseError.message}. Salida cruda: ${stdout}`
               )
             );
           }
         } else {
           reject(
             new Error(
-              stderr || `Proceso terminó con código ${code} y señal ${signal}`
+              stderr ||
+              `El proceso terminó con código ${code} y señal ${signal}. Salida: ${stdout}`
             )
           );
         }
       });
 
       process.on('error', (err) => {
+        clearTimeout(timer);
         reject(new Error(`No se pudo ejecutar el core: ${err.message}`));
       });
 

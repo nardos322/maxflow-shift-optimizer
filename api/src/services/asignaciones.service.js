@@ -35,50 +35,57 @@ class AsignacionesService {
 
     // 4. Procesar salida
     if (output.factible) {
-      // Borrar asignaciones anteriores
-      await prisma.asignacion.deleteMany();
+      // Usar transacción para asegurar atomicidad
+      return await prisma.$transaction(async (tx) => {
+        // Borrar asignaciones anteriores
+        await tx.asignacion.deleteMany();
 
-      // Guardar nuevas asignaciones
-      const asignacionesParaGuardar = [];
+        // Guardar nuevas asignaciones
+        const asignacionesParaGuardar = [];
 
-      // Mapear nombres a IDs
-      const medicoMap = new Map(medicos.map((m) => [m.nombre, m]));
-      const periodoMap = new Map(); // fecha string -> periodo
+        // Mapear nombres a IDs
+        const medicoMap = new Map(medicos.map((m) => [m.nombre, m]));
+        const periodoMap = new Map(); // fecha string -> periodo
 
-      for (const p of periodos) {
-        for (const f of p.feriados) {
-          periodoMap.set(f.fecha.toISOString().split('T')[0], p);
+        for (const p of periodos) {
+          for (const f of p.feriados) {
+            periodoMap.set(f.fecha.toISOString().split('T')[0], p);
+          }
         }
-      }
 
-      for (const assignment of output.asignaciones) {
-        const medico = medicoMap.get(assignment.medico);
-        const periodo = periodoMap.get(assignment.dia);
+        for (const assignment of output.asignaciones) {
+          const medico = medicoMap.get(assignment.medico);
+          const periodo = periodoMap.get(assignment.dia);
 
-        if (medico && periodo) {
-          asignacionesParaGuardar.push({
-            medicoId: medico.id,
-            periodoId: periodo.id,
-            fecha: new Date(assignment.dia),
+          if (medico && periodo) {
+            asignacionesParaGuardar.push({
+              medicoId: medico.id,
+              periodoId: periodo.id,
+              fecha: new Date(assignment.dia),
+            });
+          }
+        }
+
+        if (asignacionesParaGuardar.length > 0) {
+          await tx.asignacion.createMany({
+            data: asignacionesParaGuardar,
           });
         }
-      }
 
-      if (asignacionesParaGuardar.length > 0) {
-        await prisma.asignacion.createMany({
-          data: asignacionesParaGuardar,
-        });
-      }
+        await auditService.log(
+          'RESOLVER_TURNOS',
+          usuarioEmail,
+          {
+            asignacionesCreadas: asignacionesParaGuardar.length,
+          },
+          tx
+        );
 
-      await auditService.log('RESOLVER_TURNOS', usuarioEmail, {
-        asignacionesCreadas: asignacionesParaGuardar.length,
+        return {
+          status: 'FEASIBLE',
+          asignacionesCreadas: asignacionesParaGuardar.length,
+        };
       });
-
-      return {
-        status: 'FEASIBLE', // Mapear 'factible: true' a 'FEASIBLE'
-        asignacionesCreadas: asignacionesParaGuardar.length,
-        // flow: output.flow // No parece devolver flow
-      };
     } else {
       // INFEASIBLE: Devolver diagnóstico (min-cut)
       return {
