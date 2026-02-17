@@ -1,15 +1,7 @@
-export interface LoginResponse {
-    token: string;
-    user: {
-        id: number;
-        email: string;
-        nombre: string;
-        rol: string;
-    };
-}
+import type { AuthResponse } from "@/types/auth";
 
 export const authService = {
-    async login(email: string, password: string): Promise<LoginResponse> {
+    async login(email: string, password: string): Promise<AuthResponse> {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: {

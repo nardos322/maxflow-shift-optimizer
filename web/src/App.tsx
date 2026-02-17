@@ -1,17 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
-import { useAuthStore } from '@/hooks/useAuthStore'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import './index.css'
 
 const queryClient = new QueryClient()
 
-const ProtectedRoute = () => {
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  return isAuthenticated() ? <Outlet /> : <Navigate to="/login" replace />;
-};
+
 
 function App() {
   return (
