@@ -1,0 +1,28 @@
+export interface LoginResponse {
+    token: string;
+    user: {
+        id: number;
+        email: string;
+        nombre: string;
+        rol: string;
+    };
+}
+
+export const authService = {
+    async login(email: string, password: string): Promise<LoginResponse> {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al iniciar sesión');
+        }
+
+        return response.json();
+    },
+};
