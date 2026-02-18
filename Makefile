@@ -8,6 +8,9 @@ help:
 	@echo "  make infeasible   -> Inicia escenario INFACTIBLE (Min-Cut)"
 	@echo "  make repair       -> Inicia escenario REPARACIÓN"
 	@echo "  make test         -> Inicia entorno de pruebas manuales"
+	@echo "  make test-web     -> Corre tests del FRONTEND (Web)"
+	@echo "  make test-api     -> Corre tests del BACKEND (API)"
+	@echo "  make test-all     -> Corre TODOS los tests automatizados (API + Web)"
 	@echo "  make prod         -> Inicia entorno de PRODUCCIÓN (Docker)"
 	@echo "  make stop         -> Detiene entorno de PRODUCCIÓN (Docker)"
 	@echo "  make clean        -> Limpia binarios generados"
@@ -40,3 +43,12 @@ clean:
 
 web:
 	./scripts/start_web.sh
+
+test-all:
+	./scripts/run_all_tests.sh
+
+test-web:
+	cd web && npm test
+
+test-api:
+	cd api && npm test
