@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Users } from "lucide-react";
@@ -20,22 +20,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
-const formSchema = z.object({
-    email: z.string().email({
-        message: "Email inválido.",
-    }),
-    password: z.string().min(1, {
-        message: "La contraseña es requerida.",
-    }),
-});
+import { loginSchema, type LoginSchemaType } from "@/schemas/auth.schema";
 
 export function LoginPage() {
     const navigate = useNavigate();
     const setAuth = useAuthStore((state) => state.login);
     const [error, setError] = useState<string | null>(null);
 
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<LoginSchemaType>({
+        resolver: zodResolver(loginSchema),
         defaultValues: {
             email: "",
             password: "",
@@ -43,7 +36,7 @@ export function LoginPage() {
     });
 
     const mutation = useMutation({
-        mutationFn: (values: z.infer<typeof formSchema>) =>
+        mutationFn: (values: LoginSchemaType) =>
             authService.login(values.email, values.password),
         onSuccess: (data) => {
             setAuth(data.token, data.user);
@@ -54,7 +47,7 @@ export function LoginPage() {
         }
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
+    function onSubmit(values: LoginSchemaType) {
         setError(null);
         mutation.mutate(values);
     }
