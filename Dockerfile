@@ -26,33 +26,34 @@ WORKDIR /app
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Copiar el binario compilado desde el Stage 1
-# Nota: Respetamos la estructura de directorios que espera el servicio de Node
 COPY --from=cpp-builder /app/core/build/solver /app/core/build/solver
 
-# Configurar la API
+# Copiar archivos de configuración del monorepo
+COPY package.json package-lock.json ./
+COPY packages ./packages
+COPY api/package.json ./api/
+
+# Instalar dependencias incluyendo workspaces
+RUN npm ci
+
+# Copiar el código fuente de la API
+COPY api/prisma ./api/prisma
+COPY api/src ./api/src
+COPY api/index.js ./api/
+
+# Generar cliente de Prisma y construir shared
+WORKDIR /app/packages/shared
+RUN npm run build
+
 WORKDIR /app/api
-
-# Copiar archivos de dependencias
-COPY api/package*.json ./
-
-# Instalar solo dependencias de producción
-RUN npm ci --only=production
-
-# Copiar el resto del código fuente de la API
-COPY api/prisma ./prisma
-COPY api/src ./src
-COPY api/index.js ./
-
-# Generar cliente de Prisma
 RUN npx prisma generate
 
 # Entorno
 ENV NODE_ENV=production
 ENV PORT=3000
-# Esta variable se sobreescribirá en docker-compose, pero dejamos un default
-ENV DATABASE_URL="file:./prisma/dev.db"
+ENV DATABASE_URL="file:/app/data/db/prod.db"
 
 EXPOSE 3000
 
-# Script de inicio: Migrar DB y levantar servidor
+# Script de inicio
 CMD ["sh", "-c", "npx prisma migrate deploy && node prisma/seedAdmin.js && npm start"]

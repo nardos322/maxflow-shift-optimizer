@@ -10,10 +10,10 @@ services:
       - "3000:3000"
     volumes:
       # Persistencia de la base de datos SQLite en volumen nombrado (Mejor práctica)
-      - sqlite_data:/app/data/db
+      - sqlite_data:/app/api/prisma
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:/app/data/db/prod.db
+      - DATABASE_URL=file:/app/api/prisma/prod.db
       - JWT_SECRET=supersecretkey_change_me_in_prod
       # Credenciales opcionales para el seed inicial del admin
       # - ADMIN_EMAIL=admin@hospital.com
