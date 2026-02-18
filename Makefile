@@ -3,6 +3,7 @@
 help:
 	@echo "🏥 Comandos disponibles del Hospital Shift Optimizer:"
 	@echo "  make dev          -> Inicia entorno de desarrollo completo"
+	@echo "  make web          -> Inicia el FRONTEND (Web)"
 	@echo "  make feasible     -> Inicia escenario FACTIBLE"
 	@echo "  make infeasible   -> Inicia escenario INFACTIBLE (Min-Cut)"
 	@echo "  make repair       -> Inicia escenario REPARACIÓN"
@@ -36,3 +37,6 @@ test:
 
 clean:
 	cd core && make clean
+
+web:
+	./scripts/start_web.sh
