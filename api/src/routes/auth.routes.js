@@ -54,7 +54,7 @@ const { authenticateJWT } = require('../middlewares/authenticateJWT');
 const { authorizeRoles } = require('../middlewares/authorizeRoles');
 
 const validate = require('../middlewares/validate');
-const { loginSchema, registerSchema } = require('../schemas/auth.schema');
+const { loginSchema, registerSchema } = require('@maxflow/shared');
 
 router.post('/login', validate(loginSchema), login);
 /**

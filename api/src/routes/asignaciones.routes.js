@@ -7,7 +7,7 @@ const validate = require('../middlewares/validate');
 const {
   repararAsignacionSchema,
   simulacionSchema,
-} = require('../schemas/asignacion.schema');
+} = require('@maxflow/shared');
 
 /**
  * @swagger

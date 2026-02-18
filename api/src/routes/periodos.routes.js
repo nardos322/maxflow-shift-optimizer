@@ -9,7 +9,7 @@ const {
   updatePeriodoSchema,
   getPeriodoSchema,
   deletePeriodoSchema,
-} = require('../schemas/periodo.schema');
+} = require('@maxflow/shared');
 
 /**
  * @swagger

@@ -5,7 +5,7 @@ const { authorizeRoles } = require('../middlewares/authorizeRoles');
 const validate = require('../middlewares/validate');
 const {
   updateConfiguracionSchema,
-} = require('../schemas/configuracion.schema');
+} = require('@maxflow/shared');
 
 /**
  * @swagger

@@ -1,12 +1,6 @@
 import { z } from "zod";
+import { loginBodySchema } from "@maxflow/shared";
 
-export const loginSchema = z.object({
-  email: z.string().email({
-    message: "Email inválido.",
-  }),
-  password: z.string().min(1, {
-    message: "La contraseña es requerida.",
-  }),
-});
+export const loginSchema = loginBodySchema;
 
 export type LoginSchemaType = z.infer<typeof loginSchema>;

@@ -60,8 +60,8 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /ingresar/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Email inválido.')).toBeInTheDocument();
-      expect(screen.getByText('La contraseña es requerida.')).toBeInTheDocument();
+      expect(screen.getByText('Debe ser un email válido')).toBeInTheDocument();
+      expect(screen.getByText('La contraseña es obligatoria')).toBeInTheDocument();
     });
 
     expect(authService.login).not.toHaveBeenCalled();

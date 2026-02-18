@@ -1,0 +1,12 @@
+{
+  "name": "maxflow-shift-optimizer-root",
+  "private": true,
+  "workspaces": [
+    "api",
+    "web",
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm test --workspaces"
+  }
+}

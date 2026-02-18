@@ -10,8 +10,8 @@ const {
   getMedicoSchema,
   deleteMedicoSchema,
   deleteDisponibilidadSchema,
-} = require('../schemas/medico.schema');
-const { createDisponibilidadSchema } = require('../schemas/asignacion.schema'); // Reusing availability schema
+  createDisponibilidadSchema,
+} = require('@maxflow/shared');
 
 /**
  * @swagger

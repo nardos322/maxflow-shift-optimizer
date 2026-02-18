@@ -20,7 +20,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
-import { loginSchema, type LoginSchemaType } from "@/schemas/auth.schema";
+import { loginBodySchema, type z } from "@maxflow/shared";
+
+type LoginSchemaType = z.infer<typeof loginBodySchema>;
 
 export function LoginPage() {
     const navigate = useNavigate();
@@ -28,7 +30,7 @@ export function LoginPage() {
     const [error, setError] = useState<string | null>(null);
 
     const form = useForm<LoginSchemaType>({
-        resolver: zodResolver(loginSchema),
+        resolver: zodResolver(loginBodySchema),
         defaultValues: {
             email: "",
             password: "",
