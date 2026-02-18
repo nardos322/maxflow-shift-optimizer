@@ -9,10 +9,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force CJS for tests to avoid ESM/CJS interop issues
-      'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom/dist/index.js'),
-      'react-router/dom': path.resolve(__dirname, 'node_modules/react-router/dist/development/dom-export.js'),
-      'react-router': path.resolve(__dirname, 'node_modules/react-router/dist/development/index.js'),
+      // Force CJS for tests to avoid ESM/CJS interop issues (pointing to root node_modules)
+      'react-router-dom': path.resolve(__dirname, '../../node_modules/react-router-dom/dist/index.js'),
+      'react-router/dom': path.resolve(__dirname, '../../node_modules/react-router/dist/development/dom-export.js'),
+      'react-router': path.resolve(__dirname, '../../node_modules/react-router/dist/development/index.js'),
     },
   },
   test: {

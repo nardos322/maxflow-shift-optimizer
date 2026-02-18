@@ -2,8 +2,7 @@
   "name": "maxflow-shift-optimizer-root",
   "private": true,
   "workspaces": [
-    "api",
-    "web",
+    "apps/*",
     "packages/*"
   ],
   "scripts": {

@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Users } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -19,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/hooks/useAuthStore";
-
 import { loginBodySchema, type z } from "@maxflow/shared";
 
 type LoginSchemaType = z.infer<typeof loginBodySchema>;

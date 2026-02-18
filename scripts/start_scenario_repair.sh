@@ -9,18 +9,18 @@ echo "========================================="
 # 1. Compilar Core
 echo ""
 echo "📦 [1/3] Compilando Core C++..."
-cd core
+cd apps/core
 make
 if [ $? -ne 0 ]; then
     echo "❌ Error compilando Core."
     exit 1
 fi
-cd ..
+cd ../..
 
 # 2. Cargar Escenario
 echo ""
 echo "💾 [2/3] Cargando datos de escenario REPAIR..."
-cd api
+cd apps/api
 npm run setup > /dev/null 2>&1 # Asegurar DB limpia
 node prisma/scenarios/repair.js
 

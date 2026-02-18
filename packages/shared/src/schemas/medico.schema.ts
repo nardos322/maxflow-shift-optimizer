@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { idParamSchema } from "./asignacion.schema"; // Reusing idParamSchema is cleaner
+import { idParamSchema } from "./asignacion.schema.js"; // Reusing idParamSchema is cleaner
 
 export const createMedicoBodySchema = z.object({
   nombre: z.string().min(2, 'El nombre es obligatorio'),

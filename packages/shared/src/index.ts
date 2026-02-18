@@ -1,15 +1,15 @@
 import * as z from 'zod';
-export * from './schemas/auth.schema';
-export * from './schemas/asignacion.schema';
-export * from './schemas/configuracion.schema';
-export * from './schemas/medico.schema';
-export * from './schemas/periodo.schema';
+export * from './schemas/auth.schema.js';
+export * from './schemas/asignacion.schema.js';
+export * from './schemas/configuracion.schema.js';
+export * from './schemas/medico.schema.js';
+export * from './schemas/periodo.schema.js';
 
 // Inferred Types
-import { loginBodySchema, registerBodySchema } from './schemas/auth.schema';
-import { createMedicoBodySchema, updateMedicoBodySchema } from './schemas/medico.schema';
-import { createPeriodoBodySchema, updatePeriodoBodySchema } from './schemas/periodo.schema';
-import { createAsignacionBodySchema, simulacionBodySchema } from './schemas/asignacion.schema';
+import { loginBodySchema, registerBodySchema } from './schemas/auth.schema.js';
+import { createMedicoBodySchema, updateMedicoBodySchema } from './schemas/medico.schema.js';
+import { createPeriodoBodySchema, updatePeriodoBodySchema } from './schemas/periodo.schema.js';
+import { createAsignacionBodySchema, simulacionBodySchema } from './schemas/asignacion.schema.js';
 
 export type LoginBody = z.infer<typeof loginBodySchema>;
 export type RegisterBody = z.infer<typeof registerBodySchema>;

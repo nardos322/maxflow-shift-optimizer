@@ -5,9 +5,9 @@ npm-debug.log
 README.md
 Makefile
 scripts
-core/build
-api/node_modules
-api/test.db
-api/test.db-journal
+apps/core/build
+apps/api/node_modules
+apps/api/test.db
+apps/api/test.db-journal
 .env
 .env.test

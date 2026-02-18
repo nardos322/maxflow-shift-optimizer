@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
-import { RegisterPage } from '@/pages/RegisterPage'
+import { CreateUserPage } from '@/pages/admin/CreateUserPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import './index.css'
 
@@ -17,11 +17,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/admin/users/new" element={<CreateUserPage />} />
               <Route path="/medicos" element={<div>Gestión de Médicos (Próximamente)</div>} />
               <Route path="/solver" element={<div>Planificador (Próximamente)</div>} />
               <Route path="/config" element={<div>Configuración (Próximamente)</div>} />
@@ -30,8 +30,8 @@ function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+      </BrowserRouter >
+    </QueryClientProvider >
   )
 }
 

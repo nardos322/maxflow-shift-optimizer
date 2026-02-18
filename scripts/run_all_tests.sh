@@ -8,20 +8,20 @@ echo "========================================="
 # 1. Tests de API
 echo ""
 echo "backend: 📦 Ejecutando tests de API..."
-cd "$(dirname "$0")/../api"
-if [ ! -d "node_modules" ]; then
-    echo "Instalando dependencias de API..."
-    npm install
+cd "$(dirname "$0")/../apps/api"
+if [ ! -d "../../node_modules" ]; then
+    echo "Instalando dependencias (desde root)..."
+    npm install --prefix ../..
 fi
 npm test
 
 # 2. Tests de Web
 echo ""
 echo "frontend: 📦 Ejecutando tests de Web..."
-cd "../web"
-if [ ! -d "node_modules" ]; then
-    echo "Instalando dependencias de Web..."
-    npm install
+cd "../../apps/web"
+if [ ! -d "../../node_modules" ]; then
+    echo "Instalando dependencias (desde root)..."
+    npm install --prefix ../..
 fi
 npm test
 

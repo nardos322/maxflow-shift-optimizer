@@ -39,7 +39,7 @@ test:
 	./scripts/start_test_env.sh
 
 clean:
-	cd core && make clean
+	cd apps/core && make clean
 
 web:
 	./scripts/start_web.sh
@@ -48,7 +48,7 @@ test-all:
 	./scripts/run_all_tests.sh
 
 test-web:
-	cd web && npm test
+	cd apps/web && npm test
 
 test-api:
-	cd api && npm test
+	cd apps/api && npm test

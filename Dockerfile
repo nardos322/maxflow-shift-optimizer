@@ -31,21 +31,21 @@ COPY --from=cpp-builder /app/core/build/solver /app/core/build/solver
 # Copiar archivos de configuración del monorepo
 COPY package.json package-lock.json ./
 COPY packages ./packages
-COPY api/package.json ./api/
+COPY apps/api/package.json ./apps/api/
 
 # Instalar dependencias incluyendo workspaces
 RUN npm ci
 
 # Copiar el código fuente de la API
-COPY api/prisma ./api/prisma
-COPY api/src ./api/src
-COPY api/index.js ./api/
+COPY apps/api/prisma ./apps/api/prisma
+COPY apps/api/src ./apps/api/src
+COPY apps/api/index.js ./apps/api/
 
 # Generar cliente de Prisma y construir shared
 WORKDIR /app/packages/shared
 RUN npm run build
 
-WORKDIR /app/api
+WORKDIR /app/apps/api
 RUN npx prisma generate
 
 # Entorno

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { idParamSchema } from "./asignacion.schema";
+import { idParamSchema } from "./asignacion.schema.js";
 
 export const createPeriodoBodySchema = z
   .object({

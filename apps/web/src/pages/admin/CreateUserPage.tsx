@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { UserPlus } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -25,15 +23,12 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
-import { useAuthStore } from "@/hooks/useAuthStore";
-
 import { registerBodySchema, type z } from "@maxflow/shared";
 
 type RegisterSchemaType = z.infer<typeof registerBodySchema>;
 
-export function RegisterPage() {
+export function CreateUserPage() {
   const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.login);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<RegisterSchemaType>({
@@ -49,9 +44,15 @@ export function RegisterPage() {
   const mutation = useMutation({
     mutationFn: (values: RegisterSchemaType) =>
       authService.register(values),
-    onSuccess: (data) => {
-      setAuth(data.token, data.user);
+    onSuccess: () => {
+      // Don't auto-login or redirect to dashboard immediately?
+      // Or just navigate to users list?
+      // Since it's admin creating user, maybe just show success?
       navigate("/");
+      // Ideally we shouldn't call setAuth here if creating OTHER user.
+      // But authService.register returns { token, user } of the NEW user?
+      // If backend returns new user data, we shouldn't replace current admin session!
+      // I need to check backend behavior or authService.
     },
     onError: (err: Error) => {
       setError(err.message);
@@ -72,9 +73,9 @@ export function RegisterPage() {
               <UserPlus className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Registrar Cuenta</CardTitle>
+          <CardTitle className="text-2xl text-center">Crear Nuevo Usuario</CardTitle>
           <CardDescription className="text-center">
-            Crea una nueva cuenta para acceder al sistema
+            Registra un nuevo médico o administrador
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -149,15 +150,13 @@ export function RegisterPage() {
               )}
 
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? "Registrando..." : "Registrar"}
+                {mutation.isPending ? "Creando..." : "Crear Usuario"}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
-          <p>
-            ¿Ya tienes una cuenta? <Link to="/login" className="text-primary hover:underline">Inicia Sesión</Link>
-          </p>
+          {/* Internal admin page, no login link needed */}
         </CardFooter>
       </Card>
     </div>
