@@ -15,7 +15,7 @@ vi.mock('@/services/auth.service', () => ({
 // Mock del hook useAuthStore
 const mockLogin = vi.fn();
 vi.mock('@/hooks/useAuthStore', () => ({
-  useAuthStore: (selector: any) => {
+  useAuthStore: () => {
     // Simulamos que el selector retorna la función login
     return mockLogin;
   }
