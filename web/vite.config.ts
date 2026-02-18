@@ -9,12 +9,21 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Force CJS for tests to avoid ESM/CJS interop issues
+      'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom/dist/index.js'),
+      'react-router/dom': path.resolve(__dirname, 'node_modules/react-router/dist/development/dom-export.js'),
+      'react-router': path.resolve(__dirname, 'node_modules/react-router/dist/development/index.js'),
     },
   },
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    server: {
+      deps: {
+        inline: ['react-router-dom', 'react-router'],
+      },
+    },
   },
   server: {
     proxy: {
