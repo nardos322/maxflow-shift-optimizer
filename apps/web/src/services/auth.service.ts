@@ -2,6 +2,10 @@ import type { AuthResponse } from "@/types/auth";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
 export const authService = {
+    getToken(): string | null {
+        return useAuthStore.getState().token;
+    },
+
     async login(email: string, password: string): Promise<AuthResponse> {
         const response = await fetch('/api/auth/login', {
             method: 'POST',

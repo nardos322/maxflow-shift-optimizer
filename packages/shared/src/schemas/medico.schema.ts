@@ -4,6 +4,7 @@ import { idParamSchema } from "./asignacion.schema.js"; // Reusing idParamSchema
 export const createMedicoBodySchema = z.object({
   nombre: z.string().min(2, 'El nombre es obligatorio'),
   email: z.string().email('Debe ser un email válido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres').optional().or(z.literal("")),
   activo: z.boolean().optional(),
   userId: z.number().int().optional(),
 });
