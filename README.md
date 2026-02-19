@@ -379,8 +379,11 @@ A: The core needs maximum performance for large graphs (1000+ nodes). C++ offers
 
 *   `/core`: **The Brain.** C++ source code (Edmonds-Karp Solver).
     > 📖 [See technical documentation of the algorithm and data schemas](./core/README.md)
-*   `/api`: **The Nervous System.** Node.js REST API and DB management (Prisma).
+*   `/apps`: **Applications.** Contains the API (Backend) and Web (Frontend).
+*   `/packages`: **Shared Code.** Shared libraries like schemas and types.
 *   `/scripts`: Utilities to automate the development lifecycle.
+
+> 🗺️ **[SEE DETAILED ARCHITECTURE MAP](./ARCHITECTURE.md)**
 
 
 ---
