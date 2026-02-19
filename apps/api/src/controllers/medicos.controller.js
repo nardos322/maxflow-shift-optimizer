@@ -33,11 +33,21 @@ async function obtenerPorId(req, res, next) {
  */
 async function crear(req, res, next) {
   try {
-    const medico = await medicosService.crear(req.body);
+    const { nombre, email, password, activo } = req.body;
+    const medico = await medicosService.crear({
+      nombre,
+      email,
+      password,
+      activo,
+    });
     res.status(201).json(medico);
   } catch (error) {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'El email ya está registrado' });
+    }
+    // Si el error viene del service con status (ej: 409)
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
     }
     next(error);
   }

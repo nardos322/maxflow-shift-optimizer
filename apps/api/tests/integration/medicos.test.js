@@ -37,7 +37,35 @@ describe('API Integration Tests - Medicos', () => {
     expect(res.body.nombre).toBe(nuevoMedico.nombre);
     expect(res.body.activo).toBe(true); // Por defecto activo
 
+    // Verificar que se devuelve el usuario creado
+    expect(res.body).toHaveProperty('user');
+    expect(res.body.user).toHaveProperty('id');
+    expect(res.body.user.email).toBe(nuevoMedico.email);
+
+    // Verificar en DB que el usuario existe y tiene rol MEDICO
+    const userDb = await prisma.user.findUnique({
+      where: { email: nuevoMedico.email },
+    });
+    expect(userDb).toBeDefined();
+    expect(userDb.rol).toBe('MEDICO');
+    expect(userDb.id).toBe(res.body.user.id);
+
     medicoId = res.body.id;
+  });
+
+  test('POST /medicos debe fallar si el email ya existe', async () => {
+    const dupl = {
+      nombre: 'Otro Juan',
+      email: 'juan.perez@hospital.com', // Mismo email que el anterior
+    };
+
+    const res = await request(app)
+      .post('/medicos')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send(dupl);
+
+    expect(res.statusCode).toEqual(409); // Conflict
+    expect(res.body).toHaveProperty('error', 'El email ya está registrado');
   });
 
   /**

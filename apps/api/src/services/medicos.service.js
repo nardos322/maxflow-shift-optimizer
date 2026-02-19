@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const bcrypt = require('bcryptjs');
 
 class MedicosService {
   /**
@@ -31,12 +32,47 @@ class MedicosService {
    * Crea un nuevo médico
    */
   async crear(data) {
-    return prisma.medico.create({
-      data: {
-        nombre: data.nombre,
-        email: data.email,
-        activo: data.activo ?? true,
-      },
+    return prisma.$transaction(async (tx) => {
+      // 1. Verificar si el usuario ya existe
+      const existingUser = await tx.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (existingUser) {
+        throw { status: 409, message: 'El email ya está registrado' };
+      }
+
+      // 2. Crear Usuario (Login)
+      // Contraseña por defecto: "medico123" (o la que venga en data)
+      const plainPassword = data.password || 'medico123';
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+      const newUser = await tx.user.create({
+        data: {
+          nombre: data.nombre,
+          email: data.email,
+          password: hashedPassword,
+          rol: 'MEDICO',
+        },
+      });
+
+      // 3. Crear Perfil de Médico vinculado
+      const newMedico = await tx.medico.create({
+        data: {
+          nombre: data.nombre,
+          email: data.email,
+          activo: data.activo ?? true,
+          userId: newUser.id,
+        },
+      });
+
+      return {
+        ...newMedico,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+        },
+      };
     });
   }
 
