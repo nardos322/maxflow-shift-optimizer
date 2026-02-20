@@ -60,26 +60,28 @@ export function MedicosListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Gestión de Médicos</h2>
-          <p className="text-muted-foreground">
-            Administra los perfiles de los médicos y sus usuarios asociados.
-          </p>
+      <section className="panel-glass dash-reveal rounded-2xl border border-border/70 p-6">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+          <div>
+            <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">Gestión de Médicos</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Administra los perfiles de los médicos y sus usuarios asociados.
+            </p>
+          </div>
+          <div className="flex gap-2 self-start">
+            <Button variant="outline" onClick={() => setShowInactive(!showInactive)}>
+              {showInactive ? "Ocultar Inactivos" : "Mostrar Inactivos"}
+            </Button>
+            <Button asChild>
+              <Link to="/medicos/new">
+                <Plus className="mr-2 h-4 w-4" /> Nuevo Médico
+              </Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowInactive(!showInactive)}>
-            {showInactive ? "Ocultar Inactivos" : "Mostrar Inactivos"}
-          </Button>
-          <Button asChild>
-            <Link to="/medicos/new">
-              <Plus className="mr-2 h-4 w-4" /> Nuevo Médico
-            </Link>
-          </Button>
-        </div>
-      </div>
+      </section>
 
-      <Card>
+      <Card className="panel-glass dash-reveal delay-2 border-border/70">
         <CardHeader>
           <CardTitle>Médicos Registrados</CardTitle>
           <CardDescription>Lista total de médicos en el sistema.</CardDescription>

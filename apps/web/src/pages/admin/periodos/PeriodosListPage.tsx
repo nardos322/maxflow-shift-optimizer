@@ -44,24 +44,26 @@ export function PeriodosListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Calendar className="h-8 w-8" />
-            Gestión de Períodos
+      <section className="panel-glass dash-reveal rounded-2xl border border-border/70 p-6">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+          <div>
+            <h2 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+              <Calendar className="h-8 w-8 text-primary" />
+              Gestión de Períodos
             </h2>
-          <p className="text-muted-foreground">
-            Crea y administra los períodos de planificación.
-          </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Crea y administra los períodos de planificación.
+            </p>
+          </div>
+          <Button asChild className="self-start">
+            <Link to="/periodos/new">
+              <Plus className="mr-2 h-4 w-4" /> Nuevo Período
+            </Link>
+          </Button>
         </div>
-        <Button asChild>
-          <Link to="/periodos/new">
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Período
-          </Link>
-        </Button>
-      </div>
+      </section>
 
-      <Card>
+      <Card className="panel-glass dash-reveal delay-2 border-border/70">
         <CardHeader>
           <CardTitle>Períodos Registrados</CardTitle>
           <CardDescription>Lista de períodos de planificación.</CardDescription>

@@ -109,3 +109,12 @@ Thumbs.db
 *.temp
 *.cache
 .cache/
+
+# ================================
+# Agent Tooling
+# ================================
+
+.agents/
+.interface-design/
+skills-lock.json
+
