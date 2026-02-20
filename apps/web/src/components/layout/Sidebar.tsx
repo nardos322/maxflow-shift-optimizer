@@ -6,20 +6,23 @@ import { useAuthStore } from "@/hooks/useAuthStore";
 export function Sidebar() {
     const location = useLocation();
     const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.rol === "ADMIN";
 
     const getInitials = (email: string | undefined) => {
         if (!email) return "U";
         return email.substring(0, 2).toUpperCase();
     }
 
-    const navItems = [
-        { href: "/", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/medicos", label: "Médicos", icon: Users },
-        { href: "/periodos", label: "Períodos", icon: Calendar },
-        { href: "/reportes", label: "Reportes", icon: FileText },
-        { href: "/solver", label: "Planificador", icon: Calculator },
-        { href: "/config", label: "Configuración", icon: Settings },
-    ];
+    const navItems = isAdmin
+        ? [
+            { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+            { href: "/medicos", label: "Médicos", icon: Users },
+            { href: "/periodos", label: "Períodos", icon: Calendar },
+            { href: "/reportes", label: "Reportes", icon: FileText },
+            { href: "/solver", label: "Planificador", icon: Calculator },
+            { href: "/config", label: "Configuración", icon: Settings },
+          ]
+        : [{ href: "/mi-panel", label: "Mi Panel", icon: LayoutDashboard }];
 
     return (
         <aside className="panel-glass border-b border-border/70 md:min-h-screen md:w-72 md:border-b-0 md:border-r">
@@ -33,8 +36,7 @@ export function Sidebar() {
             <nav className="flex gap-2 overflow-x-auto px-4 pb-4 md:block md:space-y-1 md:px-4">
                 {navItems.map((item) => {
                     const Icon = item.icon;
-                    // Also check for sub-paths
-                    const isActive = location.pathname.startsWith(item.href) && (item.href !== '/' || location.pathname === '/');
+                    const isActive = location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
 
                     return (
                         <Link
