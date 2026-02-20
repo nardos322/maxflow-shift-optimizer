@@ -22,9 +22,9 @@ vi.mock('@/services/reportes.service', () => ({
         coberturaPorcentaje: 100,
       },
     }),
+    getGuardiasFaltantes: vi.fn().mockResolvedValue([]),
   },
 }))
-
 vi.mock('@/services/audit.service', () => ({
   auditService: {
     getLogs: vi.fn().mockResolvedValue([]),
@@ -65,6 +65,6 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Cobertura')).toBeInTheDocument()
     expect(screen.getByText('Conflictos')).toBeInTheDocument()
     expect(screen.getByText('Actividad Reciente')).toBeInTheDocument()
-    expect(screen.getByText('Próximos Feriados')).toBeInTheDocument()
+    expect(screen.getByText('Guardias Sin Cobertura')).toBeInTheDocument()
   })
 })

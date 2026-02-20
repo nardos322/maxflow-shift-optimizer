@@ -13,6 +13,20 @@ async function obtenerReporteEquidad(req, res, next) {
   }
 }
 
+/**
+ * GET /reportes/faltantes
+ * Obtiene guardias/días con cobertura incompleta.
+ */
+async function obtenerGuardiasFaltantes(req, res, next) {
+  try {
+    const faltantes = await reportesService.obtenerGuardiasFaltantes();
+    res.json(faltantes);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   obtenerReporteEquidad,
+  obtenerGuardiasFaltantes,
 };

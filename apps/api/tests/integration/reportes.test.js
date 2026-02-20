@@ -91,4 +91,60 @@ describe('Fairness Report Endpoint Tests', () => {
     expect(res.body.detallePorMedico[0].nombre).toBe('Dr. A');
     expect(res.body.detallePorMedico[1].nombre).toBe('Dr. B');
   });
+
+  test('GET /reportes/faltantes should return uncovered future shifts with reason', async () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const futureDay = new Date(today);
+    futureDay.setDate(futureDay.getDate() + 3);
+
+    await Factories.createConfiguracion({
+      maxGuardiasTotales: 5,
+      medicosPorDia: 2,
+    });
+
+    const periodo = await Factories.createPeriodoWithFeriados([futureDay]);
+    const medico = await Factories.createMedico({ nombre: 'Dr. Cobertura' });
+    await Factories.createAsignacion(medico.id, periodo.id, futureDay);
+
+    const res = await request(app)
+      .get('/reportes/faltantes')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toEqual(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].faltantes).toBe(1);
+    expect(res.body[0].medicosRequeridos).toBe(2);
+    expect(res.body[0].medicosAsignados).toBe(1);
+    expect(res.body[0].motivo).toContain('Faltan 1 médico');
+  });
+
+  test('GET /reportes/equidad should calculate coverage using only future demand', async () => {
+    await Factories.createConfiguracion({
+      maxGuardiasTotales: 5,
+      medicosPorDia: 1,
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const pastDay = new Date(today);
+    pastDay.setDate(pastDay.getDate() - 2);
+    const futureDay = new Date(today);
+    futureDay.setDate(futureDay.getDate() + 2);
+
+    const periodo = await Factories.createPeriodoWithFeriados([pastDay, futureDay]);
+    const medico = await Factories.createMedico({ nombre: 'Dr. Futuro' });
+
+    await Factories.createAsignacion(medico.id, periodo.id, futureDay);
+
+    const res = await request(app)
+      .get('/reportes/equidad')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.estadisticasGlobales.totalTurnosRequeridos).toBe(1);
+    expect(res.body.estadisticasGlobales.turnosSinCobertura).toBe(0);
+    expect(res.body.estadisticasGlobales.coberturaPorcentaje).toBe(100);
+  });
 });

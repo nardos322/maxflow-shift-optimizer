@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Calculator, Zap } from "lucide-react";
 import { asignacionesService } from "@/services/asignaciones.service";
 import type { Asignacion } from "@/types/asignaciones";
@@ -13,8 +14,22 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
+type SolverResult = {
+  status?: string;
+  message?: string;
+  minCut?: Array<Record<string, unknown>>;
+};
+
+function getBottleneckLabel(item: Record<string, unknown>) {
+  const tipo = typeof item.tipo === "string" ? item.tipo : "N/A";
+  const id = typeof item.id === "string" ? item.id : "N/A";
+  const razon = typeof item.razon === "string" ? item.razon : "Sin detalle";
+  return `${tipo} · ${id} · ${razon}`;
+}
+
 export function SolverPage() {
   const queryClient = useQueryClient();
+  const [lastResult, setLastResult] = useState<SolverResult | null>(null);
 
   // Fetch asignaciones
   const { data: asignaciones, isLoading } = useQuery({
@@ -26,6 +41,7 @@ export function SolverPage() {
   const resolverMutation = useMutation({
     mutationFn: () => asignacionesService.resolver(),
     onSuccess: (data) => {
+      setLastResult(data as SolverResult);
       console.log("Resultado del Solver:", data);
       queryClient.invalidateQueries({ queryKey: ["asignaciones"] });
       // Aquí podrías mostrar un Toast con el resultado.
@@ -37,6 +53,7 @@ export function SolverPage() {
 
   const handleResolverClick = () => {
     if (confirm("¿Estás seguro de que quieres ejecutar el planificador? Esto reemplazará las asignaciones actuales.")) {
+      setLastResult(null);
       resolverMutation.mutate();
     }
   }
@@ -121,6 +138,26 @@ export function SolverPage() {
           )}
         </div>
       </div>
+
+      {lastResult?.status === "INFEASIBLE" && (
+        <div className="panel-glass dash-reveal delay-3 rounded-xl border border-yellow-500/40 bg-yellow-500/10 p-6">
+          <h3 className="text-lg font-bold text-yellow-700">Conflictos detectados por el Solver</h3>
+          <p className="mt-2 text-sm text-yellow-800">
+            {lastResult.message ?? "No se encontró una solución factible."}
+          </p>
+          {(lastResult.minCut?.length ?? 0) > 0 ? (
+            <ul className="mt-4 space-y-2 text-sm text-yellow-900">
+              {lastResult.minCut!.map((item, idx) => (
+                <li key={`${idx}-${String(item.id ?? "node")}`} className="rounded-md border border-yellow-500/30 bg-yellow-500/5 p-2">
+                  {getBottleneckLabel(item)}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-yellow-800">No se recibieron cuellos de botella detallados.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

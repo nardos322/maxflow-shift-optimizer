@@ -35,4 +35,11 @@ router.get(
   reportesController.obtenerReporteEquidad
 );
 
+router.get(
+  '/faltantes',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  reportesController.obtenerGuardiasFaltantes
+);
+
 export default router;

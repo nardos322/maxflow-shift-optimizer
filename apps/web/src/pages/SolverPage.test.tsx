@@ -102,4 +102,24 @@ describe('SolverPage', () => {
       expect(asignacionesService.resolver).not.toHaveBeenCalled();
     });
   });
+
+  it('shows min-cut details when solver is infeasible', async () => {
+    (asignacionesService.getResultados as any).mockResolvedValue([]);
+    (asignacionesService.resolver as any).mockResolvedValue({
+      status: 'INFEASIBLE',
+      message: 'No se pudo encontrar una solución válida.',
+      minCut: [{ tipo: 'SOURCE', id: 'Dr. X', razon: 'Capacidad agotada' }],
+    });
+    mockConfirm.mockReturnValue(true);
+
+    renderComponent();
+    await screen.findByText('Planificador de Guardias');
+
+    fireEvent.click(screen.getByRole('button', { name: /ejecutar planificador/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Conflictos detectados por el Solver')).toBeInTheDocument();
+      expect(screen.getByText(/SOURCE · Dr\. X · Capacidad agotada/)).toBeInTheDocument();
+    });
+  });
 });

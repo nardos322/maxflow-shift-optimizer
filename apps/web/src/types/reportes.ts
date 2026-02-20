@@ -16,3 +16,16 @@ export interface ReporteEquidad {
     periodosCubiertos: string[];
   }>;
 }
+
+export interface GuardiaFaltante {
+  fecha: string;
+  descripcion: string;
+  periodo: {
+    id: number;
+    nombre: string;
+  };
+  medicosRequeridos: number;
+  medicosAsignados: number;
+  faltantes: number;
+  motivo: string;
+}

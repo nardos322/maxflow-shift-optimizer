@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/hooks/useAuthStore";
-import type { ReporteEquidad } from "@/types/reportes";
+import type { GuardiaFaltante, ReporteEquidad } from "@/types/reportes";
 
 
 export const reportesService = {
@@ -16,6 +16,24 @@ export const reportesService = {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error || 'Error al obtener el reporte de equidad');
+    }
+
+    return response.json();
+  },
+
+  async getGuardiasFaltantes(): Promise<GuardiaFaltante[]> {
+    const token = useAuthStore.getState().token;
+    const response = await fetch('/api/reportes/faltantes', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Error al obtener guardias faltantes');
     }
 
     return response.json();

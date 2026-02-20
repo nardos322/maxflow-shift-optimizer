@@ -1,6 +1,12 @@
 import prisma from '../lib/prisma.js';
 
 class ReportesService {
+  getStartOfToday() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }
+
   /**
    * Genera el reporte de equidad basado en las asignaciones actuales.
    * @returns {Promise<{
@@ -66,15 +72,21 @@ class ReportesService {
     const stdDev = Math.sqrt(variance);
 
     // 3.1 Métricas de cobertura global
+    const today = this.getStartOfToday();
     const configuracion = await prisma.configuracion.findFirst({
       orderBy: { id: 'desc' },
       select: { medicosPorDia: true },
     });
     const medicosPorDia = configuracion?.medicosPorDia ?? 1;
-    const totalFeriados = await prisma.feriado.count();
+    const totalFeriados = await prisma.feriado.count({
+      where: { fecha: { gte: today } },
+    });
+    const asignacionesFuturas = await prisma.asignacion.count({
+      where: { fecha: { gte: today } },
+    });
     const totalTurnosRequeridos = totalFeriados * medicosPorDia;
     const turnosSinCobertura = Math.max(
-      totalTurnosRequeridos - asignacionesTotal,
+      totalTurnosRequeridos - asignacionesFuturas,
       0
     );
     const coberturaPorcentaje =
@@ -83,7 +95,7 @@ class ReportesService {
         : Math.min(
             100,
             parseFloat(
-              ((asignacionesTotal / totalTurnosRequeridos) * 100).toFixed(2)
+              ((asignacionesFuturas / totalTurnosRequeridos) * 100).toFixed(2)
             )
           );
 
@@ -103,6 +115,62 @@ class ReportesService {
         (a, b) => b.totalGuardias - a.totalGuardias
       ),
     };
+  }
+
+  async obtenerGuardiasFaltantes() {
+    const today = this.getStartOfToday();
+    const configuracion = await prisma.configuracion.findFirst({
+      orderBy: { id: 'desc' },
+      select: { medicosPorDia: true },
+    });
+    const medicosRequeridosPorDia = configuracion?.medicosPorDia ?? 1;
+
+    const feriadosFuturos = await prisma.feriado.findMany({
+      where: { fecha: { gte: today } },
+      include: {
+        periodo: { select: { id: true, nombre: true } },
+      },
+      orderBy: { fecha: 'asc' },
+    });
+
+    if (feriadosFuturos.length === 0) return [];
+
+    const asignacionesFuturas = await prisma.asignacion.findMany({
+      where: { fecha: { gte: today } },
+      select: { fecha: true },
+    });
+
+    const asignacionesPorFecha = new Map();
+    for (const asignacion of asignacionesFuturas) {
+      const fechaKey = asignacion.fecha.toISOString().split('T')[0];
+      asignacionesPorFecha.set(
+        fechaKey,
+        (asignacionesPorFecha.get(fechaKey) || 0) + 1
+      );
+    }
+
+    return feriadosFuturos
+      .map((feriado) => {
+        const fechaKey = feriado.fecha.toISOString().split('T')[0];
+        const medicosAsignados = asignacionesPorFecha.get(fechaKey) || 0;
+        const faltantes = Math.max(
+          medicosRequeridosPorDia - medicosAsignados,
+          0
+        );
+
+        if (faltantes === 0) return null;
+
+        return {
+          fecha: feriado.fecha,
+          descripcion: feriado.descripcion,
+          periodo: feriado.periodo,
+          medicosRequeridos: medicosRequeridosPorDia,
+          medicosAsignados,
+          faltantes,
+          motivo: `Faltan ${faltantes} médico(s) para cubrir el día`,
+        };
+      })
+      .filter(Boolean);
   }
 }
 

@@ -55,4 +55,30 @@ describe('reportesService', () => {
 
     await expect(reportesService.getReporteEquidad()).rejects.toThrow('Sin permisos');
   });
+
+  it('getGuardiasFaltantes sends GET and returns list', async () => {
+    const payload = [
+      {
+        fecha: '2026-04-03T00:00:00.000Z',
+        descripcion: 'Viernes Santo',
+        periodo: { id: 1, nombre: 'Semana Santa' },
+        medicosRequeridos: 2,
+        medicosAsignados: 1,
+        faltantes: 1,
+        motivo: 'Faltan 1 médico(s) para cubrir el día',
+      },
+    ];
+    (global.fetch as any).mockResolvedValue(mockJsonResponse(true, payload));
+
+    const result = await reportesService.getGuardiasFaltantes();
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/reportes/faltantes', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer token-123',
+      },
+    });
+    expect(result).toEqual(payload);
+  });
 });
