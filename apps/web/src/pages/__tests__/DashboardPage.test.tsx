@@ -4,14 +4,36 @@ import { DashboardPage } from '../DashboardPage'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+vi.mock('@/hooks/useAuthStore', () => ({
+  useAuthStore: (selector: (state: { user: { rol: string } }) => unknown) =>
+    selector({ user: { rol: 'ADMIN' } }),
+}))
+
 vi.mock('@/services/reportes.service', () => ({
   reportesService: {
     getReporteEquidad: vi.fn().mockResolvedValue({
       estadisticasGlobales: {
         medicosActivos: 10,
         totalGuardias: 20,
+        promedioPorMedico: 2,
+        desviacionEstandar: 0,
+        totalTurnosRequeridos: 20,
+        turnosSinCobertura: 0,
+        coberturaPorcentaje: 100,
       },
     }),
+  },
+}))
+
+vi.mock('@/services/audit.service', () => ({
+  auditService: {
+    getLogs: vi.fn().mockResolvedValue([]),
+  },
+}))
+
+vi.mock('@/services/periodos.service', () => ({
+  periodosService: {
+    getAll: vi.fn().mockResolvedValue([]),
   },
 }))
 

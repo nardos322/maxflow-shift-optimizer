@@ -9,6 +9,11 @@ export interface Periodo {
   nombre: string;
   fechaInicio: string;
   fechaFin: string;
+  feriados?: {
+    id: number;
+    fecha: string;
+    descripcion: string;
+  }[];
 }
 
 type CreatePeriodo = z.infer<typeof createPeriodoBodySchema>;
