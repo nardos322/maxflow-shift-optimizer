@@ -1,27 +1,23 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
-import { LoginPage } from '../LoginPage';
+import { LoginPage } from './LoginPage';
 import { authService } from '@/services/auth.service';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Mock del servicio de autenticación
 vi.mock('@/services/auth.service', () => ({
   authService: {
     login: vi.fn(),
   },
 }));
 
-// Mock del hook useAuthStore
 const mockLogin = vi.fn();
 vi.mock('@/hooks/useAuthStore', () => ({
   useAuthStore: () => {
-    // Simulamos que el selector retorna la función login
     return mockLogin;
   }
 }));
 
-// Wrapper para proveer el contexto de Router y Query (necesario por useNavigate y useMutation)
 const renderLoginPage = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -68,7 +64,6 @@ describe('LoginPage', () => {
   });
 
   it('calls authService.login with correct data on submit', async () => {
-    // Configurar mock exitoso
     (authService.login as any).mockResolvedValue({
       token: 'fake-token',
       user: { id: 1, email: 'test@example.com' }
@@ -87,7 +82,6 @@ describe('LoginPage', () => {
   });
 
   it('displays error message on login failure', async () => {
-    // Configurar mock con error
     (authService.login as any).mockRejectedValue(new Error('Credenciales inválidas'));
 
     renderLoginPage();

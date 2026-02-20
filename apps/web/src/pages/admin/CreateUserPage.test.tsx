@@ -2,17 +2,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { CreateUserPage } from '../CreateUserPage';
+import { CreateUserPage } from './CreateUserPage';
 import { authService } from '@/services/auth.service';
 
-// Mock authService
 vi.mock('@/services/auth.service', () => ({
   authService: {
     register: vi.fn(),
   },
 }));
 
-// Mock useNavigate
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -62,7 +60,6 @@ describe('CreateUserPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /crear usuario/i }));
 
     await waitFor(() => {
-      // The shared schema messages
       expect(screen.getByText(/el nombre debe tener al menos 2 caracteres/i)).toBeInTheDocument();
       expect(screen.getByText(/debe ser un email válido/i)).toBeInTheDocument();
       expect(screen.getByText(/la contraseña debe tener al menos 6 caracteres/i)).toBeInTheDocument();
@@ -82,8 +79,6 @@ describe('CreateUserPage', () => {
     fireEvent.change(screen.getByLabelText(/nombre completo/i), { target: { value: 'New User' } });
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'new@example.com' } });
     fireEvent.change(screen.getByLabelText(/contraseña/i), { target: { value: 'password123' } });
-
-    // Role is MEDICO by default
 
     fireEvent.click(screen.getByRole('button', { name: /crear usuario/i }));
 

@@ -2,10 +2,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MedicosListPage } from '../MedicosListPage';
+import { MedicosListPage } from './MedicosListPage';
 import { medicosService } from '@/services/medicos.service';
 
-// Mock medicosService
 vi.mock('@/services/medicos.service', () => ({
   medicosService: {
     getAll: vi.fn(),
@@ -14,7 +13,6 @@ vi.mock('@/services/medicos.service', () => ({
   },
 }));
 
-// Mock window.confirm
 const mockConfirm = vi.fn();
 global.confirm = mockConfirm;
 
