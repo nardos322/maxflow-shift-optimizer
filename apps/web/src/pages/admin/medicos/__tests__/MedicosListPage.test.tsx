@@ -10,6 +10,7 @@ vi.mock('@/services/medicos.service', () => ({
   medicosService: {
     getAll: vi.fn(),
     delete: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
@@ -93,6 +94,23 @@ describe('MedicosListPage', () => {
     await waitFor(() => {
       expect(mockConfirm).toHaveBeenCalled();
       expect(medicosService.delete).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('handles medico reactivation', async () => {
+    (medicosService.getAll as any).mockResolvedValue(mockMedicos);
+    (medicosService.update as any).mockResolvedValue({});
+    mockConfirm.mockReturnValue(true);
+
+    renderComponent();
+
+    await screen.findByText('Dr. Cuddy');
+    const reactivateButton = screen.getByTitle('Reactivar');
+    fireEvent.click(reactivateButton);
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalled();
+      expect(medicosService.update).toHaveBeenCalledWith(3, { activo: true });
     });
   });
 });

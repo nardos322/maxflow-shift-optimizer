@@ -38,10 +38,21 @@ export function MedicosListPage() {
       queryClient.invalidateQueries({ queryKey: ["medicos"] });
     },
   });
+  const reactivateMutation = useMutation({
+    mutationFn: (id: number) => medicosService.update(id, { activo: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["medicos"] });
+    },
+  });
 
   const handleDelete = async (id: number) => {
     if (confirm("¿Estás seguro de desactivar este médico?")) {
       deleteMutation.mutate(id);
+    }
+  };
+  const handleReactivate = async (id: number) => {
+    if (confirm("¿Quieres reactivar este médico?")) {
+      reactivateMutation.mutate(id);
     }
   };
 
@@ -124,6 +135,17 @@ export function MedicosListPage() {
                         title="Desactivar"
                       >
                         <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {!medico.activo && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-green-600 hover:text-green-700"
+                        onClick={() => handleReactivate(medico.id)}
+                        title="Reactivar"
+                      >
+                        <UserCheck className="h-4 w-4" />
                       </Button>
                     )}
                   </TableCell>
