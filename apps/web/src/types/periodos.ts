@@ -2,6 +2,7 @@ export interface Feriado {
   id: number;
   fecha: string;
   descripcion: string;
+  estadoPlanificacion?: "PENDIENTE" | "PLANIFICADO" | "CERRADO";
 }
 
 export interface Periodo {

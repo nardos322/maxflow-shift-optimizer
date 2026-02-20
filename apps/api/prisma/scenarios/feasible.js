@@ -2,6 +2,7 @@ import prisma from '../../src/lib/prisma.js';
 import { seedAdmin } from '../seedAdmin.js';
 import Factories from '../../src/lib/factories.js';
 import { pathToFileURL } from 'node:url';
+import bcrypt from 'bcryptjs';
 
 async function main() {
   console.log('🌱 Iniciando seed: FEASIBLE (Happy Path)...');
@@ -18,29 +19,42 @@ async function main() {
   console.log('✅ Configuración creada (C=3, 1 médico/día)');
 
   // Crear médicos
-  const medicos = await Promise.all([
-    Factories.createMedico({
-      nombre: 'Ana García',
-      email: 'ana.garcia@hospital.com',
-    }),
-    Factories.createMedico({
-      nombre: 'Luis Rodríguez',
-      email: 'luis.rodriguez@hospital.com',
-    }),
-    Factories.createMedico({
-      nombre: 'Carlos Martínez',
-      email: 'carlos.martinez@hospital.com',
-    }),
-    Factories.createMedico({
-      nombre: 'María López',
-      email: 'maria.lopez@hospital.com',
-    }),
-    Factories.createMedico({
-      nombre: 'Pedro Sánchez',
-      email: 'pedro.sanchez@hospital.com',
-    }),
-  ]);
+  const medicoPassword = 'medico123';
+  const medicoPasswordHash = await bcrypt.hash(medicoPassword, 10);
+  const medicosSeedData = [
+    { nombre: 'Ana García', email: 'ana.garcia@hospital.com' },
+    { nombre: 'Luis Rodríguez', email: 'luis.rodriguez@hospital.com' },
+    { nombre: 'Carlos Martínez', email: 'carlos.martinez@hospital.com' },
+    { nombre: 'María López', email: 'maria.lopez@hospital.com' },
+    { nombre: 'Pedro Sánchez', email: 'pedro.sanchez@hospital.com' },
+  ];
+
+  const medicos = await Promise.all(
+    medicosSeedData.map(async (medicoData) => {
+      const user = await prisma.user.upsert({
+        where: { email: medicoData.email },
+        update: {
+          nombre: medicoData.nombre,
+          password: medicoPasswordHash,
+          rol: 'MEDICO',
+        },
+        create: {
+          nombre: medicoData.nombre,
+          email: medicoData.email,
+          password: medicoPasswordHash,
+          rol: 'MEDICO',
+        },
+      });
+
+      return Factories.createMedico({
+        nombre: medicoData.nombre,
+        email: medicoData.email,
+        userId: user.id,
+      });
+    })
+  );
   console.log(`✅ ${medicos.length} médicos creados`);
+  console.log(`🔐 Usuarios de médicos creados con contraseña por defecto: ${medicoPassword}`);
 
   // Crear períodos con sus feriados
   // Período 1: Semana Santa 2026

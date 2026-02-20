@@ -28,7 +28,7 @@ export function MedicoDisponibilidadPage() {
     isError: isErrorPeriodos,
     error: periodosError,
   } = useQuery({
-    queryKey: ["periodos"],
+    queryKey: ["periodos", "medico", medico?.id],
     queryFn: () => periodosService.getAll(),
     enabled: !!medico,
   });
@@ -48,6 +48,18 @@ export function MedicoDisponibilidadPage() {
     () => new Set((disponibilidad ?? []).map((d) => toDayKey(d.fecha))),
     [disponibilidad]
   );
+
+  const periodosPendientes = useMemo(() => {
+    return (periodos ?? [])
+      .map((periodo) => ({
+        ...periodo,
+        feriados: (periodo.feriados ?? []).filter((feriado) => {
+          const estado = feriado.estadoPlanificacion ?? "PENDIENTE";
+          return estado === "PENDIENTE";
+        }),
+      }))
+      .filter((periodo) => (periodo.feriados?.length ?? 0) > 0);
+  }, [periodos]);
 
   const addMutation = useMutation({
     mutationFn: (fecha: string) => medicosService.addDisponibilidad(medico!.id, [fecha]),
@@ -110,7 +122,7 @@ export function MedicoDisponibilidadPage() {
     );
   }
 
-  const totalFeriados = (periodos ?? []).reduce((acc, p) => acc + (p.feriados?.length ?? 0), 0);
+  const totalFeriados = periodosPendientes.reduce((acc, p) => acc + (p.feriados?.length ?? 0), 0);
 
   return (
     <div className="space-y-6">
@@ -145,7 +157,7 @@ export function MedicoDisponibilidadPage() {
         </div>
       )}
 
-      {(periodos ?? []).map((periodo, idx) => (
+      {periodosPendientes.map((periodo, idx) => (
         <div key={periodo.id} className={`panel-glass dash-reveal ${getDelayClass(idx)} rounded-xl border border-border/70`}>
           <div className="border-b border-border/70 p-5">
             <h3 className="text-lg font-bold">{periodo.nombre}</h3>

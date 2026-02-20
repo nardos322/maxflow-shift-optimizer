@@ -55,25 +55,34 @@ class AsignacionesService {
     if (output.factible) {
       // Usar transacción para asegurar atomicidad
       return await prisma.$transaction(async (tx) => {
-        // Borrar asignaciones anteriores
-        await tx.asignacion.deleteMany();
+        // Replanificar solo hacia adelante para no perder histórico ya ejecutado.
+        await tx.asignacion.deleteMany({
+          where: {
+            fecha: { gte: today },
+          },
+        });
 
         // Guardar nuevas asignaciones
         const asignacionesParaGuardar = [];
+        const feriadosPlanificadosIds = new Set();
 
         // Mapear nombres a IDs
         const medicoMap = new Map(medicos.map((m) => [m.nombre, m]));
         const periodoMap = new Map(); // fecha string -> periodo
+        const feriadoIdMap = new Map(); // fecha string -> feriadoId
 
         for (const p of periodosPendientes) {
           for (const f of p.feriados) {
-            periodoMap.set(f.fecha.toISOString().split('T')[0], p);
+            const fechaKey = f.fecha.toISOString().split('T')[0];
+            periodoMap.set(fechaKey, p);
+            feriadoIdMap.set(fechaKey, f.id);
           }
         }
 
         for (const assignment of output.asignaciones) {
           const medico = medicoMap.get(assignment.medico);
           const periodo = periodoMap.get(assignment.dia);
+          const feriadoId = feriadoIdMap.get(assignment.dia);
 
           if (medico && periodo) {
             asignacionesParaGuardar.push({
@@ -81,6 +90,9 @@ class AsignacionesService {
               periodoId: periodo.id,
               fecha: new Date(assignment.dia),
             });
+            if (feriadoId) {
+              feriadosPlanificadosIds.add(feriadoId);
+            }
           }
         }
 
@@ -90,15 +102,10 @@ class AsignacionesService {
           });
         }
 
-        const diasPlanificados = [
-          ...new Set(output.asignaciones.map((assignment) => assignment.dia)),
-        ];
-        if (diasPlanificados.length > 0) {
+        if (feriadosPlanificadosIds.size > 0) {
           await tx.feriado.updateMany({
             where: {
-              fecha: {
-                in: diasPlanificados.map((dia) => new Date(dia)),
-              },
+              id: { in: Array.from(feriadosPlanificadosIds) },
               estadoPlanificacion: 'PENDIENTE',
             },
             data: {

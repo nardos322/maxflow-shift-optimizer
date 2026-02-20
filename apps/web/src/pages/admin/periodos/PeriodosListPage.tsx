@@ -23,14 +23,14 @@ export function PeriodosListPage() {
   const queryClient = useQueryClient();
 
   const { data: periodos, isLoading } = useQuery({
-    queryKey: ["periodos"],
+    queryKey: ["periodos", "admin"],
     queryFn: () => periodosService.getAll(),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => periodosService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["periodos"] });
+      queryClient.invalidateQueries({ queryKey: ["periodos", "admin"] });
     },
   });
 

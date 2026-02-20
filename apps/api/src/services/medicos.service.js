@@ -8,6 +8,16 @@ class MedicosService {
     return today;
   }
 
+  async getAssignedDateSet(fromDate) {
+    const asignaciones = await prisma.asignacion.findMany({
+      where: { fecha: { gte: fromDate } },
+      select: { fecha: true },
+    });
+    return new Set(
+      asignaciones.map((a) => a.fecha.toISOString().split('T')[0])
+    );
+  }
+
   normalizeDate(dateLike) {
     const date = new Date(dateLike);
     date.setHours(0, 0, 0, 0);
@@ -16,16 +26,20 @@ class MedicosService {
 
   async validarFechasDisponibilidad(fechas) {
     const normalizedDates = fechas.map((fecha) => this.normalizeDate(fecha));
+    const today = this.getStartOfToday();
     const feriadosPendientes = await prisma.feriado.findMany({
       where: {
-        fecha: { in: normalizedDates, gte: this.getStartOfToday() },
+        fecha: { in: normalizedDates, gte: today },
         estadoPlanificacion: 'PENDIENTE',
       },
       select: { fecha: true },
     });
+    const assignedDateSet = await this.getAssignedDateSet(today);
 
     const allowedSet = new Set(
-      feriadosPendientes.map((feriado) => feriado.fecha.toISOString().split('T')[0])
+      feriadosPendientes
+        .map((feriado) => feriado.fecha.toISOString().split('T')[0])
+        .filter((fecha) => !assignedDateSet.has(fecha))
     );
     const invalidDates = normalizedDates
       .map((fecha) => fecha.toISOString().split('T')[0])
@@ -192,14 +206,18 @@ class MedicosService {
    * Obtiene la disponibilidad de un médico
    */
   async obtenerDisponibilidad(medicoId) {
+    const today = this.getStartOfToday();
     const feriadosPendientes = await prisma.feriado.findMany({
       where: {
         estadoPlanificacion: 'PENDIENTE',
-        fecha: { gte: this.getStartOfToday() },
+        fecha: { gte: today },
       },
       select: { fecha: true },
     });
-    const fechasPermitidas = feriadosPendientes.map((f) => f.fecha);
+    const assignedDateSet = await this.getAssignedDateSet(today);
+    const fechasPermitidas = feriadosPendientes
+      .map((f) => f.fecha)
+      .filter((fecha) => !assignedDateSet.has(fecha.toISOString().split('T')[0]));
 
     if (fechasPermitidas.length === 0) return [];
 

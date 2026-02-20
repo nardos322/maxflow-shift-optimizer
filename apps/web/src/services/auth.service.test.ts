@@ -12,7 +12,14 @@ import { useAuthStore } from '@/hooks/useAuthStore';
 function mockJsonResponse(ok: boolean, data: unknown) {
   return {
     ok,
-    json: vi.fn().mockResolvedValue(data),
+    text: vi.fn().mockResolvedValue(JSON.stringify(data)),
+  } as unknown as Response;
+}
+
+function mockTextResponse(ok: boolean, text: string) {
+  return {
+    ok,
+    text: vi.fn().mockResolvedValue(text),
   } as unknown as Response;
 }
 
@@ -47,6 +54,12 @@ describe('authService', () => {
     (global.fetch as any).mockResolvedValue(mockJsonResponse(false, { error: 'Credenciales inválidas' }));
 
     await expect(authService.login('a@b.com', 'wrong')).rejects.toThrow('Credenciales inválidas');
+  });
+
+  it('login throws fallback message when backend responds with empty body', async () => {
+    (global.fetch as any).mockResolvedValue(mockTextResponse(false, ''));
+
+    await expect(authService.login('a@b.com', 'wrong')).rejects.toThrow('Error al iniciar sesión');
   });
 
   it('register sends token in Authorization header', async () => {

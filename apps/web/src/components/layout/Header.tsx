@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import {
     DropdownMenu,
@@ -19,10 +20,12 @@ import { Button } from "../ui/button";
 
 export function Header() {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
 
     const handleLogout = () => {
+        queryClient.clear();
         logout();
         navigate("/login");
     };

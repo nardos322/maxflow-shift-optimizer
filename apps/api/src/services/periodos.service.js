@@ -7,16 +7,27 @@ class PeriodosService {
     return today;
   }
 
+  async getAssignedDateSet(fromDate) {
+    const asignaciones = await prisma.asignacion.findMany({
+      where: { fecha: { gte: fromDate } },
+      select: { fecha: true },
+    });
+    return new Set(
+      asignaciones.map((a) => a.fecha.toISOString().split('T')[0])
+    );
+  }
+
   /**
    * Obtiene todos los períodos con sus feriados
    */
   async obtenerTodos(options = {}) {
     const { rol } = options;
+    const today = this.getStartOfToday();
     const feriadosWhere =
       rol === 'MEDICO'
         ? {
             estadoPlanificacion: 'PENDIENTE',
-            fecha: { gte: this.getStartOfToday() },
+            fecha: { gte: today },
           }
         : undefined;
 
@@ -28,14 +39,19 @@ class PeriodosService {
 
     if (!feriadosWhere) return periodos;
 
-    return periodos.map((periodo) => ({
-      ...periodo,
-      feriados: periodo.feriados.filter(
-        (feriado) =>
-          feriado.estadoPlanificacion === 'PENDIENTE' &&
-          new Date(feriado.fecha) >= this.getStartOfToday()
-      ),
-    }));
+    const assignedDateSet = await this.getAssignedDateSet(today);
+
+    return periodos
+      .map((periodo) => ({
+        ...periodo,
+        feriados: periodo.feriados.filter(
+          (feriado) =>
+            feriado.estadoPlanificacion === 'PENDIENTE' &&
+            new Date(feriado.fecha) >= today &&
+            !assignedDateSet.has(feriado.fecha.toISOString().split('T')[0])
+        ),
+      }))
+      .filter((periodo) => periodo.feriados.length > 0);
   }
 
   /**
