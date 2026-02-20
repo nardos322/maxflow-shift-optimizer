@@ -43,7 +43,7 @@ async function obtenerResultados(req, res, next) {
 async function limpiar(req, res, next) {
   try {
     await prisma.asignacion.deleteMany();
-    res.json({ message: 'Asignaciones eliminadas' });
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

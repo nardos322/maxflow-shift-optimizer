@@ -19,6 +19,10 @@ import {
 const router = Router();
 
 // Solo admin puede resolver, reparar y limpiar
+// REST-friendly aliases (resource-oriented):
+// - POST /asignaciones/ejecuciones   (antes /resolver)
+// - POST /asignaciones/reparaciones  (antes /reparar)
+// - POST /asignaciones/simulaciones  (antes /simular)
 /**
  * @swagger
  * /asignaciones/resolver:
@@ -41,6 +45,14 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+router.post(
+  '/ejecuciones',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  solverLimiter,
+  asignacionesController.calcular
+);
+
 router.post(
   '/resolver',
   authenticateJWT,
@@ -84,6 +96,14 @@ router.post(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+router.post(
+  '/reparaciones',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(repararAsignacionSchema),
+  asignacionesController.reparar
+);
+
 router.post(
   '/reparar',
   authenticateJWT,
@@ -133,6 +153,15 @@ router.post(
  *               $ref: '#/components/schemas/Error'
  */
 router.post(
+  '/simulaciones',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  solverLimiter,
+  validate(simulacionSchema),
+  asignacionesController.simular
+);
+
+router.post(
   '/simular',
   authenticateJWT,
   authorizeRoles('ADMIN'),
@@ -150,15 +179,8 @@ router.post(
  *     security:
  *       - bearerAuth: []
  *     responses:
- *       200:
+ *       204:
  *         description: Asignaciones eliminadas
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
  *       401:
  *         description: No autorizado
  */

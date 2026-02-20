@@ -83,6 +83,16 @@ describe('API Integration Tests', () => {
     expect(res.body.asignacionesCreadas).toBeGreaterThan(0);
   }, 30000); // Timeout aumentado
 
+  test('POST /asignaciones/ejecuciones (alias REST) debe generar asignaciones', async () => {
+    const res = await request(app)
+      .post('/asignaciones/ejecuciones')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('status');
+  });
+
   /**
    * Test 3: Verificar Persistencia
    */
@@ -139,5 +149,40 @@ describe('API Integration Tests', () => {
     // Al no haber disponibilidad, el bottleneck es de tipo "Day"?
     // El formato de minCut depende del core C++.
     // Asumiremos que devuelve algo analizable.
+  });
+
+  test('POST /asignaciones/simulaciones (alias REST) debe responder 200', async () => {
+    const res = await request(app)
+      .post('/asignaciones/simulaciones')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        excluirMedicos: [],
+        config: { maxGuardiasTotales: 5 },
+      });
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('resultado');
+  });
+
+  test('POST /asignaciones/reparaciones (alias REST) valida body', async () => {
+    const res = await request(app)
+      .post('/asignaciones/reparaciones')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+
+    expect(res.statusCode).toEqual(400);
+  });
+
+  test('DELETE /asignaciones debe responder 204', async () => {
+    await request(app)
+      .post('/asignaciones/resolver')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+
+    const res = await request(app)
+      .delete('/asignaciones')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toEqual(204);
   });
 });
