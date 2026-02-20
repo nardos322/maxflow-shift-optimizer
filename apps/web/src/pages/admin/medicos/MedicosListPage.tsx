@@ -110,8 +110,10 @@ export function MedicosListPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" title="Editar">
-                      <Edit2 className="h-4 w-4" />
+                    <Button asChild variant="ghost" size="icon" title="Editar">
+                      <Link to={`/medicos/${medico.id}/edit`}>
+                        <Edit2 className="h-4 w-4" />
+                      </Link>
                     </Button>
                     {medico.activo && (
                       <Button

@@ -27,6 +27,14 @@ class MedicosService {
     return res.json();
   }
 
+  async getById(id: number): Promise<Medico> {
+    const res = await fetch(`${API_BASE}/medicos/${id}`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error al obtener el médico");
+    return res.json();
+  }
+
   async create(data: { nombre: string; email: string; password?: string }): Promise<Medico> {
     const res = await fetch(`${API_BASE}/medicos`, {
       method: "POST",

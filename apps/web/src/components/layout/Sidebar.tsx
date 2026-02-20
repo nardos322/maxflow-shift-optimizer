@@ -1,13 +1,22 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Calculator, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Calculator, Settings, Calendar, FileText } from "lucide-react";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 export function Sidebar() {
     const location = useLocation();
+    const user = useAuthStore((state) => state.user);
+
+    const getInitials = (email: string | undefined) => {
+        if (!email) return "U";
+        return email.substring(0, 2).toUpperCase();
+    }
 
     const navItems = [
         { href: "/", label: "Dashboard", icon: LayoutDashboard },
         { href: "/medicos", label: "Médicos", icon: Users },
+        { href: "/periodos", label: "Períodos", icon: Calendar },
+        { href: "/reportes", label: "Reportes", icon: FileText },
         { href: "/solver", label: "Planificador", icon: Calculator },
         { href: "/config", label: "Configuración", icon: Settings },
     ];
@@ -24,7 +33,8 @@ export function Sidebar() {
             <nav className="flex-1 p-4 space-y-1">
                 {navItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = location.pathname === item.href;
+                    // Also check for sub-paths
+                    const isActive = location.pathname.startsWith(item.href) && (item.href !== '/' || location.pathname === '/');
 
                     return (
                         <Link
@@ -47,11 +57,11 @@ export function Sidebar() {
             <div className="p-4 border-t">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-                        AD
+                        {getInitials(user?.email)}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-medium truncate">Admin User</p>
-                        <p className="text-xs text-muted-foreground truncate">admin@hospital.com</p>
+                        <p className="text-sm font-medium truncate">{user?.name ?? 'Usuario'}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                     </div>
                 </div>
             </div>

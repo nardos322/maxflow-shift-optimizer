@@ -1,25 +1,47 @@
+import { useQuery } from "@tanstack/react-query";
+import { reportesService } from "@/services/reportes.service";
+
 export function DashboardPage() {
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ['reporteEquidad'],
+        queryFn: reportesService.getReporteEquidad
+    });
+
+    const stats = data?.estadisticasGlobales;
+
     return (
         <div className="space-y-6">
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+
+            {isError && (
+                 <div className="p-3 bg-destructive/15 text-destructive text-sm rounded-md">
+                    Error al cargar el dashboard: {error.message}
+                </div>
+            )}
+
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {/* Placeholder cards */}
-                <div className="p-6 bg-card rounded-xl border shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Total Médicos</div>
-                    <div className="text-2xl font-bold">24</div>
-                </div>
-                <div className="p-6 bg-card rounded-xl border shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Guardias Asignadas</div>
-                    <div className="text-2xl font-bold">156</div>
-                </div>
-                <div className="p-6 bg-card rounded-xl border shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Cobertura</div>
-                    <div className="text-2xl font-bold text-green-600">98%</div>
-                </div>
-                <div className="p-6 bg-card rounded-xl border shadow-sm">
-                    <div className="text-sm font-medium text-muted-foreground">Conflictos</div>
-                    <div className="text-2xl font-bold text-yellow-600">2</div>
-                </div>
+                <DashboardCard
+                    title="Total Médicos"
+                    value={stats?.medicosActivos}
+                    isLoading={isLoading}
+                />
+                <DashboardCard
+                    title="Guardias Asignadas"
+                    value={stats?.totalGuardias}
+                    isLoading={isLoading}
+                />
+                <DashboardCard
+                    title="Cobertura"
+                    value="98%"
+                    valueClassName="text-green-600"
+                    isLoading={false} // Placeholder
+                />
+                <DashboardCard
+                    title="Conflictos"
+                    value="2"
+                    valueClassName="text-yellow-600"
+                    isLoading={false} // Placeholder
+                />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -34,4 +56,22 @@ export function DashboardPage() {
             </div>
         </div>
     );
+}
+
+interface DashboardCardProps {
+    title: string;
+    value?: string | number;
+    valueClassName?: string;
+    isLoading: boolean;
+}
+
+function DashboardCard({ title, value, valueClassName, isLoading }: DashboardCardProps) {
+    return (
+        <div className="p-6 bg-card rounded-xl border shadow-sm">
+            <div className="text-sm font-medium text-muted-foreground">{title}</div>
+            <div className={`text-2xl font-bold ${valueClassName}`}>
+                {isLoading ? <span className="text-sm">Cargando...</span> : (value ?? 'N/A')}
+            </div>
+        </div>
+    )
 }
