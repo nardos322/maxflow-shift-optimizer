@@ -22,15 +22,15 @@ export function Sidebar() {
     ];
 
     return (
-        <aside className="w-64 bg-card border-r min-h-screen flex flex-col">
-            <div className="p-6 border-b">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        <aside className="panel-glass border-b border-border/70 md:min-h-screen md:w-72 md:border-b-0 md:border-r">
+            <div className="px-5 pb-4 pt-5 md:px-6 md:pt-7">
+                <h1 className="text-2xl font-extrabold tracking-tight text-primary">
                     MaxFlow Shift
                 </h1>
-                <p className="text-xs text-muted-foreground">Hospital Optimizer</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.22em] text-muted-foreground">Hospital Optimizer</p>
             </div>
 
-            <nav className="flex-1 p-4 space-y-1">
+            <nav className="flex gap-2 overflow-x-auto px-4 pb-4 md:block md:space-y-1 md:px-4">
                 {navItems.map((item) => {
                     const Icon = item.icon;
                     // Also check for sub-paths
@@ -41,22 +41,22 @@ export function Sidebar() {
                             key={item.href}
                             to={item.href}
                             className={cn(
-                                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                                "flex min-w-max items-center gap-3 rounded-xl border px-3 py-2 text-sm font-semibold transition-all md:min-w-0",
                                 isActive
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    ? "border-primary/40 bg-primary/10 text-primary shadow-sm"
+                                    : "border-transparent text-muted-foreground hover:border-border/60 hover:bg-accent/40 hover:text-foreground"
                             )}
                         >
-                            <Icon size={18} />
+                            <Icon size={17} />
                             {item.label}
                         </Link>
                     );
                 })}
             </nav>
 
-            <div className="p-4 border-t">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+            <div className="hidden border-t border-border/70 p-4 md:block">
+                <div className="flex items-center gap-3 rounded-xl bg-accent/30 p-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
                         {getInitials(user?.email)}
                     </div>
                     <div className="flex-1 overflow-hidden">

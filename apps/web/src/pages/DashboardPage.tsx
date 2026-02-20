@@ -46,7 +46,12 @@ export function DashboardPage() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <section className="panel-glass dash-reveal rounded-2xl border border-border/70 p-6">
+                <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Dashboard</h2>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                    Estado operativo en tiempo real del sistema de cobertura médica.
+                </p>
+            </section>
 
             {isError && (
                  <div className="p-3 bg-destructive/15 text-destructive text-sm rounded-md">
@@ -59,17 +64,20 @@ export function DashboardPage() {
                     title="Total Médicos"
                     value={stats?.medicosActivos}
                     isLoading={isLoading}
+                    className="dash-reveal delay-1"
                 />
                 <DashboardCard
                     title="Guardias Asignadas"
                     value={stats?.totalGuardias}
                     isLoading={isLoading}
+                    className="dash-reveal delay-1"
                 />
                 <DashboardCard
                     title="Cobertura"
                     value={cobertura}
                     valueClassName="text-green-600"
                     isLoading={isLoading}
+                    className="dash-reveal delay-2"
                 />
                 <DashboardCard
                     title="Conflictos"
@@ -80,11 +88,12 @@ export function DashboardPage() {
                             : "text-muted-foreground"
                     }
                     isLoading={isLoading}
+                    className="dash-reveal delay-2"
                 />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <div className="col-span-4 bg-card p-6 rounded-xl border shadow-sm min-h-[300px]">
+                <div className="panel-glass dash-reveal delay-2 col-span-4 min-h-[300px] rounded-xl border border-border/70 p-6">
                     <h3 className="text-lg font-medium mb-4">Actividad Reciente</h3>
                     {!isAdmin && (
                         <p className="text-muted-foreground text-sm">
@@ -108,7 +117,7 @@ export function DashboardPage() {
                         </ul>
                     )}
                 </div>
-                <div className="col-span-3 bg-card p-6 rounded-xl border shadow-sm min-h-[300px]">
+                <div className="panel-glass dash-reveal delay-3 col-span-3 min-h-[300px] rounded-xl border border-border/70 p-6">
                     <h3 className="text-lg font-medium mb-4">Próximos Feriados</h3>
                     {isLoadingHolidays && (
                         <p className="text-muted-foreground text-sm">Cargando próximos feriados...</p>
@@ -137,12 +146,13 @@ interface DashboardCardProps {
     value?: string | number;
     valueClassName?: string;
     isLoading: boolean;
+    className?: string;
 }
 
-function DashboardCard({ title, value, valueClassName, isLoading }: DashboardCardProps) {
+function DashboardCard({ title, value, valueClassName, isLoading, className }: DashboardCardProps) {
     return (
-        <div className="p-6 bg-card rounded-xl border shadow-sm">
-            <div className="text-sm font-medium text-muted-foreground">{title}</div>
+        <div className={`panel-glass rounded-xl border border-border/70 p-6 ${className ?? ""}`}>
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</div>
             <div className={`text-2xl font-bold ${valueClassName}`}>
                 {isLoading ? <span className="text-sm">Cargando...</span> : (value ?? 'N/A')}
             </div>
