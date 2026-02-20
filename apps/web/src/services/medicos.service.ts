@@ -1,14 +1,7 @@
 import { authService } from "./auth.service";
+import type { Medico } from "@/types/medicos";
 
 const API_BASE = "/api";
-
-export interface Medico {
-  id: number;
-  nombre: string;
-  email: string;
-  activo: boolean;
-  userId?: number;
-}
 
 class MedicosService {
   private getHeaders() {

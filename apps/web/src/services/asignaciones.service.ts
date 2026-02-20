@@ -1,25 +1,7 @@
 import { authService } from "./auth.service";
-import type { Medico } from "./medicos.service";
+import type { Asignacion } from "@/types/asignaciones";
 
 const API_BASE = "/api";
-
-// From prisma schema
-export interface Periodo {
-    id: number;
-    nombre: string;
-    fechaInicio: string;
-    fechaFin: string;
-}
-
-// From prisma schema
-export interface Asignacion {
-    id: number;
-    fecha: string;
-    medico: Medico;
-    periodo: Periodo;
-    medicoId: number;
-    periodoId: number;
-}
 
 
 class AsignacionesService {

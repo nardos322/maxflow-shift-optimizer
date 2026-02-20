@@ -1,14 +1,7 @@
 import { authService } from "./auth.service";
+import type { AuditLog } from "@/types/audit";
 
 const API_BASE = "/api";
-
-export interface AuditLog {
-  id: number;
-  accion: string;
-  usuario: string;
-  detalles: string | null;
-  createdAt: string;
-}
 
 class AuditService {
   private getHeaders() {

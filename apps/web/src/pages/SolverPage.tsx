@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calculator, Zap } from "lucide-react";
-import { asignacionesService, type Asignacion } from "@/services/asignaciones.service";
+import { asignacionesService } from "@/services/asignaciones.service";
+import type { Asignacion } from "@/types/asignaciones";
 import { Button } from "@/components/ui/button";
 import {
   Table,

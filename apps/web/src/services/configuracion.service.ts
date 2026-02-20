@@ -1,11 +1,7 @@
 import { authService } from "./auth.service";
+import type { Configuracion } from "@/types/configuracion";
 
 const API_BASE = "/api";
-
-export interface Configuracion {
-  maxGuardiasTotales: number;
-  medicosPorDia: number;
-}
 
 class ConfiguracionService {
   private getHeaders() {

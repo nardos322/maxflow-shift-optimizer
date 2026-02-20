@@ -1,24 +1,5 @@
 import { useAuthStore } from "@/hooks/useAuthStore";
-
-// Based on the backend service, let's define the response type
-export interface ReporteEquidad {
-  fechaGeneracion: string;
-  estadisticasGlobales: {
-    totalGuardias: number;
-    medicosActivos: number;
-    promedioPorMedico: number;
-    desviacionEstandar: number;
-    totalTurnosRequeridos: number;
-    turnosSinCobertura: number;
-    coberturaPorcentaje: number;
-  };
-  detallePorMedico: Array<{
-    id: number;
-    nombre: string;
-    totalGuardias: number;
-    periodosCubiertos: string[];
-  }>;
-}
+import type { ReporteEquidad } from "@/types/reportes";
 
 
 export const reportesService = {

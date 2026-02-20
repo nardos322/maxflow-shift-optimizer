@@ -1,20 +1,9 @@
 import { authService } from "./auth.service";
 import type { z } from "@maxflow/shared";
 import { createPeriodoBodySchema, updatePeriodoBodySchema } from "@maxflow/shared";
+import type { Periodo } from "@/types/periodos";
 
 const API_BASE = "/api";
-
-export interface Periodo {
-  id: number;
-  nombre: string;
-  fechaInicio: string;
-  fechaFin: string;
-  feriados?: {
-    id: number;
-    fecha: string;
-    descripcion: string;
-  }[];
-}
 
 type CreatePeriodo = z.infer<typeof createPeriodoBodySchema>;
 type UpdatePeriodo = z.infer<typeof updatePeriodoBodySchema>;
