@@ -5,7 +5,9 @@ import periodosService from '../services/periodos.service.js';
  */
 async function obtenerTodos(req, res, next) {
   try {
-    const periodos = await periodosService.obtenerTodos();
+    const periodos = await periodosService.obtenerTodos({
+      rol: req.user?.rol,
+    });
     res.json(periodos);
   } catch (error) {
     next(error);

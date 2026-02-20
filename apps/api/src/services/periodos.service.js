@@ -1,14 +1,41 @@
 import prisma from '../lib/prisma.js';
 
 class PeriodosService {
+  getStartOfToday() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }
+
   /**
    * Obtiene todos los períodos con sus feriados
    */
-  async obtenerTodos() {
-    return prisma.periodo.findMany({
+  async obtenerTodos(options = {}) {
+    const { rol } = options;
+    const feriadosWhere =
+      rol === 'MEDICO'
+        ? {
+            estadoPlanificacion: 'PENDIENTE',
+            fecha: { gte: this.getStartOfToday() },
+          }
+        : undefined;
+
+    const periodos = await prisma.periodo.findMany({
       include: { feriados: true },
       orderBy: { fechaInicio: 'desc' },
+      ...(feriadosWhere ? { where: { feriados: { some: feriadosWhere } } } : {}),
     });
+
+    if (!feriadosWhere) return periodos;
+
+    return periodos.map((periodo) => ({
+      ...periodo,
+      feriados: periodo.feriados.filter(
+        (feriado) =>
+          feriado.estadoPlanificacion === 'PENDIENTE' &&
+          new Date(feriado.fecha) >= this.getStartOfToday()
+      ),
+    }));
   }
 
   /**

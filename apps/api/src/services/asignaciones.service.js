@@ -3,6 +3,12 @@ import auditService from './audit.service.js';
 import coreService from './core.service.js';
 
 class AsignacionesService {
+  getStartOfToday() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }
+
   /**
    * Genera las asignaciones llamando al core (C++) y guardando resultados
    */
@@ -13,10 +19,20 @@ class AsignacionesService {
       include: { disponibilidad: true },
     });
 
+    const today = this.getStartOfToday();
+
     const periodos = await prisma.periodo.findMany({
-      include: { feriados: true },
+      include: {
+        feriados: {
+          where: {
+            estadoPlanificacion: 'PENDIENTE',
+            fecha: { gte: today },
+          },
+        },
+      },
       orderBy: { fechaInicio: 'asc' }, // Ordenar cronológicamente
     });
+    const periodosPendientes = periodos.filter((periodo) => periodo.feriados.length > 0);
 
     const config = await prisma.configuracion.findFirst();
 
@@ -25,10 +41,12 @@ class AsignacionesService {
     }
 
     if (medicos.length === 0) throw new Error('No hay médicos activos');
-    if (periodos.length === 0) throw new Error('No hay períodos definidos');
+    if (periodosPendientes.length === 0) {
+      throw new Error('No hay feriados pendientes para planificar');
+    }
 
     // 2. Preparar JSON para el core (Usando core.service)
-    const inputJson = coreService.prepareInput(medicos, periodos, config);
+    const inputJson = coreService.prepareInput(medicos, periodosPendientes, config);
 
     // 3. Ejecutar el ejecutable C++
     const output = await coreService.runSolver(inputJson);
@@ -47,7 +65,7 @@ class AsignacionesService {
         const medicoMap = new Map(medicos.map((m) => [m.nombre, m]));
         const periodoMap = new Map(); // fecha string -> periodo
 
-        for (const p of periodos) {
+        for (const p of periodosPendientes) {
           for (const f of p.feriados) {
             periodoMap.set(f.fecha.toISOString().split('T')[0], p);
           }
@@ -69,6 +87,23 @@ class AsignacionesService {
         if (asignacionesParaGuardar.length > 0) {
           await tx.asignacion.createMany({
             data: asignacionesParaGuardar,
+          });
+        }
+
+        const diasPlanificados = [
+          ...new Set(output.asignaciones.map((assignment) => assignment.dia)),
+        ];
+        if (diasPlanificados.length > 0) {
+          await tx.feriado.updateMany({
+            where: {
+              fecha: {
+                in: diasPlanificados.map((dia) => new Date(dia)),
+              },
+              estadoPlanificacion: 'PENDIENTE',
+            },
+            data: {
+              estadoPlanificacion: 'PLANIFICADO',
+            },
           });
         }
 

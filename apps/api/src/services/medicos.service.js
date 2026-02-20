@@ -2,6 +2,44 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
 class MedicosService {
+  getStartOfToday() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }
+
+  normalizeDate(dateLike) {
+    const date = new Date(dateLike);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  async validarFechasDisponibilidad(fechas) {
+    const normalizedDates = fechas.map((fecha) => this.normalizeDate(fecha));
+    const feriadosPendientes = await prisma.feriado.findMany({
+      where: {
+        fecha: { in: normalizedDates, gte: this.getStartOfToday() },
+        estadoPlanificacion: 'PENDIENTE',
+      },
+      select: { fecha: true },
+    });
+
+    const allowedSet = new Set(
+      feriadosPendientes.map((feriado) => feriado.fecha.toISOString().split('T')[0])
+    );
+    const invalidDates = normalizedDates
+      .map((fecha) => fecha.toISOString().split('T')[0])
+      .filter((fecha) => !allowedSet.has(fecha));
+
+    if (invalidDates.length > 0) {
+      throw new Error(
+        `Fechas no disponibles para edición: ${invalidDates.join(', ')}. Solo se permite disponibilidad en feriados pendientes.`
+      );
+    }
+
+    return normalizedDates;
+  }
+
   /**
    * Obtiene todos los médicos
    */
@@ -113,9 +151,10 @@ class MedicosService {
    * Agrega disponibilidad a un médico
    */
   async agregarDisponibilidad(medicoId, fechas) {
-    const data = fechas.map((fecha) => ({
+    const normalizedDates = await this.validarFechasDisponibilidad(fechas);
+    const data = normalizedDates.map((fecha) => ({
       medicoId: parseInt(medicoId),
-      fecha: new Date(fecha),
+      fecha,
     }));
 
     // Usar upsert para evitar duplicados
@@ -140,10 +179,11 @@ class MedicosService {
    * Elimina disponibilidad de un médico
    */
   async eliminarDisponibilidad(medicoId, fechas) {
+    const normalizedDates = await this.validarFechasDisponibilidad(fechas);
     return prisma.disponibilidad.deleteMany({
       where: {
         medicoId: parseInt(medicoId),
-        fecha: { in: fechas.map((f) => new Date(f)) },
+        fecha: { in: normalizedDates },
       },
     });
   }
@@ -152,8 +192,22 @@ class MedicosService {
    * Obtiene la disponibilidad de un médico
    */
   async obtenerDisponibilidad(medicoId) {
+    const feriadosPendientes = await prisma.feriado.findMany({
+      where: {
+        estadoPlanificacion: 'PENDIENTE',
+        fecha: { gte: this.getStartOfToday() },
+      },
+      select: { fecha: true },
+    });
+    const fechasPermitidas = feriadosPendientes.map((f) => f.fecha);
+
+    if (fechasPermitidas.length === 0) return [];
+
     return prisma.disponibilidad.findMany({
-      where: { medicoId: parseInt(medicoId) },
+      where: {
+        medicoId: parseInt(medicoId),
+        fecha: { in: fechasPermitidas },
+      },
       orderBy: { fecha: 'asc' },
     });
   }

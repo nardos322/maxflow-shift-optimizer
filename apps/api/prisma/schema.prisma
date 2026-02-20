@@ -49,11 +49,12 @@ model User {
 
 // Días feriados individuales (pertenecen a un período)
 model Feriado {
-  id          Int      @id @default(autoincrement())
-  fecha       DateTime @unique
-  descripcion String
-  periodo     Periodo  @relation(fields: [periodoId], references: [id])
-  periodoId   Int
+  id                  Int      @id @default(autoincrement())
+  fecha               DateTime @unique
+  descripcion         String
+  estadoPlanificacion String   @default("PENDIENTE") // PENDIENTE | PLANIFICADO | CERRADO
+  periodo             Periodo  @relation(fields: [periodoId], references: [id])
+  periodoId           Int
 
   @@index([periodoId])
 }

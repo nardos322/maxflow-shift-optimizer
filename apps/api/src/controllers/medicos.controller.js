@@ -113,6 +113,9 @@ async function agregarDisponibilidad(req, res, next) {
     );
     res.status(201).json(result);
   } catch (error) {
+    if (error.message?.includes('Fechas no disponibles para edición')) {
+      return res.status(400).json({ error: error.message });
+    }
     next(error);
   }
 }
@@ -130,6 +133,9 @@ async function eliminarDisponibilidad(req, res, next) {
     await medicosService.eliminarDisponibilidad(req.params.id, fechas);
     res.status(204).send();
   } catch (error) {
+    if (error.message?.includes('Fechas no disponibles para edición')) {
+      return res.status(400).json({ error: error.message });
+    }
     next(error);
   }
 }

@@ -8,10 +8,11 @@ export const idParamSchema = z.object({
 });
 
 export const createDisponibilidadBodySchema = z.object({
-  // Si no se envía medicoId, se asume que es el del usuario logueado (gestionado por controller)
-  // pero validamos si se envía.
-  medicoId: z.number().int().optional(),
-  fecha: z.coerce.date(),
+  fechas: z
+    .array(z.coerce.date(), {
+      required_error: 'Se requiere un array de fechas',
+    })
+    .min(1, 'Debe enviar al menos una fecha'),
 });
 
 export const createDisponibilidadSchema = z.object({
