@@ -9,7 +9,8 @@ export function DashboardPage() {
 
     const stats = data?.estadisticasGlobales;
     const cobertura = stats ? `${stats.coberturaPorcentaje}%` : undefined;
-    const conflictos = stats?.turnosSinCobertura;
+    const hasRunSolver = (stats?.totalGuardias ?? 0) > 0;
+    const conflictos = hasRunSolver ? stats?.turnosSinCobertura : "Sin ejecutar";
 
     return (
         <div className="space-y-6">
@@ -41,7 +42,11 @@ export function DashboardPage() {
                 <DashboardCard
                     title="Conflictos"
                     value={conflictos}
-                    valueClassName={conflictos && conflictos > 0 ? "text-yellow-600" : "text-green-600"}
+                    valueClassName={
+                        typeof conflictos === "number"
+                            ? (conflictos > 0 ? "text-yellow-600" : "text-green-600")
+                            : "text-muted-foreground"
+                    }
                     isLoading={isLoading}
                 />
             </div>
