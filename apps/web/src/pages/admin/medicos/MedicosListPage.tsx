@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Edit2, UserX, UserCheck } from "lucide-react";
+import { Plus, Trash2, Edit2, UserCheck } from "lucide-react";
 import { medicosService } from "@/services/medicos.service";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,7 +91,6 @@ export function MedicosListPage() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Usuario Vinculado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -105,19 +104,6 @@ export function MedicosListPage() {
                       <Badge variant="default" className="bg-green-600">Activo</Badge>
                     ) : (
                       <Badge variant="destructive">Inactivo</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {medico.userId ? (
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <UserCheck className="mr-1 h-3 w-3 text-green-600" />
-                        Si (ID: {medico.userId})
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <UserX className="mr-1 h-3 w-3 text-yellow-600" />
-                        No
-                      </div>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
