@@ -73,7 +73,7 @@ class AsignacionesService {
         }
 
         await auditService.log(
-          'RESOLVER_TURNOS',
+          'RESOLVER_ASIGNACIONES',
           usuarioEmail,
           {
             asignacionesCreadas: asignacionesParaGuardar.length,
@@ -260,7 +260,7 @@ class AsignacionesService {
         }
       });
 
-      await auditService.log('REPARAR_TURNOS', usuarioEmail, {
+      await auditService.log('REPARAR_ASIGNACIONES', usuarioEmail, {
         medicoId,
         reasignaciones: output.asignaciones.length,
         darDeBaja,

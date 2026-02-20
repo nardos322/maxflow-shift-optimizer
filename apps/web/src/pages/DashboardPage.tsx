@@ -4,6 +4,12 @@ import { auditService } from "@/services/audit.service";
 import { periodosService } from "@/services/periodos.service";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
+function normalizeAuditAction(action: string) {
+    return action
+        .replace("RESOLVER_TURNOS", "RESOLVER_ASIGNACIONES")
+        .replace("REPARAR_TURNOS", "REPARAR_ASIGNACIONES");
+}
+
 export function DashboardPage() {
     const user = useAuthStore((state) => state.user);
     const isAdmin = user?.rol === "ADMIN";
@@ -110,7 +116,7 @@ export function DashboardPage() {
                         <ul className="space-y-2">
                             {activityLogs!.map((log) => (
                                 <li key={log.id} className="text-sm">
-                                    <span className="font-medium">{log.accion}</span>{" "}
+                                    <span className="font-medium">{normalizeAuditAction(log.accion)}</span>{" "}
                                     <span className="text-muted-foreground">por {log.usuario} · {new Date(log.createdAt).toLocaleString()}</span>
                                 </li>
                             ))}
