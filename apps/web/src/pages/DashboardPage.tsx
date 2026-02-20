@@ -8,6 +8,8 @@ export function DashboardPage() {
     });
 
     const stats = data?.estadisticasGlobales;
+    const cobertura = stats ? `${stats.coberturaPorcentaje}%` : undefined;
+    const conflictos = stats?.turnosSinCobertura;
 
     return (
         <div className="space-y-6">
@@ -32,15 +34,15 @@ export function DashboardPage() {
                 />
                 <DashboardCard
                     title="Cobertura"
-                    value="98%"
+                    value={cobertura}
                     valueClassName="text-green-600"
-                    isLoading={false} // Placeholder
+                    isLoading={isLoading}
                 />
                 <DashboardCard
                     title="Conflictos"
-                    value="2"
-                    valueClassName="text-yellow-600"
-                    isLoading={false} // Placeholder
+                    value={conflictos}
+                    valueClassName={conflictos && conflictos > 0 ? "text-yellow-600" : "text-green-600"}
+                    isLoading={isLoading}
                 />
             </div>
 

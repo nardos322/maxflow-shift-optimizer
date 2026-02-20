@@ -8,6 +8,9 @@ export interface ReporteEquidad {
     medicosActivos: number;
     promedioPorMedico: number;
     desviacionEstandar: number;
+    totalTurnosRequeridos: number;
+    turnosSinCobertura: number;
+    coberturaPorcentaje: number;
   };
   detallePorMedico: Array<{
     id: number;

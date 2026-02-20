@@ -65,6 +65,28 @@ class ReportesService {
       }, 0) / medicosCount;
     const stdDev = Math.sqrt(variance);
 
+    // 3.1 Métricas de cobertura global
+    const configuracion = await prisma.configuracion.findFirst({
+      orderBy: { id: 'desc' },
+      select: { medicosPorDia: true },
+    });
+    const medicosPorDia = configuracion?.medicosPorDia ?? 1;
+    const totalFeriados = await prisma.feriado.count();
+    const totalTurnosRequeridos = totalFeriados * medicosPorDia;
+    const turnosSinCobertura = Math.max(
+      totalTurnosRequeridos - asignacionesTotal,
+      0
+    );
+    const coberturaPorcentaje =
+      totalTurnosRequeridos === 0
+        ? 100
+        : Math.min(
+            100,
+            parseFloat(
+              ((asignacionesTotal / totalTurnosRequeridos) * 100).toFixed(2)
+            )
+          );
+
     // 4. Construir respuesta
     return {
       fechaGeneracion: new Date(),
@@ -73,6 +95,9 @@ class ReportesService {
         medicosActivos: medicosCount,
         promedioPorMedico: parseFloat(promedio.toFixed(2)),
         desviacionEstandar: parseFloat(stdDev.toFixed(2)),
+        totalTurnosRequeridos,
+        turnosSinCobertura,
+        coberturaPorcentaje,
       },
       detallePorMedico: detalles.sort(
         (a, b) => b.totalGuardias - a.totalGuardias
