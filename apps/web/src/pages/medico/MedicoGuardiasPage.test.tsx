@@ -67,7 +67,9 @@ describe('MedicoGuardiasPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Mis Guardias')).toBeInTheDocument();
       expect(screen.getByText('Dra. Torres')).toBeInTheDocument();
-      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText('Agenda por Período')).toBeInTheDocument();
+      expect(screen.getByText('Navidad')).toBeInTheDocument();
+      expect(screen.getByText('Pendiente')).toBeInTheDocument();
       expect(asignacionesService.getResultados).toHaveBeenCalled();
     });
   });

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarCheck2 } from "lucide-react";
 import { periodosService } from "@/services/periodos.service";
@@ -18,15 +18,27 @@ function getDelayClass(index: number) {
 
 export function MedicoDisponibilidadPage() {
   const queryClient = useQueryClient();
-  const { medico, isLoading: isLoadingMedico } = useCurrentMedico();
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [pendingFecha, setPendingFecha] = useState<string | null>(null);
+  const { medico, isLoading: isLoadingMedico, isError: isErrorMedico, error: medicoError } = useCurrentMedico();
 
-  const { data: periodos, isLoading: isLoadingPeriodos } = useQuery({
+  const {
+    data: periodos,
+    isLoading: isLoadingPeriodos,
+    isError: isErrorPeriodos,
+    error: periodosError,
+  } = useQuery({
     queryKey: ["periodos"],
     queryFn: () => periodosService.getAll(),
     enabled: !!medico,
   });
 
-  const { data: disponibilidad, isLoading: isLoadingDisponibilidad } = useQuery({
+  const {
+    data: disponibilidad,
+    isLoading: isLoadingDisponibilidad,
+    isError: isErrorDisponibilidad,
+    error: disponibilidadError,
+  } = useQuery({
     queryKey: ["disponibilidad", medico?.id],
     queryFn: () => medicosService.getDisponibilidad(medico!.id),
     enabled: !!medico,
@@ -39,16 +51,34 @@ export function MedicoDisponibilidadPage() {
 
   const addMutation = useMutation({
     mutationFn: (fecha: string) => medicosService.addDisponibilidad(medico!.id, [fecha]),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["disponibilidad", medico?.id] }),
+    onSuccess: (_, fecha) => {
+      queryClient.invalidateQueries({ queryKey: ["disponibilidad", medico?.id] });
+      setFeedback({ type: "success", message: `Disponibilidad marcada para ${new Date(fecha).toLocaleDateString()}.` });
+      setPendingFecha(null);
+    },
+    onError: (error: Error) => {
+      setFeedback({ type: "error", message: error.message });
+      setPendingFecha(null);
+    },
   });
 
   const removeMutation = useMutation({
     mutationFn: (fecha: string) => medicosService.removeDisponibilidad(medico!.id, [fecha]),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["disponibilidad", medico?.id] }),
+    onSuccess: (_, fecha) => {
+      queryClient.invalidateQueries({ queryKey: ["disponibilidad", medico?.id] });
+      setFeedback({ type: "success", message: `Disponibilidad quitada para ${new Date(fecha).toLocaleDateString()}.` });
+      setPendingFecha(null);
+    },
+    onError: (error: Error) => {
+      setFeedback({ type: "error", message: error.message });
+      setPendingFecha(null);
+    },
   });
 
   const handleToggle = (fecha: string) => {
     if (!medico) return;
+    setFeedback(null);
+    setPendingFecha(fecha);
     if (disponibilidadSet.has(fecha)) {
       removeMutation.mutate(fecha);
       return;
@@ -68,6 +98,20 @@ export function MedicoDisponibilidadPage() {
     );
   }
 
+  if (isErrorMedico || isErrorPeriodos || isErrorDisponibilidad) {
+    return (
+      <div className="panel-glass rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
+        Error al cargar disponibilidad:{" "}
+        {(medicoError as Error)?.message ||
+          (periodosError as Error)?.message ||
+          (disponibilidadError as Error)?.message ||
+          "Intenta nuevamente."}
+      </div>
+    );
+  }
+
+  const totalFeriados = (periodos ?? []).reduce((acc, p) => acc + (p.feriados?.length ?? 0), 0);
+
   return (
     <div className="space-y-6">
       <section className="panel-glass dash-reveal rounded-2xl border border-border/70 p-6">
@@ -78,7 +122,28 @@ export function MedicoDisponibilidadPage() {
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Marca en qué feriados puedes tomar guardia.
         </p>
+        <p className="mt-4 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          {disponibilidadSet.size} de {totalFeriados} fechas marcadas
+        </p>
       </section>
+
+      {feedback && (
+        <div
+          className={
+            feedback.type === "success"
+              ? "rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary"
+              : "rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          }
+        >
+          {feedback.message}
+        </div>
+      )}
+
+      {totalFeriados === 0 && (
+        <div className="panel-glass dash-reveal rounded-xl border border-dashed border-border/80 bg-muted/40 p-8 text-center text-muted-foreground">
+          Aún no hay feriados disponibles para marcar en tus períodos.
+        </div>
+      )}
 
       {(periodos ?? []).map((periodo, idx) => (
         <div key={periodo.id} className={`panel-glass dash-reveal ${getDelayClass(idx)} rounded-xl border border-border/70`}>
@@ -95,7 +160,7 @@ export function MedicoDisponibilidadPage() {
             {(periodo.feriados ?? []).map((feriado) => {
               const fechaKey = toDayKey(feriado.fecha);
               const isAvailable = disponibilidadSet.has(fechaKey);
-              const isPending = addMutation.isPending || removeMutation.isPending;
+              const isPending = pendingFecha === fechaKey && (addMutation.isPending || removeMutation.isPending);
 
               return (
                 <div key={feriado.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/70 bg-card/50 p-3">
@@ -108,7 +173,7 @@ export function MedicoDisponibilidadPage() {
                     disabled={isPending}
                     onClick={() => handleToggle(fechaKey)}
                   >
-                    {isAvailable ? "Quitar disponibilidad" : "Marcar disponible"}
+                    {isPending ? "Guardando..." : isAvailable ? "Quitar disponibilidad" : "Marcar disponible"}
                   </Button>
                 </div>
               );
