@@ -2,6 +2,11 @@ import { authService } from "./auth.service";
 import type { Medico } from "@/types/medicos";
 
 const API_BASE = "/api";
+export interface Disponibilidad {
+  id: number;
+  medicoId: number;
+  fecha: string;
+}
 
 class MedicosService {
   private getHeaders() {
@@ -59,6 +64,36 @@ class MedicosService {
       headers: this.getHeaders(),
     });
     if (!res.ok) throw new Error("Error al eliminar médico");
+  }
+
+  async getDisponibilidad(medicoId: number): Promise<Disponibilidad[]> {
+    const res = await fetch(`${API_BASE}/medicos/${medicoId}/disponibilidad`, {
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error("Error al obtener disponibilidad");
+    return res.json();
+  }
+
+  async addDisponibilidad(medicoId: number, fechas: string[]): Promise<Disponibilidad[]> {
+    const res = await fetch(`${API_BASE}/medicos/${medicoId}/disponibilidad`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({ fechas }),
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || error.message || "Error al agregar disponibilidad");
+    }
+    return res.json();
+  }
+
+  async removeDisponibilidad(medicoId: number, fechas: string[]): Promise<void> {
+    const res = await fetch(`${API_BASE}/medicos/${medicoId}/disponibilidad`, {
+      method: "DELETE",
+      headers: this.getHeaders(),
+      body: JSON.stringify({ fechas }),
+    });
+    if (!res.ok) throw new Error("Error al eliminar disponibilidad");
   }
 }
 

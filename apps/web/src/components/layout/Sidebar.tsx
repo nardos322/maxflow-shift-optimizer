@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Calculator, Settings, Calendar, FileText } from "lucide-react";
+import { LayoutDashboard, Users, Calculator, Settings, Calendar, FileText, ClipboardList } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
 export function Sidebar() {
@@ -22,7 +22,11 @@ export function Sidebar() {
             { href: "/solver", label: "Planificador", icon: Calculator },
             { href: "/config", label: "Configuración", icon: Settings },
           ]
-        : [{ href: "/mi-panel", label: "Mi Panel", icon: LayoutDashboard }];
+        : [
+            { href: "/mi-panel", label: "Mi Panel", icon: LayoutDashboard },
+            { href: "/mi-disponibilidad", label: "Disponibilidad", icon: Calendar },
+            { href: "/mis-guardias", label: "Mis Guardias", icon: ClipboardList },
+          ];
 
     return (
         <aside className="panel-glass border-b border-border/70 md:min-h-screen md:w-72 md:border-b-0 md:border-r">

@@ -53,4 +53,19 @@ describe('medicosService', () => {
       medicosService.create({ nombre: 'Dr. House', email: 'house@hospital.com' })
     ).rejects.toThrow('El email ya existe');
   });
+
+  it('addDisponibilidad sends fechas array to medico availability endpoint', async () => {
+    (global.fetch as any).mockResolvedValue(mockJsonResponse(true, []));
+
+    await medicosService.addDisponibilidad(7, ['2026-12-25']);
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/medicos/7/disponibilidad', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer token-123',
+      },
+      body: JSON.stringify({ fechas: ['2026-12-25'] }),
+    });
+  });
 });

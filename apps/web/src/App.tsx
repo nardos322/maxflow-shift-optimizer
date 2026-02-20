@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { MedicoHomePage } from '@/pages/MedicoHomePage'
+import { MedicoDisponibilidadPage } from '@/pages/medico/MedicoDisponibilidadPage'
+import { MedicoGuardiasPage } from '@/pages/medico/MedicoGuardiasPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { CreateUserPage } from '@/pages/admin/CreateUserPage'
 import { MedicosListPage } from '@/pages/admin/medicos/MedicosListPage'
@@ -25,7 +27,9 @@ function HomeRoute() {
   const user = useAuthStore((state) => state.user)
 
   if (!user) return <Navigate to="/login" replace />
-  return user.rol === 'MEDICO' ? <Navigate to="/mi-panel" replace /> : <Navigate to="/dashboard" replace />
+  if (user.rol === 'MEDICO') return <Navigate to="/mi-panel" replace />
+  if (user.rol === 'ADMIN') return <Navigate to="/dashboard" replace />
+  return <Navigate to="/login" replace />
 }
 
 function App() {
@@ -59,6 +63,8 @@ function App() {
 
               <Route element={<RoleRoute allowedRoles={['MEDICO']} />}>
                 <Route path="/mi-panel" element={<MedicoHomePage />} />
+                <Route path="/mi-disponibilidad" element={<MedicoDisponibilidadPage />} />
+                <Route path="/mis-guardias" element={<MedicoGuardiasPage />} />
               </Route>
             </Route>
           </Route>
