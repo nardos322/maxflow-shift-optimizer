@@ -1,5 +1,5 @@
-const ExcelJS = require('exceljs');
-const { createEvents } = require('ics');
+import ExcelJS from 'exceljs';
+import { createEvents } from 'ics';
 
 class ExportService {
   /**
@@ -68,4 +68,4 @@ class ExportService {
   }
 }
 
-module.exports = new ExportService();
+export default new ExportService();

@@ -1,4 +1,4 @@
-const periodosService = require('../services/periodos.service');
+import periodosService from '../services/periodos.service.js';
 
 /**
  * GET /periodos
@@ -83,7 +83,7 @@ async function eliminar(req, res, next) {
   }
 }
 
-module.exports = {
+export default {
   obtenerTodos,
   obtenerPorId,
   crear,

@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 /**
@@ -49,12 +49,12 @@ const router = express.Router();
  *       401:
  *         description: Credenciales incorrectas
  */
-const { login, register } = require('../controllers/auth.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+import { login, register } from '../controllers/auth.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
-const validate = require('../middlewares/validate');
-const { loginSchema, registerSchema } = require('@maxflow/shared');
+import validate from '../middlewares/validate.js';
+import { loginSchema, registerSchema } from '@maxflow/shared';
 
 router.post('/login', validate(loginSchema), login);
 /**
@@ -106,4 +106,4 @@ router.post(
   register
 );
 
-module.exports = router;
+export default router;

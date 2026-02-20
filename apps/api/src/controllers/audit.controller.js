@@ -1,4 +1,4 @@
-const auditService = require('../services/audit.service');
+import auditService from '../services/audit.service.js';
 
 /**
  * GET /auditoria
@@ -13,6 +13,6 @@ async function obtenerLogs(req, res, next) {
   }
 }
 
-module.exports = {
+export default {
   obtenerLogs,
 };

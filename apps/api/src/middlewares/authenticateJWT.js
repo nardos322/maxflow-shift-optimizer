@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const { JWT_SECRET } = require('../config');
+import { JWT_SECRET } from '../config.js';
 
 function authenticateJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -17,4 +17,4 @@ function authenticateJWT(req, res, next) {
   }
 }
 
-module.exports = { authenticateJWT };
+export { authenticateJWT };

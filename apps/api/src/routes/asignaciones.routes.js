@@ -1,13 +1,13 @@
-const { Router } = require('express');
-const asignacionesController = require('../controllers/asignaciones.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
-const { solverLimiter } = require('../middlewares/rateLimiter');
-const validate = require('../middlewares/validate');
-const {
+import { Router } from 'express';
+import asignacionesController from '../controllers/asignaciones.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
+import { solverLimiter } from '../middlewares/rateLimiter.js';
+import validate from '../middlewares/validate.js';
+import {
   repararAsignacionSchema,
   simulacionSchema,
-} = require('@maxflow/shared');
+} from '@maxflow/shared';
 
 /**
  * @swagger
@@ -197,4 +197,4 @@ router.get(
   asignacionesController.obtenerResultados
 );
 
-module.exports = router;
+export default router;

@@ -1,5 +1,5 @@
-const app = require('./src/app');
-const { PORT } = require('./src/config');
+import app from './src/app.js';
+import { PORT } from './src/config.js';
 
 app.listen(PORT, () => {
   console.log(`🚀 API corriendo en http://localhost:${PORT}`);

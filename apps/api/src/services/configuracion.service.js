@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma');
+import prisma from '../lib/prisma.js';
 
 class ConfiguracionService {
   /**
@@ -39,4 +39,4 @@ class ConfiguracionService {
   }
 }
 
-module.exports = new ConfiguracionService();
+export default new ConfiguracionService();

@@ -9,7 +9,7 @@ This is the orchestration and data management layer of the system. It acts as th
 - **ORM:** Prisma (SQLite by default)
 - **Validation:** Zod
 - **Docs:** Swagger / OpenAPI
-- **Testing:** Jest + Supertest
+- **Testing:** Vitest + Supertest
 
 ## ⚡ Key Commands
 

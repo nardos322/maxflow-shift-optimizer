@@ -60,7 +60,7 @@ export function Sidebar() {
                         {getInitials(user?.email)}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-medium truncate">{user?.name ?? 'Usuario'}</p>
+                        <p className="text-sm font-medium truncate">{user?.nombre ?? 'Usuario'}</p>
                         <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                     </div>
                 </div>

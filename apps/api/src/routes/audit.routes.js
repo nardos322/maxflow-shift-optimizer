@@ -1,7 +1,7 @@
-const { Router } = require('express');
-const auditController = require('../controllers/audit.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+import { Router } from 'express';
+import auditController from '../controllers/audit.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
 const router = Router();
 
@@ -49,4 +49,4 @@ router.get(
   auditController.obtenerLogs
 );
 
-module.exports = router;
+export default router;

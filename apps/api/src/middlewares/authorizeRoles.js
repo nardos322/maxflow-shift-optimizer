@@ -7,4 +7,4 @@ function authorizeRoles(...roles) {
   };
 }
 
-module.exports = { authorizeRoles };
+export { authorizeRoles };

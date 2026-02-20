@@ -1,17 +1,17 @@
-const { Router } = require('express');
-const medicosController = require('../controllers/medicos.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+import { Router } from 'express';
+import medicosController from '../controllers/medicos.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
-const validate = require('../middlewares/validate');
-const {
+import validate from '../middlewares/validate.js';
+import {
   createMedicoSchema,
   updateMedicoSchema,
   getMedicoSchema,
   deleteMedicoSchema,
   deleteDisponibilidadSchema,
   createDisponibilidadSchema,
-} = require('@maxflow/shared');
+} from '@maxflow/shared';
 
 /**
  * @swagger
@@ -320,4 +320,4 @@ router.get(
   medicosController.obtenerPorId
 );
 
-module.exports = router;
+export default router;

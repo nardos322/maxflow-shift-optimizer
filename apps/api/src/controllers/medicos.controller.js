@@ -1,4 +1,4 @@
-const medicosService = require('../services/medicos.service');
+import medicosService from '../services/medicos.service.js';
 
 /**
  * GET /medicos
@@ -134,7 +134,7 @@ async function eliminarDisponibilidad(req, res, next) {
   }
 }
 
-module.exports = {
+export default {
   obtenerTodos,
   obtenerPorId,
   crear,

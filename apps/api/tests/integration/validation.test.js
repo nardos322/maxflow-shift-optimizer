@@ -1,12 +1,11 @@
-const request = require('supertest');
-const app = require('../../src/app');
-const prisma = require('../../src/lib/prisma');
-const Factories = require('../../src/lib/factories');
+import request from 'supertest';
+import app from '../../src/app.js';
+import prisma from '../../src/lib/prisma.js';
+import Factories from '../../src/lib/factories.js';
+import bcrypt from 'bcryptjs';
 
 describe('Input Validation Tests', () => {
   let adminToken;
-
-  const bcrypt = require('bcryptjs');
 
   // ...
 

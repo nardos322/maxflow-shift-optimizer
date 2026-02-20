@@ -1,15 +1,15 @@
-const { Router } = require('express');
-const periodosController = require('../controllers/periodos.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+import { Router } from 'express';
+import periodosController from '../controllers/periodos.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
-const validate = require('../middlewares/validate');
-const {
+import validate from '../middlewares/validate.js';
+import {
   createPeriodoSchema,
   updatePeriodoSchema,
   getPeriodoSchema,
   deletePeriodoSchema,
-} = require('@maxflow/shared');
+} from '@maxflow/shared';
 
 /**
  * @swagger
@@ -175,4 +175,4 @@ router.get(
   periodosController.obtenerPorId
 );
 
-module.exports = router;
+export default router;

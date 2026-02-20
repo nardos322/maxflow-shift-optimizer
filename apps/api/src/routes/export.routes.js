@@ -1,7 +1,7 @@
-const { Router } = require('express');
-const exportController = require('../controllers/export.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+import { Router } from 'express';
+import exportController from '../controllers/export.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 const router = Router();
 
 // Allow access to exports for ADMIN, MEDICO, and LECTOR roles
@@ -19,4 +19,4 @@ router.get(
   exportController.downloadICS
 );
 
-module.exports = router;
+export default router;

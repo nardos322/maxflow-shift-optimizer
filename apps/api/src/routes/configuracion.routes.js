@@ -1,11 +1,11 @@
-const { Router } = require('express');
-const configuracionController = require('../controllers/configuracion.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
-const validate = require('../middlewares/validate');
-const {
+import { Router } from 'express';
+import configuracionController from '../controllers/configuracion.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
+import validate from '../middlewares/validate.js';
+import {
   updateConfiguracionSchema,
-} = require('@maxflow/shared');
+} from '@maxflow/shared';
 
 /**
  * @swagger
@@ -70,4 +70,4 @@ router.get(
   configuracionController.obtenerConfiguracion
 );
 
-module.exports = router;
+export default router;

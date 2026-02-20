@@ -1,7 +1,7 @@
-const { Router } = require('express');
-const reportesController = require('../controllers/reportes.controller');
-const { authenticateJWT } = require('../middlewares/authenticateJWT');
-const { authorizeRoles } = require('../middlewares/authorizeRoles');
+import { Router } from 'express';
+import reportesController from '../controllers/reportes.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 
 const router = Router();
 
@@ -35,4 +35,4 @@ router.get(
   reportesController.obtenerReporteEquidad
 );
 
-module.exports = router;
+export default router;

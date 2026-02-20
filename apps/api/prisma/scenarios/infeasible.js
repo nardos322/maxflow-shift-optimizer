@@ -1,6 +1,7 @@
-const prisma = require('../../src/lib/prisma');
-const { seedAdmin } = require('../seedAdmin');
-const Factories = require('../../src/lib/factories');
+import prisma from '../../src/lib/prisma.js';
+import { seedAdmin } from '../seedAdmin.js';
+import Factories from '../../src/lib/factories.js';
+import { pathToFileURL } from 'node:url';
 
 async function main() {
   console.log('🔥 Iniciando seed: INFEASIBLE (Infactible)...');
@@ -84,7 +85,11 @@ async function main() {
   );
 }
 
-if (require.main === module) {
+const isDirectRun =
+  typeof process.argv[1] === 'string' &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun) {
   main()
     .catch((e) => {
       console.error('❌ Error en seed:', e);
@@ -95,4 +100,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { main };
+export { main };

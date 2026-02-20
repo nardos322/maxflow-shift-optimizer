@@ -1,5 +1,5 @@
-const asignacionesService = require('../services/asignaciones.service');
-const prisma = require('../lib/prisma');
+import asignacionesService from '../services/asignaciones.service.js';
+import prisma from '../lib/prisma.js';
 
 /**
  * POST /asignaciones/calcular
@@ -90,7 +90,7 @@ async function simular(req, res, next) {
   }
 }
 
-module.exports = {
+export default {
   calcular,
   obtenerResultados,
   limpiar,

@@ -1,10 +1,9 @@
-const request = require('supertest');
-const app = require('../../src/app');
-const prisma = require('../../src/lib/prisma');
-const { seedAdmin } = require('../../prisma/seed');
-jest.setTimeout(30000);
+import request from 'supertest';
+import app from '../../src/app.js';
+import prisma from '../../src/lib/prisma.js';
+import { seedAdmin } from '../../prisma/seed.js';
 
-const AuthHelper = require('../utils/authHelper');
+import AuthHelper from '../utils/authHelper.js';
 
 describe('API Integration Tests - Configuracion', () => {
   let adminToken;

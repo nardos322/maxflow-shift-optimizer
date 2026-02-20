@@ -1,4 +1,4 @@
-const { ZodError } = require('zod');
+import { ZodError } from 'zod';
 
 /**
  * Middleware genérico para validar esquemas Zod
@@ -30,4 +30,4 @@ const validate = (schema) => (req, res, next) => {
   }
 };
 
-module.exports = validate;
+export default validate;

@@ -1,5 +1,5 @@
-const { spawn } = require('child_process');
-const { CORE_PATH } = require('../config');
+import { spawn } from 'child_process';
+import { CORE_PATH } from '../config.js';
 
 class CoreService {
   /**
@@ -139,4 +139,4 @@ class CoreService {
   }
 }
 
-module.exports = new CoreService();
+export default new CoreService();

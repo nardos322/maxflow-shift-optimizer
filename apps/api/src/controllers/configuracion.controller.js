@@ -1,5 +1,5 @@
-const auditService = require('../services/audit.service');
-const configuracionService = require('../services/configuracion.service');
+import auditService from '../services/audit.service.js';
+import configuracionService from '../services/configuracion.service.js';
 
 async function obtenerConfiguracion(req, res, next) {
   try {
@@ -26,7 +26,7 @@ async function actualizarConfiguracion(req, res, next) {
   }
 }
 
-module.exports = {
+export default {
   obtenerConfiguracion,
   actualizarConfiguracion,
 };

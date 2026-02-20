@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma');
+import prisma from '../lib/prisma.js';
 
 class PeriodosService {
   /**
@@ -121,4 +121,4 @@ class PeriodosService {
   }
 }
 
-module.exports = new PeriodosService();
+export default new PeriodosService();

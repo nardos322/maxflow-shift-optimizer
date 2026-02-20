@@ -1,8 +1,12 @@
-const { main } = require('./scenarios/feasible');
+import { main } from './scenarios/feasible.js';
+import { seedAdmin } from './seedAdmin.js';
+import { pathToFileURL } from 'node:url';
 
-const { seedAdmin } = require('./seedAdmin');
+const isDirectRun =
+  typeof process.argv[1] === 'string' &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
 
-if (require.main === module) {
+if (isDirectRun) {
   seedAdmin()
     .then(() => main())
     .catch((e) => {
@@ -11,4 +15,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { main, seedAdmin };
+export { main, seedAdmin };

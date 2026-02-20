@@ -1,5 +1,6 @@
-const prisma = require('../src/lib/prisma');
-const bcrypt = require('bcryptjs');
+import prisma from '../src/lib/prisma.js';
+import bcrypt from 'bcryptjs';
+import { pathToFileURL } from 'node:url';
 
 async function seedAdmin() {
   const email = process.env.ADMIN_EMAIL || 'admin@hospital.com';
@@ -32,7 +33,11 @@ async function seedAdmin() {
   }
 }
 
-if (require.main === module) {
+const isDirectRun =
+  typeof process.argv[1] === 'string' &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun) {
   seedAdmin()
     .then(() => process.exit(0))
     .catch((e) => {
@@ -41,4 +46,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { seedAdmin };
+export { seedAdmin };

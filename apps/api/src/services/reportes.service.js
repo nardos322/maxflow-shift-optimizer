@@ -1,4 +1,4 @@
-const prisma = require('../lib/prisma');
+import prisma from '../lib/prisma.js';
 
 class ReportesService {
   /**
@@ -81,4 +81,4 @@ class ReportesService {
   }
 }
 
-module.exports = new ReportesService();
+export default new ReportesService();

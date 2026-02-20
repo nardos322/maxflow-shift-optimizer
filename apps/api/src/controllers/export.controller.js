@@ -1,5 +1,5 @@
-const prisma = require('../lib/prisma');
-const exportService = require('../services/export.service');
+import prisma from '../lib/prisma.js';
+import exportService from '../services/export.service.js';
 
 async function downloadExcel(req, res, next) {
   try {
@@ -58,7 +58,7 @@ async function downloadICS(req, res, next) {
   }
 }
 
-module.exports = {
+export default {
   downloadExcel,
   downloadICS,
 };

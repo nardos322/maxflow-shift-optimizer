@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+import rateLimit from 'express-rate-limit';
 
 // Rate Limiter para operaciones pesadas (Solver)
 const solverLimiter = rateLimit({
@@ -7,6 +7,4 @@ const solverLimiter = rateLimit({
   message: { error: 'Demasiadas peticiones al solver, por favor espere.' },
 });
 
-module.exports = {
-  solverLimiter,
-};
+export { solverLimiter };

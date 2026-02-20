@@ -1,10 +1,9 @@
-const request = require('supertest');
-const app = require('../../src/app');
-const AuthHelper = require('../utils/authHelper');
-const { seedAdmin } = require('../../prisma/seed');
-const prisma = require('../../src/lib/prisma');
+import request from 'supertest';
+import app from '../../src/app.js';
+import AuthHelper from '../utils/authHelper.js';
+import { seedAdmin } from '../../prisma/seed.js';
+import prisma from '../../src/lib/prisma.js';
 
-jest.setTimeout(30000);
 
 describe('API Hardening Tests', () => {
   let adminToken;

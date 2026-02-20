@@ -1,6 +1,7 @@
-const prisma = require('../../src/lib/prisma');
-const { seedAdmin } = require('../seedAdmin');
-const Factories = require('../../src/lib/factories');
+import prisma from '../../src/lib/prisma.js';
+import { seedAdmin } from '../seedAdmin.js';
+import Factories from '../../src/lib/factories.js';
+import { pathToFileURL } from 'node:url';
 
 async function main() {
   console.log('🌱 Iniciando seed: REPAIR SCENARIO...');
@@ -83,7 +84,11 @@ async function main() {
   console.log('   El Dr. B y C deben MANTENER sus días 2 y 3.');
 }
 
-if (require.main === module) {
+const isDirectRun =
+  typeof process.argv[1] === 'string' &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectRun) {
   main()
     .catch((e) => {
       console.error(e);
@@ -94,4 +99,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { main };
+export { main };

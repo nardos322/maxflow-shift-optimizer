@@ -1,6 +1,7 @@
-const prisma = require('../../src/lib/prisma');
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../../src/config');
+import prisma from '../../src/lib/prisma.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { JWT_SECRET } from '../../src/config.js';
 
 const AuthHelper = {
   // Generic helper to create a user and get token
@@ -13,7 +14,7 @@ const AuthHelper = {
     const nombre = data.nombre || `Test ${role}`;
 
     // Create user directly in DB
-    const passwordHash = await require('bcryptjs').hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.upsert({
       where: { email },
@@ -66,4 +67,4 @@ const AuthHelper = {
   },
 };
 
-module.exports = AuthHelper;
+export default AuthHelper;

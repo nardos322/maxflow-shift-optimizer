@@ -1,4 +1,4 @@
-const reportesService = require('../services/reportes.service');
+import reportesService from '../services/reportes.service.js';
 
 /**
  * GET /reportes/equidad
@@ -13,6 +13,6 @@ async function obtenerReporteEquidad(req, res, next) {
   }
 }
 
-module.exports = {
+export default {
   obtenerReporteEquidad,
 };

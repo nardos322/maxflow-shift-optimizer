@@ -1,4 +1,4 @@
-const prisma = require('./prisma');
+import prisma from './prisma.js';
 
 const Factories = {
   async createMedico(data = {}) {
@@ -100,4 +100,4 @@ const Factories = {
   },
 };
 
-module.exports = Factories;
+export default Factories;

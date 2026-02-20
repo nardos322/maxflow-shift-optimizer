@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { PrismaClient } = require('@prisma/client');
-const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config');
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { PrismaClient } from '@prisma/client';
+import { JWT_SECRET, JWT_EXPIRES_IN } from '../config.js';
 
 const prisma = new PrismaClient();
 
@@ -74,4 +74,4 @@ class AuthService {
   }
 }
 
-module.exports = new AuthService();
+export default new AuthService();

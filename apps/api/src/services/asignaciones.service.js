@@ -1,6 +1,6 @@
-const prisma = require('../lib/prisma');
-const auditService = require('./audit.service');
-const coreService = require('./core.service');
+import prisma from '../lib/prisma.js';
+import auditService from './audit.service.js';
+import coreService from './core.service.js';
 
 class AsignacionesService {
   /**
@@ -341,4 +341,4 @@ class AsignacionesService {
   }
 }
 
-module.exports = new AsignacionesService();
+export default new AsignacionesService();

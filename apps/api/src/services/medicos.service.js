@@ -1,5 +1,5 @@
-const prisma = require('../lib/prisma');
-const bcrypt = require('bcryptjs');
+import prisma from '../lib/prisma.js';
+import bcrypt from 'bcryptjs';
 
 class MedicosService {
   /**
@@ -159,4 +159,4 @@ class MedicosService {
   }
 }
 
-module.exports = new MedicosService();
+export default new MedicosService();
