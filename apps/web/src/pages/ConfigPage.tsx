@@ -74,24 +74,37 @@ export function ConfigPage() {
     }
 
     if (isLoading) {
-        return <div>Cargando configuración...</div>
+        return <div className="text-sm text-muted-foreground">Cargando configuración...</div>
     }
 
     return (
         <div className="space-y-6">
-             <div className="flex justify-between items-start">
+             <section className="panel-glass dash-reveal rounded-2xl border border-border/70 p-6">
+              <div className="flex justify-between items-start">
                 <div>
-                <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                    <Settings className="h-8 w-8" />
+                <h2 className="text-3xl font-extrabold tracking-tight flex items-center gap-2 md:text-4xl">
+                    <Settings className="h-8 w-8 text-primary" />
                     Configuración del Sistema
                 </h2>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-2 text-sm">
                     Ajusta los parámetros globales del planificador.
                 </p>
                 </div>
+              </div>
+            </section>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="panel-glass dash-reveal delay-1 rounded-xl border border-border/70 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Máx. Guardias</p>
+                <p className="mt-2 text-3xl font-extrabold">{config?.maxGuardiasTotales ?? "N/A"}</p>
+              </div>
+              <div className="panel-glass dash-reveal delay-2 rounded-xl border border-border/70 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Médicos por Día</p>
+                <p className="mt-2 text-3xl font-extrabold">{config?.medicosPorDia ?? "N/A"}</p>
+              </div>
             </div>
 
-            <Card className="max-w-2xl">
+            <Card className="panel-glass max-w-2xl border-border/70">
                 <CardHeader>
                     <CardTitle>Parámetros del Algoritmo</CardTitle>
                     <CardDescription>
@@ -146,7 +159,7 @@ export function ConfigPage() {
                                 </div>
                             )}
 
-                            <Button type="submit" className="mt-4" disabled={mutation.isPending}>
+                            <Button type="submit" className="mt-4 rounded-xl" disabled={mutation.isPending}>
                                 {mutation.isPending ? "Guardando..." : "Guardar Cambios"}
                             </Button>
                         </form>

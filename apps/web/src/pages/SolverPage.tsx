@@ -11,13 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export function SolverPage() {
@@ -50,35 +43,53 @@ export function SolverPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Calculator className="h-8 w-8" />
-            Planificador de Guardias
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            Ejecuta el algoritmo de optimización para generar el calendario de guardias.
-          </p>
-        </div>
-        <Button 
+      <section className="panel-glass dash-reveal rounded-2xl border border-border/70 p-6">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+          <div>
+            <h2 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight md:text-4xl">
+              <Calculator className="h-8 w-8 text-primary" />
+              Planificador de Guardias
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              Ejecuta el algoritmo de optimización para generar el calendario de guardias.
+            </p>
+          </div>
+          <Button
             onClick={handleResolverClick}
             disabled={resolverMutation.isPending}
-        >
-          <Zap className="mr-2 h-4 w-4" />
-          {resolverMutation.isPending ? "Ejecutando..." : "Ejecutar Planificador"}
-        </Button>
+            className="self-start rounded-xl px-5"
+          >
+            <Zap className="mr-2 h-4 w-4" />
+            {resolverMutation.isPending ? "Ejecutando..." : "Ejecutar Planificador"}
+          </Button>
+        </div>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="panel-glass dash-reveal delay-1 rounded-xl border border-border/70 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Asignaciones</p>
+          <p className="mt-2 text-3xl font-extrabold">{asignaciones?.length ?? 0}</p>
+        </div>
+        <div className="panel-glass dash-reveal delay-2 rounded-xl border border-border/70 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Estado del Motor</p>
+          <p className="mt-2 text-lg font-bold text-primary">{resolverMutation.isPending ? "Procesando" : "Listo"}</p>
+        </div>
+        <div className="panel-glass dash-reveal delay-3 rounded-xl border border-border/70 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Última Acción</p>
+          <p className="mt-2 text-lg font-bold text-foreground">{resolverMutation.isSuccess ? "Ejecución completada" : "Sin cambios recientes"}</p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Resultados de Asignación</CardTitle>
-          <CardDescription>
+      <div className="panel-glass dash-reveal delay-2 rounded-xl border border-border/70">
+        <div className="border-b border-border/70 p-6">
+          <h3 className="text-xl font-bold">Resultados de Asignación</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
             Lista de guardias asignadas a los médicos.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-6">
           {isLoading ? (
-            <div>Cargando asignaciones...</div>
+            <div className="text-sm text-muted-foreground">Cargando asignaciones...</div>
           ) : (
             <Table>
               <TableHeader>
@@ -91,23 +102,25 @@ export function SolverPage() {
               <TableBody>
                 {asignaciones?.map((asignacion: Asignacion) => (
                   <TableRow key={asignacion.id}>
-                    <TableCell className="font-medium">{new Date(asignacion.fecha).toLocaleDateString()}</TableCell>
+                    <TableCell className="font-semibold">{new Date(asignacion.fecha).toLocaleDateString()}</TableCell>
                     <TableCell>{asignacion.medico.nombre}</TableCell>
                     <TableCell>
-                        <Badge variant="outline">{asignacion.periodo.nombre}</Badge>
+                      <Badge variant="outline" className="bg-accent/35">
+                        {asignacion.periodo.nombre}
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           )}
-           { !isLoading && asignaciones?.length === 0 && (
-                <div className="text-center text-muted-foreground p-8">
-                    No hay asignaciones para mostrar. Ejecuta el planificador para generarlas.
-                </div>
-           )}
-        </CardContent>
-      </Card>
+          {!isLoading && asignaciones?.length === 0 && (
+            <div className="rounded-lg border border-dashed border-border/80 bg-muted/40 p-8 text-center text-muted-foreground">
+              No hay asignaciones para mostrar. Ejecuta el planificador para generarlas.
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
