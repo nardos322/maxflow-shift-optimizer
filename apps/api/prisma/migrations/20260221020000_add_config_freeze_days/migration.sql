@@ -1,0 +1,1 @@
+ALTER TABLE "Configuracion" ADD COLUMN "freezeDays" INTEGER NOT NULL DEFAULT 0;

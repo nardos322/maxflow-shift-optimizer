@@ -5,6 +5,10 @@ import { authorizeRoles } from '../middlewares/authorizeRoles.js';
 import { solverLimiter } from '../middlewares/rateLimiter.js';
 import validate from '../middlewares/validate.js';
 import {
+  planDiffSchema,
+  publishPlanVersionSchema,
+  publishedPlanDiffSchema,
+  versionRiskSchema,
   repararAsignacionSchema,
   simulacionSchema,
 } from '@maxflow/shared';
@@ -82,6 +86,14 @@ router.post(
  *                 type: integer
  *               darDeBaja:
  *                 type: boolean
+ *               ventanaInicio:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha inicio opcional para limitar la reparación
+ *               ventanaFin:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha fin opcional para limitar la reparación
  *     responses:
  *       200:
  *         description: Asignación reparada
@@ -102,6 +114,22 @@ router.post(
   authorizeRoles('ADMIN'),
   validate(repararAsignacionSchema),
   asignacionesController.reparar
+);
+
+router.post(
+  '/reparaciones/candidatas',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(repararAsignacionSchema),
+  asignacionesController.repararCandidata
+);
+
+router.post(
+  '/reparaciones/previsualizar',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(repararAsignacionSchema),
+  asignacionesController.previsualizarReparacion
 );
 
 router.post(
@@ -217,6 +245,85 @@ router.get(
   authenticateJWT,
   authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
   asignacionesController.obtenerResultados
+);
+
+/**
+ * @swagger
+ * /asignaciones/diff:
+ *   get:
+ *     summary: Comparar dos versiones de plan
+ *     tags: [Asignaciones]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: fromVersionId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: toVersionId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Diferencias calculadas entre versiones
+ */
+
+router.get(
+  '/diff',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(planDiffSchema),
+  asignacionesController.compararVersiones
+);
+
+router.get(
+  '/diff/publicado',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(publishedPlanDiffSchema),
+  asignacionesController.compararConPublicada
+);
+
+router.get(
+  '/versiones',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  asignacionesController.listarVersiones
+);
+
+router.post(
+  '/versiones/:id/publicar',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(publishPlanVersionSchema),
+  asignacionesController.publicarVersion
+);
+
+router.get(
+  '/versiones/:id/riesgo',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(versionRiskSchema),
+  asignacionesController.obtenerRiesgoVersion
+);
+
+router.get(
+  '/versiones/:id/aprobacion',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(versionRiskSchema),
+  asignacionesController.obtenerResumenAprobacion
+);
+
+router.get(
+  '/versiones/:id/autofix-sugerido',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(versionRiskSchema),
+  asignacionesController.obtenerAutofixSugerido
 );
 
 export default router;

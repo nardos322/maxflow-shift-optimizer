@@ -22,6 +22,7 @@ const obtenerResultados = asyncHandler(async (req, res) => {
     include: {
       medico: { select: { id: true, nombre: true } },
       periodo: { select: { id: true, nombre: true } },
+      planVersion: { select: { id: true, tipo: true, createdAt: true } },
     },
     orderBy: { fecha: 'asc' },
   });
@@ -43,7 +44,7 @@ const limpiar = asyncHandler(async (req, res) => {
  * Body: { medicoId: 123 }
  */
 const reparar = asyncHandler(async (req, res) => {
-  const { medicoId, darDeBaja } = req.body;
+  const { medicoId, darDeBaja, ventanaInicio, ventanaFin } = req.body;
   if (!medicoId) throw new ValidationError('medicoId es requerido');
 
   const usuarioEmail = req.user ? req.user.email : 'system';
@@ -51,6 +52,8 @@ const reparar = asyncHandler(async (req, res) => {
   const resultado = await asignacionesService.repararAsignaciones(
     medicoId,
     darDeBaja,
+    ventanaInicio,
+    ventanaFin,
     usuarioEmail
   );
   res.json(resultado);
@@ -70,10 +73,93 @@ const simular = asyncHandler(async (req, res) => {
   res.json(resultado);
 });
 
+const repararCandidata = asyncHandler(async (req, res) => {
+  const { medicoId, darDeBaja, ventanaInicio, ventanaFin } = req.body;
+  if (!medicoId) throw new ValidationError('medicoId es requerido');
+
+  const usuarioEmail = req.user ? req.user.email : 'system';
+
+  const resultado = await asignacionesService.generarCandidataReparacion(
+    medicoId,
+    darDeBaja,
+    ventanaInicio,
+    ventanaFin,
+    usuarioEmail
+  );
+  res.json(resultado);
+});
+
+const previsualizarReparacion = asyncHandler(async (req, res) => {
+  const { medicoId, darDeBaja, ventanaInicio, ventanaFin } = req.body;
+  if (!medicoId) throw new ValidationError('medicoId es requerido');
+
+  const resultado = await asignacionesService.previsualizarReparacion(
+    medicoId,
+    darDeBaja,
+    ventanaInicio,
+    ventanaFin
+  );
+  res.json(resultado);
+});
+
+const compararVersiones = asyncHandler(async (req, res) => {
+  const { fromVersionId, toVersionId } = req.query;
+  const diff = await asignacionesService.compararVersiones(
+    fromVersionId,
+    toVersionId
+  );
+  res.json(diff);
+});
+
+const listarVersiones = asyncHandler(async (_req, res) => {
+  const versiones = await asignacionesService.listarVersiones();
+  res.json(versiones);
+});
+
+const publicarVersion = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const usuarioEmail = req.user ? req.user.email : 'system';
+  const version = await asignacionesService.publicarVersion(id, usuarioEmail);
+  res.json(version);
+});
+
+const compararConPublicada = asyncHandler(async (req, res) => {
+  const { toVersionId } = req.query;
+  const diff = await asignacionesService.compararConPublicada(toVersionId);
+  res.json(diff);
+});
+
+const obtenerRiesgoVersion = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const riesgo = await asignacionesService.obtenerRiesgoVersion(id);
+  res.json(riesgo);
+});
+
+const obtenerResumenAprobacion = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const resumen = await asignacionesService.obtenerResumenAprobacion(id);
+  res.json(resumen);
+});
+
+const obtenerAutofixSugerido = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const autofix = await asignacionesService.obtenerAutofixSugerido(id);
+  res.json(autofix);
+});
+
 export default {
   calcular,
   obtenerResultados,
   limpiar,
   reparar,
+  repararCandidata,
+  previsualizarReparacion,
   simular,
+  compararVersiones,
+  listarVersiones,
+  publicarVersion,
+  compararConPublicada,
+  obtenerRiesgoVersion,
+  obtenerResumenAprobacion,
+  obtenerAutofixSugerido,
 };

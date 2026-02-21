@@ -59,14 +59,18 @@ const Factories = {
         where: { id: exists.id },
         data: {
           maxGuardiasTotales: data.maxGuardiasTotales || 5,
+          maxGuardiasPorPeriodo: data.maxGuardiasPorPeriodo || 1,
           medicosPorDia: data.medicosPorDia || 1,
+          freezeDays: data.freezeDays ?? 0,
         },
       });
     }
     return prisma.configuracion.create({
       data: {
         maxGuardiasTotales: data.maxGuardiasTotales || 5,
+        maxGuardiasPorPeriodo: data.maxGuardiasPorPeriodo || 1,
         medicosPorDia: data.medicosPorDia || 1,
+        freezeDays: data.freezeDays ?? 0,
       },
     });
   },

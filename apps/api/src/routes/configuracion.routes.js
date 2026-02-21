@@ -35,9 +35,15 @@ const router = Router();
  *               maxGuardiasTotales:
  *                 type: integer
  *                 description: Límite global C de guardias por médico
+ *               maxGuardiasPorPeriodo:
+ *                 type: integer
+ *                 description: Límite de guardias por médico dentro de cada período
  *               medicosPorDia:
  *                 type: integer
  *                 description: Demanda diaria requerida
+ *               freezeDays:
+ *                 type: integer
+ *                 description: Días desde hoy que quedan congelados para cambios automáticos
  *     responses:
  *       200:
  *         description: Configuración actualizada

@@ -81,6 +81,9 @@ describe('API Integration Tests', () => {
 
     expect(res.body).toHaveProperty('asignacionesCreadas');
     expect(res.body.asignacionesCreadas).toBeGreaterThan(0);
+    expect(res.body).toHaveProperty('planVersion');
+    expect(res.body.planVersion).toHaveProperty('id');
+    expect(res.body.planVersion.tipo).toBe('BASE');
   }, 30000); // Timeout aumentado
 
   test('POST /asignaciones/ejecuciones (alias REST) debe generar asignaciones', async () => {
@@ -184,5 +187,113 @@ describe('API Integration Tests', () => {
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.statusCode).toEqual(204);
+  });
+
+  test('versioning flow: list, publish and compare against published', async () => {
+    const [drA, drB] = await prisma.medico.findMany({
+      take: 2,
+      orderBy: { id: 'asc' },
+    });
+    const periodo = await prisma.periodo.findFirst({
+      include: { feriados: true },
+      orderBy: { id: 'asc' },
+    });
+    const dia = periodo.feriados[0].fecha;
+
+    const baseVersion = await prisma.planVersion.create({
+      data: {
+        tipo: 'BASE',
+        estado: 'DRAFT',
+        usuario: 'admin@hospital.com',
+      },
+    });
+
+    await prisma.asignacion.create({
+      data: {
+        medicoId: drA.id,
+        periodoId: periodo.id,
+        fecha: dia,
+        planVersionId: baseVersion.id,
+      },
+    });
+
+    const baseVersionId = baseVersion.id;
+
+    const publishRes = await request(app)
+      .post(`/asignaciones/versiones/${baseVersionId}/publicar`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+
+    expect(publishRes.statusCode).toBe(200);
+    expect(publishRes.body.id).toBe(baseVersionId);
+    expect(publishRes.body.estado).toBe('PUBLICADO');
+
+    const repairTarget = await prisma.medico.findFirst();
+    expect(repairTarget).toBeTruthy();
+
+    const repairRes = await request(app)
+      .post('/asignaciones/reparar')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        medicoId: repairTarget.id,
+        ventanaInicio: dia.toISOString(),
+        ventanaFin: dia.toISOString(),
+      });
+
+    expect(repairRes.statusCode).toBe(200);
+    expect(repairRes.body.status).toBe('FEASIBLE');
+    const repairVersionId = repairRes.body.planVersion.id;
+
+    const listRes = await request(app)
+      .get('/asignaciones/versiones')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(listRes.statusCode).toBe(200);
+    expect(Array.isArray(listRes.body)).toBe(true);
+    const ids = listRes.body.map((v) => v.id);
+    expect(ids).toContain(baseVersionId);
+    expect(ids).toContain(repairVersionId);
+
+    const diffPublishedRes = await request(app)
+      .get('/asignaciones/diff/publicado')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .query({ toVersionId: repairVersionId });
+
+    expect(diffPublishedRes.statusCode).toBe(200);
+    expect(diffPublishedRes.body.fromVersion.id).toBe(baseVersionId);
+    expect(diffPublishedRes.body.toVersion.id).toBe(repairVersionId);
+    expect(diffPublishedRes.body).toHaveProperty('resumen');
+
+    const riesgoRes = await request(app)
+      .get(`/asignaciones/versiones/${repairVersionId}/riesgo`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(riesgoRes.statusCode).toBe(200);
+    expect(riesgoRes.body.version.id).toBe(repairVersionId);
+    expect(riesgoRes.body).toHaveProperty('resumen');
+    expect(Array.isArray(riesgoRes.body.detallePorMedico)).toBe(true);
+    expect(Array.isArray(riesgoRes.body.detallePorPeriodo)).toBe(true);
+
+    const aprobacionRes = await request(app)
+      .get(`/asignaciones/versiones/${repairVersionId}/aprobacion`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(aprobacionRes.statusCode).toBe(200);
+    expect(aprobacionRes.body.version.id).toBe(repairVersionId);
+    expect(aprobacionRes.body).toHaveProperty('decision');
+    expect(aprobacionRes.body.decision).toHaveProperty('aprobable');
+    expect(aprobacionRes.body).toHaveProperty('resumenRiesgo');
+    expect(Array.isArray(aprobacionRes.body.recomendaciones)).toBe(true);
+    expect(aprobacionRes.body.recomendaciones.length).toBeGreaterThan(0);
+
+    const autofixRes = await request(app)
+      .get(`/asignaciones/versiones/${repairVersionId}/autofix-sugerido`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(autofixRes.statusCode).toBe(200);
+    expect(autofixRes.body.version.id).toBe(repairVersionId);
+    expect(autofixRes.body).toHaveProperty('parametrosReintento');
+    expect(Array.isArray(autofixRes.body.pasosSugeridos)).toBe(true);
+    expect(autofixRes.body.pasosSugeridos.length).toBeGreaterThan(0);
   });
 });

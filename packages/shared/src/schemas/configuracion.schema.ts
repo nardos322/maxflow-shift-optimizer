@@ -6,10 +6,20 @@ export const updateConfiguracionBodySchema = z.object({
     .int('Debe ser un número entero')
     .positive('Debe ser positivo')
     .optional(),
+  maxGuardiasPorPeriodo: z
+    .number()
+    .int('Debe ser un número entero')
+    .positive('Debe ser positivo')
+    .optional(),
   medicosPorDia: z
     .number()
     .int('Debe ser un número entero')
     .positive('Debe ser positivo')
+    .optional(),
+  freezeDays: z
+    .number()
+    .int('Debe ser un número entero')
+    .min(0, 'No puede ser negativo')
     .optional(),
 });
 
