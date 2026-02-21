@@ -8,6 +8,7 @@ import {
   planDiffSchema,
   publishPlanVersionSchema,
   publishedPlanDiffSchema,
+  versionRiskSchema,
   repararAsignacionSchema,
   simulacionSchema,
 } from '@maxflow/shared';
@@ -299,6 +300,14 @@ router.post(
   authorizeRoles('ADMIN'),
   validate(publishPlanVersionSchema),
   asignacionesController.publicarVersion
+);
+
+router.get(
+  '/versiones/:id/riesgo',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(versionRiskSchema),
+  asignacionesController.obtenerRiesgoVersion
 );
 
 export default router;

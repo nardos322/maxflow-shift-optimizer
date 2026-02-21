@@ -941,6 +941,170 @@ class AsignacionesService {
     return this.compararVersiones(publicada.id, target.id);
   }
 
+  async obtenerRiesgoVersion(planVersionId) {
+    const target = await this.ensurePlanVersion(planVersionId);
+
+    let baseline = null;
+    if (target.sourcePlanVersionId) {
+      baseline = await prisma.planVersion.findUnique({
+        where: { id: target.sourcePlanVersionId },
+      });
+    }
+    if (!baseline) {
+      baseline = await prisma.planVersion.findFirst({
+        where: { estado: 'PUBLICADO', id: { not: target.id } },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    const [targetAssignments, baselineAssignments, config] = await Promise.all([
+      this.getAssignmentsForVersion(target),
+      baseline ? this.getAssignmentsForVersion(baseline) : [],
+      prisma.configuracion.findFirst(),
+    ]);
+
+    const baselineMap = new Map(
+      baselineAssignments.map((a) => [
+        `${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`,
+        a,
+      ])
+    );
+    const targetMap = new Map(
+      targetAssignments.map((a) => [
+        `${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`,
+        a,
+      ])
+    );
+
+    const removidas = baselineAssignments.filter(
+      (a) => !targetMap.has(`${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`)
+    );
+    const agregadas = targetAssignments.filter(
+      (a) => !baselineMap.has(`${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`)
+    );
+
+    const periodIds = [
+      ...new Set(
+        [...targetAssignments, ...baselineAssignments]
+          .map((a) => a.periodoId)
+          .filter(Boolean)
+      ),
+    ];
+    const periodos = await prisma.periodo.findMany({
+      where: { id: { in: periodIds } },
+      select: { id: true, nombre: true, feriados: { select: { fecha: true } } },
+    });
+    const periodoMap = new Map(periodos.map((p) => [p.id, p]));
+
+    const medicoStats = new Map();
+    for (const a of agregadas) {
+      const key = a.medicoId;
+      const current = medicoStats.get(key) || {
+        medicoId: a.medicoId,
+        medico: a.medico?.nombre || 'Desconocido',
+        agregadas: 0,
+        removidas: 0,
+      };
+      current.agregadas += 1;
+      medicoStats.set(key, current);
+    }
+    for (const a of removidas) {
+      const key = a.medicoId;
+      const current = medicoStats.get(key) || {
+        medicoId: a.medicoId,
+        medico: a.medico?.nombre || 'Desconocido',
+        agregadas: 0,
+        removidas: 0,
+      };
+      current.removidas += 1;
+      medicoStats.set(key, current);
+    }
+
+    const periodoStats = new Map();
+    for (const a of agregadas) {
+      const key = a.periodoId;
+      const current = periodoStats.get(key) || {
+        periodoId: a.periodoId,
+        periodo: periodoMap.get(a.periodoId)?.nombre || 'Desconocido',
+        agregadas: 0,
+        removidas: 0,
+      };
+      current.agregadas += 1;
+      periodoStats.set(key, current);
+    }
+    for (const a of removidas) {
+      const key = a.periodoId;
+      const current = periodoStats.get(key) || {
+        periodoId: a.periodoId,
+        periodo: periodoMap.get(a.periodoId)?.nombre || 'Desconocido',
+        agregadas: 0,
+        removidas: 0,
+      };
+      current.removidas += 1;
+      periodoStats.set(key, current);
+    }
+
+    const medicosPorDia = config?.medicosPorDia ?? 1;
+    const assignedPerDay = new Map();
+    for (const a of targetAssignments) {
+      const day = a.fecha.toISOString().split('T')[0];
+      assignedPerDay.set(day, (assignedPerDay.get(day) || 0) + 1);
+    }
+
+    const allFeriadoDays = [
+      ...new Set(
+        periodos.flatMap((p) =>
+          p.feriados.map((f) => f.fecha.toISOString().split('T')[0])
+        )
+      ),
+    ];
+    const diasConRiesgoCobertura = allFeriadoDays
+      .map((day) => ({
+        fecha: day,
+        requeridos: medicosPorDia,
+        asignados: assignedPerDay.get(day) || 0,
+      }))
+      .filter((d) => d.asignados < d.requeridos);
+
+    const freezeBoundary = this.getFreezeBoundary(config || { freezeDays: 0 });
+    const cambiosEnZonaCongelada = [...agregadas, ...removidas].filter(
+      (a) => a.fecha < freezeBoundary
+    ).length;
+
+    return {
+      version: {
+        id: target.id,
+        tipo: target.tipo,
+        estado: target.estado,
+        createdAt: target.createdAt,
+      },
+      baseline: baseline
+        ? {
+            id: baseline.id,
+            tipo: baseline.tipo,
+            estado: baseline.estado,
+            createdAt: baseline.createdAt,
+          }
+        : null,
+      resumen: {
+        cambiosNetos: agregadas.length + removidas.length,
+        agregadas: agregadas.length,
+        removidas: removidas.length,
+        medicosAfectados: medicoStats.size,
+        periodosAfectados: periodoStats.size,
+        diasConRiesgoCobertura: diasConRiesgoCobertura.length,
+        cambiosEnZonaCongelada,
+      },
+      detallePorMedico: Array.from(medicoStats.values()).sort(
+        (a, b) => b.agregadas + b.removidas - (a.agregadas + a.removidas)
+      ),
+      detallePorPeriodo: Array.from(periodoStats.values()).sort(
+        (a, b) => b.agregadas + b.removidas - (a.agregadas + a.removidas)
+      ),
+      diasConRiesgoCobertura,
+    };
+  }
+
   /**
    * Ejecuta una simulación del solver con opciones personalizadas.
    * No guarda resultados en la base de datos.

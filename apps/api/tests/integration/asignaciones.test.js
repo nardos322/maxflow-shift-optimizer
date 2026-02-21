@@ -263,5 +263,15 @@ describe('API Integration Tests', () => {
     expect(diffPublishedRes.body.fromVersion.id).toBe(baseVersionId);
     expect(diffPublishedRes.body.toVersion.id).toBe(repairVersionId);
     expect(diffPublishedRes.body).toHaveProperty('resumen');
+
+    const riesgoRes = await request(app)
+      .get(`/asignaciones/versiones/${repairVersionId}/riesgo`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(riesgoRes.statusCode).toBe(200);
+    expect(riesgoRes.body.version.id).toBe(repairVersionId);
+    expect(riesgoRes.body).toHaveProperty('resumen');
+    expect(Array.isArray(riesgoRes.body.detallePorMedico)).toBe(true);
+    expect(Array.isArray(riesgoRes.body.detallePorPeriodo)).toBe(true);
   });
 });

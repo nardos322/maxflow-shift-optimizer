@@ -70,6 +70,10 @@ export const publishedPlanDiffSchema = z.object({
   query: publishedPlanDiffQuerySchema,
 });
 
+export const versionRiskSchema = z.object({
+  params: idParamSchema,
+});
+
 export const simulacionBodySchema = z.object({
   excluirMedicos: z.array(z.number().int()).optional(),
   periodosIds: z.array(z.number().int()).optional(),

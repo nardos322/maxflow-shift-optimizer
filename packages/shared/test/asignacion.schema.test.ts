@@ -5,6 +5,7 @@ import {
   planDiffQuerySchema,
   publishPlanVersionSchema,
   publishedPlanDiffQuerySchema,
+  versionRiskSchema,
   repararAsignacionBodySchema,
 } from '../src/schemas/asignacion.schema';
 
@@ -125,6 +126,18 @@ describe('Asignacion Schemas', () => {
         toVersionId: 'abc',
       });
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe('versionRiskSchema', () => {
+    it('should parse version id from params', () => {
+      const result = versionRiskSchema.safeParse({
+        params: { id: '5' },
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.params.id).toBe(5);
+      }
     });
   });
 });

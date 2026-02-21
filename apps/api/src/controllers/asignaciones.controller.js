@@ -129,6 +129,12 @@ const compararConPublicada = asyncHandler(async (req, res) => {
   res.json(diff);
 });
 
+const obtenerRiesgoVersion = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const riesgo = await asignacionesService.obtenerRiesgoVersion(id);
+  res.json(riesgo);
+});
+
 export default {
   calcular,
   obtenerResultados,
@@ -141,4 +147,5 @@ export default {
   listarVersiones,
   publicarVersion,
   compararConPublicada,
+  obtenerRiesgoVersion,
 };
