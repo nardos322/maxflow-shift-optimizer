@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Calculator, Settings, Calendar, FileText, ClipboardList, FlaskConical } from "lucide-react";
+import { LayoutDashboard, Users, Calculator, Settings, Calendar, FileText, ClipboardList, FlaskConical, GitBranch } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
 export function Sidebar() {
@@ -21,6 +21,7 @@ export function Sidebar() {
             { href: "/reportes", label: "Reportes", icon: FileText, match: "prefix" },
             { href: "/solver", label: "Planificador", icon: Calculator, match: "exact" },
             { href: "/solver/laboratorio", label: "Laboratorio", icon: FlaskConical, match: "prefix" },
+            { href: "/solver/versiones", label: "Versiones", icon: GitBranch, match: "prefix" },
             { href: "/config", label: "Configuración", icon: Settings, match: "prefix" },
           ]
         : [

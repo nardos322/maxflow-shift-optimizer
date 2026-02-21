@@ -75,4 +75,31 @@ describe('asignacionesService', () => {
       body: JSON.stringify({ medicoId: 7, darDeBaja: true }),
     });
   });
+
+  it('getVersiones requests version list', async () => {
+    (global.fetch as any).mockResolvedValue(mockJsonResponse(true, []));
+
+    await asignacionesService.getVersiones();
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/asignaciones/versiones', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer token-123',
+      },
+    });
+  });
+
+  it('publicarVersion posts to publish endpoint', async () => {
+    (global.fetch as any).mockResolvedValue(mockJsonResponse(true, { id: 5 }));
+
+    await asignacionesService.publicarVersion(5);
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/asignaciones/versiones/5/publicar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer token-123',
+      },
+    });
+  });
 });
