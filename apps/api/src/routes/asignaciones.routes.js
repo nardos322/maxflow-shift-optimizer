@@ -318,4 +318,12 @@ router.get(
   asignacionesController.obtenerResumenAprobacion
 );
 
+router.get(
+  '/versiones/:id/autofix-sugerido',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(versionRiskSchema),
+  asignacionesController.obtenerAutofixSugerido
+);
+
 export default router;

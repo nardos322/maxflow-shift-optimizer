@@ -141,6 +141,12 @@ const obtenerResumenAprobacion = asyncHandler(async (req, res) => {
   res.json(resumen);
 });
 
+const obtenerAutofixSugerido = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const autofix = await asignacionesService.obtenerAutofixSugerido(id);
+  res.json(autofix);
+});
+
 export default {
   calcular,
   obtenerResultados,
@@ -155,4 +161,5 @@ export default {
   compararConPublicada,
   obtenerRiesgoVersion,
   obtenerResumenAprobacion,
+  obtenerAutofixSugerido,
 };

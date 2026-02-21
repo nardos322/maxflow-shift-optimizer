@@ -1239,6 +1239,72 @@ class AsignacionesService {
     };
   }
 
+  async obtenerAutofixSugerido(planVersionId) {
+    const target = await this.ensurePlanVersion(planVersionId);
+    const [riesgo, aprobacion, config] = await Promise.all([
+      this.obtenerRiesgoVersion(target.id),
+      this.obtenerResumenAprobacion(target.id),
+      prisma.configuracion.findFirst(),
+    ]);
+
+    const metadata = this.safeJsonParse(target.metadata, {});
+    const freezeBoundary = this.getFreezeBoundary(config || { freezeDays: 0 });
+
+    const pasos = [];
+    if (riesgo.resumen.cambiosEnZonaCongelada > 0) {
+      pasos.push(
+        'Mover la ventana de reparación para iniciar luego de freezeDays.'
+      );
+    }
+    if (riesgo.resumen.diasConRiesgoCobertura > 0) {
+      pasos.push(
+        'Agregar disponibilidad o reforzar médicos en fechas con déficit de cobertura.'
+      );
+    }
+    if (riesgo.resumen.cambiosNetos > 25) {
+      pasos.push(
+        'Dividir la reparación en dos tandas por períodos para reducir cambios por publicación.'
+      );
+    }
+    if (pasos.length === 0) {
+      pasos.push(
+        'La versión es operativamente estable; se puede publicar o hacer una reparación menor.'
+      );
+    }
+
+    const diasRiesgo = riesgo.diasConRiesgoCobertura.map((d) => d.fecha);
+    const fechaMaxRiesgo = diasRiesgo.length
+      ? diasRiesgo.sort().slice(-1)[0]
+      : null;
+
+    const parametrosReintento = {
+      medicoId: metadata.medicoId ?? null,
+      darDeBaja: Boolean(metadata.darDeBaja),
+      ventanaInicioSugerida: freezeBoundary.toISOString(),
+      ventanaFinSugerida: fechaMaxRiesgo
+        ? new Date(`${fechaMaxRiesgo}T23:59:59.999Z`).toISOString()
+        : null,
+      fechasCriticasACubrir: diasRiesgo.slice(0, 10),
+      medicosMasImpactados: riesgo.detallePorMedico.slice(0, 3).map((m) => ({
+        medicoId: m.medicoId,
+        medico: m.medico,
+        cambios: m.agregadas + m.removidas,
+      })),
+    };
+
+    return {
+      version: {
+        id: target.id,
+        tipo: target.tipo,
+        estado: target.estado,
+      },
+      decisionActual: aprobacion.decision,
+      parametrosReintento,
+      pasosSugeridos: pasos,
+      resumenRiesgo: riesgo.resumen,
+    };
+  }
+
   /**
    * Ejecuta una simulación del solver con opciones personalizadas.
    * No guarda resultados en la base de datos.

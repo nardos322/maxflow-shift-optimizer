@@ -285,5 +285,15 @@ describe('API Integration Tests', () => {
     expect(aprobacionRes.body).toHaveProperty('resumenRiesgo');
     expect(Array.isArray(aprobacionRes.body.recomendaciones)).toBe(true);
     expect(aprobacionRes.body.recomendaciones.length).toBeGreaterThan(0);
+
+    const autofixRes = await request(app)
+      .get(`/asignaciones/versiones/${repairVersionId}/autofix-sugerido`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(autofixRes.statusCode).toBe(200);
+    expect(autofixRes.body.version.id).toBe(repairVersionId);
+    expect(autofixRes.body).toHaveProperty('parametrosReintento');
+    expect(Array.isArray(autofixRes.body.pasosSugeridos)).toBe(true);
+    expect(autofixRes.body.pasosSugeridos.length).toBeGreaterThan(0);
   });
 });
