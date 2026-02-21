@@ -1,5 +1,6 @@
 import { authService } from "./auth.service";
 import type { Configuracion } from "@/types/configuracion";
+import { parseApiError } from "./apiError";
 
 const API_BASE = "/api";
 
@@ -16,7 +17,7 @@ class ConfiguracionService {
     const res = await fetch(`${API_BASE}/configuracion`, {
       headers: this.getHeaders(),
     });
-    if (!res.ok) throw new Error("Error al obtener la configuración");
+    if (!res.ok) throw await parseApiError(res, "Error al obtener la configuración");
     return res.json();
   }
 
@@ -26,10 +27,7 @@ class ConfiguracionService {
       headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || error.message || "Error al actualizar la configuración");
-    }
+    if (!res.ok) throw await parseApiError(res, "Error al actualizar la configuración");
     return res.json();
   }
 }

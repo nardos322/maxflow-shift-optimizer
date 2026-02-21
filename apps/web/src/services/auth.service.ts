@@ -1,28 +1,6 @@
 import type { AuthResponse } from "@/types/auth";
 import { useAuthStore } from "@/hooks/useAuthStore";
-
-async function parseResponseBody(response: Response): Promise<unknown> {
-    const rawBody = await response.text();
-    if (!rawBody) {
-        return null;
-    }
-
-    try {
-        return JSON.parse(rawBody);
-    } catch {
-        return { error: rawBody };
-    }
-}
-
-function extractErrorMessage(body: unknown, fallback: string): string {
-    if (body && typeof body === "object" && "error" in body) {
-        const message = (body as { error?: unknown }).error;
-        if (typeof message === "string" && message.trim()) {
-            return message;
-        }
-    }
-    return fallback;
-}
+import { parseApiError, readApiBody } from "./apiError";
 
 export const authService = {
     getToken(): string | null {
@@ -37,13 +15,11 @@ export const authService = {
             },
             body: JSON.stringify({ email, password }),
         });
-
-        const body = await parseResponseBody(response);
-
         if (!response.ok) {
-            throw new Error(extractErrorMessage(body, "Error al iniciar sesión"));
+            throw await parseApiError(response, "Error al iniciar sesión");
         }
 
+        const body = await readApiBody(response);
         if (!body || typeof body !== "object") {
             throw new Error("Respuesta inválida del servidor");
         }
@@ -61,13 +37,11 @@ export const authService = {
             },
             body: JSON.stringify(data),
         });
-
-        const body = await parseResponseBody(response);
-
         if (!response.ok) {
-            throw new Error(extractErrorMessage(body, "Error al registrarse"));
+            throw await parseApiError(response, "Error al registrarse");
         }
 
+        const body = await readApiBody(response);
         if (!body || typeof body !== "object") {
             throw new Error("Respuesta inválida del servidor");
         }

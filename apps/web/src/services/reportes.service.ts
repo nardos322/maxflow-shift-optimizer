@@ -1,5 +1,6 @@
 import { useAuthStore } from "@/hooks/useAuthStore";
 import type { GuardiaFaltante, ReporteEquidad } from "@/types/reportes";
+import { parseApiError } from "./apiError";
 
 
 export const reportesService = {
@@ -13,10 +14,7 @@ export const reportesService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al obtener el reporte de equidad');
-    }
+    if (!response.ok) throw await parseApiError(response, 'Error al obtener el reporte de equidad');
 
     return response.json();
   },
@@ -31,10 +29,7 @@ export const reportesService = {
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al obtener guardias faltantes');
-    }
+    if (!response.ok) throw await parseApiError(response, 'Error al obtener guardias faltantes');
 
     return response.json();
   },

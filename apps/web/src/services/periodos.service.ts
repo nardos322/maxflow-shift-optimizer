@@ -2,6 +2,7 @@ import { authService } from "./auth.service";
 import type { z } from "@maxflow/shared";
 import { createPeriodoBodySchema, updatePeriodoBodySchema } from "@maxflow/shared";
 import type { Periodo } from "@/types/periodos";
+import { parseApiError } from "./apiError";
 
 const API_BASE = "/api";
 
@@ -21,7 +22,7 @@ class PeriodosService {
     const res = await fetch(`${API_BASE}/periodos`, {
       headers: this.getHeaders(),
     });
-    if (!res.ok) throw new Error("Error al obtener períodos");
+    if (!res.ok) throw await parseApiError(res, "Error al obtener períodos");
     return res.json();
   }
 
@@ -29,7 +30,7 @@ class PeriodosService {
     const res = await fetch(`${API_BASE}/periodos/${id}`, {
         headers: this.getHeaders(),
       });
-      if (!res.ok) throw new Error("Error al obtener el período");
+      if (!res.ok) throw await parseApiError(res, "Error al obtener el período");
       return res.json();
   }
 
@@ -40,10 +41,7 @@ class PeriodosService {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || error.message || "Error al crear el período");
-    }
+    if (!res.ok) throw await parseApiError(res, "Error al crear el período");
 
     return res.json();
   }
@@ -54,10 +52,7 @@ class PeriodosService {
       headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || error.message || "Error al actualizar el período");
-    }
+    if (!res.ok) throw await parseApiError(res, "Error al actualizar el período");
     return res.json();
   }
 
@@ -66,7 +61,7 @@ class PeriodosService {
       method: "DELETE",
       headers: this.getHeaders(),
     });
-    if (!res.ok) throw new Error("Error al eliminar el período");
+    if (!res.ok) throw await parseApiError(res, "Error al eliminar el período");
   }
 }
 

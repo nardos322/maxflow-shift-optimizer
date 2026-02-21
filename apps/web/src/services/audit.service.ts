@@ -1,5 +1,6 @@
 import { authService } from "./auth.service";
 import type { AuditLog } from "@/types/audit";
+import { parseApiError } from "./apiError";
 
 const API_BASE = "/api";
 
@@ -16,10 +17,7 @@ class AuditService {
     const res = await fetch(`${API_BASE}/auditoria`, {
       headers: this.getHeaders(),
     });
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({}));
-      throw new Error(error.error || "Error al obtener actividad reciente");
-    }
+    if (!res.ok) throw await parseApiError(res, "Error al obtener actividad reciente");
     const logs = (await res.json()) as AuditLog[];
     return logs.slice(0, 5);
   }

@@ -1,5 +1,6 @@
 import { authService } from "./auth.service";
 import type { Asignacion } from "@/types/asignaciones";
+import { parseApiError } from "./apiError";
 
 const API_BASE = "/api";
 
@@ -19,10 +20,7 @@ class AsignacionesService {
             headers: this.getHeaders(),
         });
 
-        if (!res.ok) {
-            const error = await res.json();
-            throw new Error(error.error || error.message || "Error al ejecutar el planificador");
-        }
+        if (!res.ok) throw await parseApiError(res, "Error al ejecutar el planificador");
         return res.json();
     }
 
@@ -30,7 +28,7 @@ class AsignacionesService {
         const res = await fetch(`${API_BASE}/asignaciones`, {
             headers: this.getHeaders(),
         });
-        if (!res.ok) throw new Error("Error al obtener las asignaciones");
+        if (!res.ok) throw await parseApiError(res, "Error al obtener las asignaciones");
         return res.json();
     }
 }
