@@ -1,76 +1,60 @@
 import asignacionesService from '../services/asignaciones.service.js';
 import prisma from '../lib/prisma.js';
 import { ValidationError } from '../lib/errors.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * POST /asignaciones/calcular
  * Ejecuta el solver C++ para generar asignaciones
  */
-async function calcular(req, res, next) {
-  try {
-    const usuarioEmail = req.user ? req.user.email : 'system';
-    const resultado =
-      await asignacionesService.generarAsignaciones(usuarioEmail);
-    res.json(resultado);
-  } catch (error) {
-    next(error);
-  }
-}
+const calcular = asyncHandler(async (req, res) => {
+  const usuarioEmail = req.user ? req.user.email : 'system';
+  const resultado = await asignacionesService.generarAsignaciones(usuarioEmail);
+  res.json(resultado);
+});
 
 /**
  * GET /asignaciones
  * Obtiene todas las asignaciones generadas
  */
-async function obtenerResultados(req, res, next) {
-  try {
-    const asignaciones = await prisma.asignacion.findMany({
-      include: {
-        medico: { select: { id: true, nombre: true } },
-        periodo: { select: { id: true, nombre: true } },
-      },
-      orderBy: { fecha: 'asc' },
-    });
+const obtenerResultados = asyncHandler(async (req, res) => {
+  const asignaciones = await prisma.asignacion.findMany({
+    include: {
+      medico: { select: { id: true, nombre: true } },
+      periodo: { select: { id: true, nombre: true } },
+    },
+    orderBy: { fecha: 'asc' },
+  });
 
-    res.json(asignaciones);
-  } catch (error) {
-    next(error);
-  }
-}
+  res.json(asignaciones);
+});
 
 /**
  * DELETE /asignaciones
  * Limpia todas las asignaciones
  */
-async function limpiar(req, res, next) {
-  try {
-    await prisma.asignacion.deleteMany();
-    res.status(204).send();
-  } catch (error) {
-    next(error);
-  }
-}
+const limpiar = asyncHandler(async (req, res) => {
+  await prisma.asignacion.deleteMany();
+  res.status(204).send();
+});
 
 /**
  * POST /asignaciones/reparar
  * Body: { medicoId: 123 }
  */
-async function reparar(req, res, next) {
-  try {
-    const { medicoId, darDeBaja } = req.body;
-    if (!medicoId) throw new ValidationError('medicoId es requerido');
+const reparar = asyncHandler(async (req, res) => {
+  const { medicoId, darDeBaja } = req.body;
+  if (!medicoId) throw new ValidationError('medicoId es requerido');
 
-    const usuarioEmail = req.user ? req.user.email : 'system';
+  const usuarioEmail = req.user ? req.user.email : 'system';
 
-    const resultado = await asignacionesService.repararAsignaciones(
-      medicoId,
-      darDeBaja,
-      usuarioEmail
-    );
-    res.json(resultado);
-  } catch (error) {
-    next(error);
-  }
-}
+  const resultado = await asignacionesService.repararAsignaciones(
+    medicoId,
+    darDeBaja,
+    usuarioEmail
+  );
+  res.json(resultado);
+});
 
 /**
  * POST /asignaciones/simular
@@ -80,15 +64,11 @@ async function reparar(req, res, next) {
  *   config: { maxGuardiasTotales: 5, ... }
  * }
  */
-async function simular(req, res, next) {
-  try {
-    const options = req.body || {};
-    const resultado = await asignacionesService.simularAsignaciones(options);
-    res.json(resultado);
-  } catch (error) {
-    next(error);
-  }
-}
+const simular = asyncHandler(async (req, res) => {
+  const options = req.body || {};
+  const resultado = await asignacionesService.simularAsignaciones(options);
+  res.json(resultado);
+});
 
 export default {
   calcular,

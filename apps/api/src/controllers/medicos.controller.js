@@ -4,39 +4,32 @@ import {
   ValidationError,
   ConflictError,
 } from '../lib/errors.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * GET /medicos
  */
-async function obtenerTodos(req, res, next) {
-  try {
-    const soloActivos = req.query.soloActivos === 'true';
-    const medicos = await medicosService.obtenerTodos(soloActivos);
-    res.json(medicos);
-  } catch (error) {
-    next(error);
-  }
-}
+const obtenerTodos = asyncHandler(async (req, res) => {
+  const soloActivos = req.query.soloActivos === 'true';
+  const medicos = await medicosService.obtenerTodos(soloActivos);
+  res.json(medicos);
+});
 
 /**
  * GET /medicos/:id
  */
-async function obtenerPorId(req, res, next) {
-  try {
-    const medico = await medicosService.obtenerPorId(req.params.id);
-    if (!medico) {
-      throw new NotFoundError('Médico no encontrado');
-    }
-    res.json(medico);
-  } catch (error) {
-    next(error);
+const obtenerPorId = asyncHandler(async (req, res) => {
+  const medico = await medicosService.obtenerPorId(req.params.id);
+  if (!medico) {
+    throw new NotFoundError('Médico no encontrado');
   }
-}
+  res.json(medico);
+});
 
 /**
  * POST /medicos
  */
-async function crear(req, res, next) {
+const crear = asyncHandler(async (req, res) => {
   try {
     const { nombre, email, password, activo } = req.body;
     const medico = await medicosService.crear({
@@ -48,92 +41,75 @@ async function crear(req, res, next) {
     res.status(201).json(medico);
   } catch (error) {
     if (error.code === 'P2002') {
-      return next(new ConflictError('El email ya está registrado'));
+      throw new ConflictError('El email ya está registrado');
     }
-    next(error);
+    throw error;
   }
-}
+});
 
 /**
  * PUT /medicos/:id
  */
-async function actualizar(req, res, next) {
+const actualizar = asyncHandler(async (req, res) => {
   try {
     const medico = await medicosService.actualizar(req.params.id, req.body);
     res.json(medico);
   } catch (error) {
     if (error.code === 'P2025') {
-      return next(new NotFoundError('Médico no encontrado'));
+      throw new NotFoundError('Médico no encontrado');
     }
-    next(error);
+    throw error;
   }
-}
+});
 
 /**
  * DELETE /medicos/:id
  */
-async function eliminar(req, res, next) {
+const eliminar = asyncHandler(async (req, res) => {
   try {
     await medicosService.eliminar(req.params.id);
     res.status(204).send();
   } catch (error) {
     if (error.code === 'P2025') {
-      return next(new NotFoundError('Médico no encontrado'));
+      throw new NotFoundError('Médico no encontrado');
     }
-    next(error);
+    throw error;
   }
-}
+});
 
 /**
  * GET /medicos/:id/disponibilidad
  */
-async function obtenerDisponibilidad(req, res, next) {
-  try {
-    const disponibilidad = await medicosService.obtenerDisponibilidad(
-      req.params.id
-    );
-    res.json(disponibilidad);
-  } catch (error) {
-    next(error);
-  }
-}
+const obtenerDisponibilidad = asyncHandler(async (req, res) => {
+  const disponibilidad = await medicosService.obtenerDisponibilidad(req.params.id);
+  res.json(disponibilidad);
+});
 
 /**
  * POST /medicos/:id/disponibilidad
  * Body: { fechas: ["2026-04-02", "2026-04-03"] }
  */
-async function agregarDisponibilidad(req, res, next) {
-  try {
-    const { fechas } = req.body;
-    if (!fechas || !Array.isArray(fechas)) {
-      throw new ValidationError('Se requiere un array de fechas');
-    }
-    const result = await medicosService.agregarDisponibilidad(
-      req.params.id,
-      fechas
-    );
-    res.status(201).json(result);
-  } catch (error) {
-    next(error);
+const agregarDisponibilidad = asyncHandler(async (req, res) => {
+  const { fechas } = req.body;
+  if (!fechas || !Array.isArray(fechas)) {
+    throw new ValidationError('Se requiere un array de fechas');
   }
-}
+  const result = await medicosService.agregarDisponibilidad(req.params.id, fechas);
+  res.status(201).json(result);
+});
 
 /**
  * DELETE /medicos/:id/disponibilidad
  * Body: { fechas: ["2026-04-02"] }
  */
-async function eliminarDisponibilidad(req, res, next) {
-  try {
-    const { fechas } = req.body;
-    if (!fechas || !Array.isArray(fechas)) {
-      throw new ValidationError('Se requiere un array de fechas');
-    }
-    await medicosService.eliminarDisponibilidad(req.params.id, fechas);
-    res.status(204).send();
-  } catch (error) {
-    next(error);
+const eliminarDisponibilidad = asyncHandler(async (req, res) => {
+  const { fechas } = req.body;
+  if (!fechas || !Array.isArray(fechas)) {
+    throw new ValidationError('Se requiere un array de fechas');
   }
-}
+  await medicosService.eliminarDisponibilidad(req.params.id, fechas);
+  res.status(204).send();
+});
 
 export default {
   obtenerTodos,

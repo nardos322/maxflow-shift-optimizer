@@ -1,17 +1,14 @@
 import auditService from '../services/audit.service.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * GET /auditoria
  * Obtiene logs de auditoría
  */
-async function obtenerLogs(req, res, next) {
-  try {
-    const logs = await auditService.obtenerLogs();
-    res.json(logs);
-  } catch (error) {
-    next(error);
-  }
-}
+const obtenerLogs = asyncHandler(async (req, res) => {
+  const logs = await auditService.obtenerLogs();
+  res.json(logs);
+});
 
 export default {
   obtenerLogs,

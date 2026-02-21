@@ -1,30 +1,23 @@
 import auditService from '../services/audit.service.js';
 import configuracionService from '../services/configuracion.service.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-async function obtenerConfiguracion(req, res, next) {
-  try {
-    const configuracion = await configuracionService.getConfiguracion();
-    res.json(configuracion);
-  } catch (error) {
-    next(error);
-  }
-}
+const obtenerConfiguracion = asyncHandler(async (req, res) => {
+  const configuracion = await configuracionService.getConfiguracion();
+  res.json(configuracion);
+});
 
-async function actualizarConfiguracion(req, res, next) {
-  try {
-    const configuracion = await configuracionService.actualizarConfiguracion(
-      req.body
-    );
+const actualizarConfiguracion = asyncHandler(async (req, res) => {
+  const configuracion = await configuracionService.actualizarConfiguracion(
+    req.body
+  );
 
-    // Audit Log
-    const usuarioEmail = req.user ? req.user.email : 'system';
-    await auditService.log('CONFIG_UPDATE', usuarioEmail, req.body);
+  // Audit Log
+  const usuarioEmail = req.user ? req.user.email : 'system';
+  await auditService.log('CONFIG_UPDATE', usuarioEmail, req.body);
 
-    res.json(configuracion);
-  } catch (error) {
-    next(error);
-  }
-}
+  res.json(configuracion);
+});
 
 export default {
   obtenerConfiguracion,
