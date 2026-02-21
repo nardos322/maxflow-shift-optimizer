@@ -89,6 +89,19 @@ const repararCandidata = asyncHandler(async (req, res) => {
   res.json(resultado);
 });
 
+const previsualizarReparacion = asyncHandler(async (req, res) => {
+  const { medicoId, darDeBaja, ventanaInicio, ventanaFin } = req.body;
+  if (!medicoId) throw new ValidationError('medicoId es requerido');
+
+  const resultado = await asignacionesService.previsualizarReparacion(
+    medicoId,
+    darDeBaja,
+    ventanaInicio,
+    ventanaFin
+  );
+  res.json(resultado);
+});
+
 const compararVersiones = asyncHandler(async (req, res) => {
   const { fromVersionId, toVersionId } = req.query;
   const diff = await asignacionesService.compararVersiones(
@@ -122,6 +135,7 @@ export default {
   limpiar,
   reparar,
   repararCandidata,
+  previsualizarReparacion,
   simular,
   compararVersiones,
   listarVersiones,

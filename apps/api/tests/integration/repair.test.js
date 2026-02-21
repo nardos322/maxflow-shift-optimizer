@@ -285,6 +285,47 @@ describe('Integration: Shift Repair', () => {
     expect(Array.isArray(diffRes.body.removidas)).toBe(true);
   });
 
+  it('should preview repair impact without changing assignments', async () => {
+    const [drA, drB] = await Promise.all([
+      Factories.createMedico({ nombre: 'Dr. Prev A', email: 'prev-a@test.com' }),
+      Factories.createMedico({ nombre: 'Dr. Prev B', email: 'prev-b@test.com' }),
+    ]);
+
+    const dia = new Date();
+    dia.setDate(dia.getDate() + 6);
+    dia.setHours(0, 0, 0, 0);
+
+    const periodo = await Factories.createPeriodoWithFeriados([dia]);
+    await Factories.createDisponibilidad(drA.id, dia);
+    await Factories.createDisponibilidad(drB.id, dia);
+    await Factories.createAsignacion(drA.id, periodo.id, dia);
+
+    const preRes = await request(app)
+      .post('/asignaciones/reparaciones/previsualizar')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        medicoId: drA.id,
+        ventanaInicio: dia.toISOString(),
+        ventanaFin: dia.toISOString(),
+      });
+
+    expect(preRes.status).toBe(200);
+    expect(preRes.body.status).toBe('FEASIBLE');
+    expect(preRes.body).toHaveProperty('resumenImpacto');
+    expect(preRes.body.resumenImpacto.guardiasRemovidas).toBe(1);
+    expect(preRes.body.resumenImpacto.guardiasReasignadas).toBeGreaterThan(0);
+
+    const afterPreview = await prisma.asignacion.findFirst({
+      where: { fecha: dia },
+    });
+    expect(afterPreview.medicoId).toBe(drA.id);
+
+    const candidateCount = await prisma.planVersion.count({
+      where: { tipo: 'REPAIR_CANDIDATE' },
+    });
+    expect(candidateCount).toBe(0);
+  });
+
   it('should create repair candidate without applying, then publish to apply snapshot', async () => {
     const [drA, drB] = await Promise.all([
       Factories.createMedico({ nombre: 'Dr. Cand A', email: 'cand-a@test.com' }),

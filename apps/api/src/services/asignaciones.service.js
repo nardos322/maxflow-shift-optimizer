@@ -479,12 +479,11 @@ class AsignacionesService {
     }
   }
 
-  async generarCandidataReparacion(
+  async computeRepairPreviewData(
     medicoId,
     darDeBaja = false,
     ventanaInicio = null,
-    ventanaFin = null,
-    usuarioEmail = 'system'
+    ventanaFin = null
   ) {
     medicoId = parseInt(medicoId);
     if (isNaN(medicoId)) throw new ValidationError('ID de médico inválido');
@@ -528,7 +527,7 @@ class AsignacionesService {
       return {
         status: 'OK',
         message:
-          'La ventana solicitada cae completamente dentro del período congelado. No se generó candidata.',
+          'La ventana solicitada cae completamente dentro del período congelado. No se aplicaron cambios.',
         ventanaAplicada: {
           inicio,
           fin,
@@ -553,7 +552,7 @@ class AsignacionesService {
       return {
         status: 'OK',
         message:
-          'El médico no tenía asignaciones futuras en la ventana. No se requiere candidata.',
+          'El médico no tenía asignaciones futuras en la ventana. No se requiere reparación.',
         ventanaAplicada: {
           inicio,
           fin,
@@ -620,8 +619,13 @@ class AsignacionesService {
       return {
         status: 'INFEASIBLE',
         message:
-          'No se pudo encontrar una solución válida para la candidata de reparación.',
+          'No se pudo encontrar una solución válida para reparar.',
         minCut: output.bottlenecks || [],
+        ventanaAplicada: {
+          inicio,
+          fin,
+          freezeBoundary,
+        },
       };
     }
 
@@ -654,31 +658,105 @@ class AsignacionesService {
 
     const snapshot = [...preservedAssignments, ...reassignedAssignments];
 
+    const diasAfectados = [
+      ...new Set(
+        reassignedAssignments.map((a) =>
+          new Date(a.fecha).toISOString().split('T')[0]
+        )
+      ),
+    ];
+
+    const medicosEntrantes = [
+      ...new Set(reassignedAssignments.map((a) => a.medicoId)),
+    ];
+
+    return {
+      status: 'FEASIBLE',
+      reasignaciones: reassignedAssignments.length,
+      snapshot,
+      sourcePlanVersionId,
+      metadata: {
+        darDeBaja: Boolean(darDeBaja),
+        medicoId,
+      },
+      resumenImpacto: {
+        medicoIdAfectado: medicoId,
+        guardiasRemovidas: asignacionesBorrables.length,
+        guardiasReasignadas: reassignedAssignments.length,
+        diasAfectados: diasAfectados.length,
+        listaDiasAfectados: diasAfectados,
+        medicosEntrantes: medicosEntrantes.length,
+        listaMedicosEntrantes: medicosEntrantes,
+        cambiosEstimados: asignacionesBorrables.length + reassignedAssignments.length,
+      },
+      ventanaAplicada: {
+        inicio,
+        fin,
+        freezeBoundary,
+      },
+    };
+  }
+
+  async previsualizarReparacion(
+    medicoId,
+    darDeBaja = false,
+    ventanaInicio = null,
+    ventanaFin = null
+  ) {
+    const preview = await this.computeRepairPreviewData(
+      medicoId,
+      darDeBaja,
+      ventanaInicio,
+      ventanaFin
+    );
+
+    if (preview.status !== 'FEASIBLE') return preview;
+
+    return {
+      status: 'FEASIBLE',
+      resumenImpacto: preview.resumenImpacto,
+      ventanaAplicada: preview.ventanaAplicada,
+    };
+  }
+
+  async generarCandidataReparacion(
+    medicoId,
+    darDeBaja = false,
+    ventanaInicio = null,
+    ventanaFin = null,
+    usuarioEmail = 'system'
+  ) {
+    const preview = await this.computeRepairPreviewData(
+      medicoId,
+      darDeBaja,
+      ventanaInicio,
+      ventanaFin
+    );
+
+    if (preview.status !== 'FEASIBLE') return preview;
+
     const version = await prisma.planVersion.create({
       data: {
         tipo: 'REPAIR_CANDIDATE',
         estado: 'DRAFT',
         usuario: usuarioEmail,
-        sourcePlanVersionId,
-        snapshot: JSON.stringify(snapshot),
-        metadata: JSON.stringify({
-          darDeBaja: Boolean(darDeBaja),
-          medicoId,
-        }),
+        sourcePlanVersionId: preview.sourcePlanVersionId,
+        snapshot: JSON.stringify(preview.snapshot),
+        metadata: JSON.stringify(preview.metadata),
       },
     });
 
     await auditService.log('CREAR_CANDIDATA_REPARACION', usuarioEmail, {
-      medicoId,
-      reasignaciones: reassignedAssignments.length,
+      medicoId: preview.metadata.medicoId,
+      reasignaciones: preview.reasignaciones,
       planVersionId: version.id,
-      sourcePlanVersionId,
-      darDeBaja,
+      sourcePlanVersionId: preview.sourcePlanVersionId,
+      darDeBaja: preview.metadata.darDeBaja,
     });
 
     return {
       status: 'FEASIBLE',
-      reasignaciones: reassignedAssignments.length,
+      reasignaciones: preview.reasignaciones,
       planVersion: {
         id: version.id,
         tipo: version.tipo,
@@ -686,11 +764,8 @@ class AsignacionesService {
         sourcePlanVersionId: version.sourcePlanVersionId,
         createdAt: version.createdAt,
       },
-      ventanaAplicada: {
-        inicio,
-        fin,
-        freezeBoundary,
-      },
+      resumenImpacto: preview.resumenImpacto,
+      ventanaAplicada: preview.ventanaAplicada,
     };
   }
 

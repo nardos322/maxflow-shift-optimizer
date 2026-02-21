@@ -124,6 +124,14 @@ router.post(
 );
 
 router.post(
+  '/reparaciones/previsualizar',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(repararAsignacionSchema),
+  asignacionesController.previsualizarReparacion
+);
+
+router.post(
   '/reparar',
   authenticateJWT,
   authorizeRoles('ADMIN'),
