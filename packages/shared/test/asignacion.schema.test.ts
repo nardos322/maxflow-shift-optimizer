@@ -3,6 +3,8 @@ import {
   createAsignacionBodySchema,
   idParamSchema,
   planDiffQuerySchema,
+  publishPlanVersionSchema,
+  publishedPlanDiffQuerySchema,
   repararAsignacionBodySchema,
 } from '../src/schemas/asignacion.schema';
 
@@ -90,6 +92,37 @@ describe('Asignacion Schemas', () => {
       const result = planDiffQuerySchema.safeParse({
         fromVersionId: 0,
         toVersionId: -1,
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('publishPlanVersionSchema', () => {
+    it('should parse version id from params', () => {
+      const result = publishPlanVersionSchema.safeParse({
+        params: { id: '10' },
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.params.id).toBe(10);
+      }
+    });
+  });
+
+  describe('publishedPlanDiffQuerySchema', () => {
+    it('should parse toVersionId from query', () => {
+      const result = publishedPlanDiffQuerySchema.safeParse({
+        toVersionId: '3',
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.toVersionId).toBe(3);
+      }
+    });
+
+    it('should fail for invalid toVersionId', () => {
+      const result = publishedPlanDiffQuerySchema.safeParse({
+        toVersionId: 'abc',
       });
       expect(result.success).toBe(false);
     });

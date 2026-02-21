@@ -58,6 +58,18 @@ export const planDiffSchema = z.object({
   query: planDiffQuerySchema,
 });
 
+export const publishPlanVersionSchema = z.object({
+  params: idParamSchema,
+});
+
+export const publishedPlanDiffQuerySchema = z.object({
+  toVersionId: z.coerce.number().int('toVersionId inválido').positive(),
+});
+
+export const publishedPlanDiffSchema = z.object({
+  query: publishedPlanDiffQuerySchema,
+});
+
 export const simulacionBodySchema = z.object({
   excluirMedicos: z.array(z.number().int()).optional(),
   periodosIds: z.array(z.number().int()).optional(),

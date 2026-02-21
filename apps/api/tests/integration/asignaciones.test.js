@@ -188,4 +188,80 @@ describe('API Integration Tests', () => {
 
     expect(res.statusCode).toEqual(204);
   });
+
+  test('versioning flow: list, publish and compare against published', async () => {
+    const [drA, drB] = await prisma.medico.findMany({
+      take: 2,
+      orderBy: { id: 'asc' },
+    });
+    const periodo = await prisma.periodo.findFirst({
+      include: { feriados: true },
+      orderBy: { id: 'asc' },
+    });
+    const dia = periodo.feriados[0].fecha;
+
+    const baseVersion = await prisma.planVersion.create({
+      data: {
+        tipo: 'BASE',
+        estado: 'DRAFT',
+        usuario: 'admin@hospital.com',
+      },
+    });
+
+    await prisma.asignacion.create({
+      data: {
+        medicoId: drA.id,
+        periodoId: periodo.id,
+        fecha: dia,
+        planVersionId: baseVersion.id,
+      },
+    });
+
+    const baseVersionId = baseVersion.id;
+
+    const publishRes = await request(app)
+      .post(`/asignaciones/versiones/${baseVersionId}/publicar`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+
+    expect(publishRes.statusCode).toBe(200);
+    expect(publishRes.body.id).toBe(baseVersionId);
+    expect(publishRes.body.estado).toBe('PUBLICADO');
+
+    const repairTarget = await prisma.medico.findFirst();
+    expect(repairTarget).toBeTruthy();
+
+    const repairRes = await request(app)
+      .post('/asignaciones/reparar')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        medicoId: repairTarget.id,
+        ventanaInicio: dia.toISOString(),
+        ventanaFin: dia.toISOString(),
+      });
+
+    expect(repairRes.statusCode).toBe(200);
+    expect(repairRes.body.status).toBe('FEASIBLE');
+    const repairVersionId = repairRes.body.planVersion.id;
+
+    const listRes = await request(app)
+      .get('/asignaciones/versiones')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(listRes.statusCode).toBe(200);
+    expect(Array.isArray(listRes.body)).toBe(true);
+    const ids = listRes.body.map((v) => v.id);
+    expect(ids).toContain(baseVersionId);
+    expect(ids).toContain(repairVersionId);
+
+    const diffPublishedRes = await request(app)
+      .get('/asignaciones/diff/publicado')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .query({ toVersionId: repairVersionId });
+
+    expect(diffPublishedRes.statusCode).toBe(200);
+    expect(diffPublishedRes.body.fromVersion.id).toBe(baseVersionId);
+    expect(diffPublishedRes.body.toVersion.id).toBe(repairVersionId);
+    expect(diffPublishedRes.body).toHaveProperty('resumen');
+  });
 });

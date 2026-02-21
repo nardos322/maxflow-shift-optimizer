@@ -82,6 +82,24 @@ const compararVersiones = asyncHandler(async (req, res) => {
   res.json(diff);
 });
 
+const listarVersiones = asyncHandler(async (_req, res) => {
+  const versiones = await asignacionesService.listarVersiones();
+  res.json(versiones);
+});
+
+const publicarVersion = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const usuarioEmail = req.user ? req.user.email : 'system';
+  const version = await asignacionesService.publicarVersion(id, usuarioEmail);
+  res.json(version);
+});
+
+const compararConPublicada = asyncHandler(async (req, res) => {
+  const { toVersionId } = req.query;
+  const diff = await asignacionesService.compararConPublicada(toVersionId);
+  res.json(diff);
+});
+
 export default {
   calcular,
   obtenerResultados,
@@ -89,4 +107,7 @@ export default {
   reparar,
   simular,
   compararVersiones,
+  listarVersiones,
+  publicarVersion,
+  compararConPublicada,
 };

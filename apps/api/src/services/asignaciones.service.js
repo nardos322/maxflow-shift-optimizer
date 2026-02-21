@@ -509,6 +509,69 @@ class AsignacionesService {
     };
   }
 
+  async listarVersiones() {
+    const versiones = await prisma.planVersion.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { asignaciones: true },
+        },
+      },
+    });
+
+    return versiones.map((v) => ({
+      id: v.id,
+      tipo: v.tipo,
+      estado: v.estado,
+      usuario: v.usuario,
+      sourcePlanVersionId: v.sourcePlanVersionId,
+      createdAt: v.createdAt,
+      totalAsignaciones: v._count.asignaciones,
+    }));
+  }
+
+  async publicarVersion(planVersionId, usuarioEmail = 'system') {
+    const version = await this.ensurePlanVersion(planVersionId);
+
+    await prisma.$transaction(async (tx) => {
+      await tx.planVersion.updateMany({
+        where: { estado: 'PUBLICADO' },
+        data: { estado: 'DRAFT' },
+      });
+
+      await tx.planVersion.update({
+        where: { id: version.id },
+        data: { estado: 'PUBLICADO' },
+      });
+
+      await auditService.log(
+        'PUBLICAR_PLAN_VERSION',
+        usuarioEmail,
+        { planVersionId: version.id },
+        tx
+      );
+    });
+
+    return prisma.planVersion.findUnique({ where: { id: version.id } });
+  }
+
+  async compararConPublicada(toVersionId) {
+    const target = await this.ensurePlanVersion(toVersionId);
+    const publicada = await prisma.planVersion.findFirst({
+      where: {
+        estado: 'PUBLICADO',
+        id: { not: target.id },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!publicada) {
+      throw new NotFoundError('No existe una versión publicada para comparar');
+    }
+
+    return this.compararVersiones(publicada.id, target.id);
+  }
+
   /**
    * Ejecuta una simulación del solver con opciones personalizadas.
    * No guarda resultados en la base de datos.

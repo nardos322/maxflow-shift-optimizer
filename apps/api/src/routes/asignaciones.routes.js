@@ -6,6 +6,8 @@ import { solverLimiter } from '../middlewares/rateLimiter.js';
 import validate from '../middlewares/validate.js';
 import {
   planDiffSchema,
+  publishPlanVersionSchema,
+  publishedPlanDiffSchema,
   repararAsignacionSchema,
   simulacionSchema,
 } from '@maxflow/shared';
@@ -258,6 +260,29 @@ router.get(
   authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
   validate(planDiffSchema),
   asignacionesController.compararVersiones
+);
+
+router.get(
+  '/diff/publicado',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(publishedPlanDiffSchema),
+  asignacionesController.compararConPublicada
+);
+
+router.get(
+  '/versiones',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  asignacionesController.listarVersiones
+);
+
+router.post(
+  '/versiones/:id/publicar',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(publishPlanVersionSchema),
+  asignacionesController.publicarVersion
 );
 
 export default router;
