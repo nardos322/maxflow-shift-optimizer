@@ -57,4 +57,5 @@ describe('API Hardening Tests', () => {
     expect(res.statusCode).toEqual(429);
     expect(res.body.error).toMatch(/Demasiadas peticiones/);
   });
+
 });

@@ -11,6 +11,11 @@ function errorHandler(err, req, res, _next) {
       ? err
       : new ApplicationError(err?.message || 'Error interno del servidor'));
   const statusCode = normalizedError.status || 500;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const messageToSend =
+    statusCode === 500 && isProduction
+      ? 'Ocurrió un error interno inesperado. Por favor contacte a soporte.'
+      : normalizedError.message || 'Error interno del servidor';
 
   // Loguear solo errores graves (500) o si estamos en desarrollo
   // Evitar logs en tests para no ensuciar la salida
@@ -23,7 +28,7 @@ function errorHandler(err, req, res, _next) {
   }
 
   const payload = {
-    error: normalizedError.message || 'Error interno del servidor',
+    error: messageToSend,
     code: normalizedError.code || 'INTERNAL_ERROR',
     factible: false, // Mantener compatibilidad con frontend
   };

@@ -1,12 +1,13 @@
 import prisma from './prisma.js';
+import { randomUUID } from 'crypto';
 
 const Factories = {
   async createMedico(data = {}) {
+    const uniqueId = randomUUID();
     return prisma.medico.create({
       data: {
         nombre: data.nombre || `Medico ${Math.floor(Math.random() * 1000)}`,
-        email:
-          data.email || `medico${Math.floor(Math.random() * 1000)}@test.com`,
+        email: data.email || `medico-${uniqueId}@test.com`,
         activo: data.activo !== undefined ? data.activo : true,
         ...(data.userId && { user: { connect: { id: data.userId } } }),
       },
