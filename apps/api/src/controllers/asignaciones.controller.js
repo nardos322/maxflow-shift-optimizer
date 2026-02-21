@@ -135,6 +135,12 @@ const obtenerRiesgoVersion = asyncHandler(async (req, res) => {
   res.json(riesgo);
 });
 
+const obtenerResumenAprobacion = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const resumen = await asignacionesService.obtenerResumenAprobacion(id);
+  res.json(resumen);
+});
+
 export default {
   calcular,
   obtenerResultados,
@@ -148,4 +154,5 @@ export default {
   publicarVersion,
   compararConPublicada,
   obtenerRiesgoVersion,
+  obtenerResumenAprobacion,
 };

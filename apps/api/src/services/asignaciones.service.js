@@ -1105,6 +1105,72 @@ class AsignacionesService {
     };
   }
 
+  async obtenerResumenAprobacion(planVersionId) {
+    const target = await this.ensurePlanVersion(planVersionId);
+    const riesgo = await this.obtenerRiesgoVersion(target.id);
+
+    let diffPublicada = null;
+    const advertencias = [];
+    try {
+      diffPublicada = await this.compararConPublicada(target.id);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        advertencias.push(
+          'No existe versión publicada para comparar; la decisión se basa solo en riesgo interno.'
+        );
+      } else {
+        throw error;
+      }
+    }
+
+    const bloqueantes = [];
+    if (riesgo.resumen.diasConRiesgoCobertura > 0) {
+      bloqueantes.push('La versión deja días con cobertura insuficiente.');
+    }
+    if (riesgo.resumen.cambiosEnZonaCongelada > 0) {
+      bloqueantes.push(
+        'La versión implica cambios dentro de la zona congelada.'
+      );
+    }
+    if (target.estado === 'PUBLICADO') {
+      advertencias.push('La versión ya está publicada.');
+    }
+
+    if (riesgo.resumen.cambiosNetos > 25) {
+      advertencias.push(
+        'La versión tiene alto volumen de cambios netos; revisar impacto operacional.'
+      );
+    }
+
+    const aprobable = bloqueantes.length === 0;
+    const recomendacion = aprobable
+      ? 'APROBAR'
+      : 'REVISAR_Y_CORREGIR';
+
+    return {
+      version: {
+        id: target.id,
+        tipo: target.tipo,
+        estado: target.estado,
+        createdAt: target.createdAt,
+      },
+      decision: {
+        aprobable,
+        recomendacion,
+        bloqueantes,
+        advertencias,
+      },
+      resumenRiesgo: riesgo.resumen,
+      comparacionPublicada: diffPublicada
+        ? {
+            fromVersion: diffPublicada.fromVersion,
+            toVersion: diffPublicada.toVersion,
+            resumen: diffPublicada.resumen,
+          }
+        : null,
+    };
+  }
+
   /**
    * Ejecuta una simulación del solver con opciones personalizadas.
    * No guarda resultados en la base de datos.

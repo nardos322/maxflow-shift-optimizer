@@ -273,5 +273,15 @@ describe('API Integration Tests', () => {
     expect(riesgoRes.body).toHaveProperty('resumen');
     expect(Array.isArray(riesgoRes.body.detallePorMedico)).toBe(true);
     expect(Array.isArray(riesgoRes.body.detallePorPeriodo)).toBe(true);
+
+    const aprobacionRes = await request(app)
+      .get(`/asignaciones/versiones/${repairVersionId}/aprobacion`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(aprobacionRes.statusCode).toBe(200);
+    expect(aprobacionRes.body.version.id).toBe(repairVersionId);
+    expect(aprobacionRes.body).toHaveProperty('decision');
+    expect(aprobacionRes.body.decision).toHaveProperty('aprobable');
+    expect(aprobacionRes.body).toHaveProperty('resumenRiesgo');
   });
 });

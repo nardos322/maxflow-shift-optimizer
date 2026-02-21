@@ -310,4 +310,12 @@ router.get(
   asignacionesController.obtenerRiesgoVersion
 );
 
+router.get(
+  '/versiones/:id/aprobacion',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(versionRiskSchema),
+  asignacionesController.obtenerResumenAprobacion
+);
+
 export default router;
