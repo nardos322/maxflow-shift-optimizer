@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma.js';
 import auditService from './audit.service.js';
 import coreService from './core.service.js';
+import { NotFoundError, ValidationError } from '../lib/errors.js';
 
 class AsignacionesService {
   getStartOfToday() {
@@ -37,12 +38,12 @@ class AsignacionesService {
     const config = await prisma.configuracion.findFirst();
 
     if (!config) {
-      throw new Error('Configuración no encontrada');
+      throw new NotFoundError('Configuración no encontrada');
     }
 
-    if (medicos.length === 0) throw new Error('No hay médicos activos');
+    if (medicos.length === 0) throw new ValidationError('No hay médicos activos');
     if (periodosPendientes.length === 0) {
-      throw new Error('No hay feriados pendientes para planificar');
+      throw new ValidationError('No hay feriados pendientes para planificar');
     }
 
     // 2. Preparar JSON para el core (Usando core.service)
@@ -155,11 +156,11 @@ class AsignacionesService {
     usuarioEmail = 'system'
   ) {
     medicoId = parseInt(medicoId);
-    if (isNaN(medicoId)) throw new Error('ID de médico inválido');
+    if (isNaN(medicoId)) throw new ValidationError('ID de médico inválido');
 
     // 1. Obtener configuración
     const config = await prisma.configuracion.findFirst();
-    if (!config) throw new Error('No hay configuración definida');
+    if (!config) throw new NotFoundError('No hay configuración definida');
 
     // 2. Obtener todas las asignaciones futuras
     const hoy = new Date();
@@ -345,7 +346,7 @@ class AsignacionesService {
 
     let config = await prisma.configuracion.findFirst();
 
-    if (!config) throw new Error('Configuración no encontrada');
+    if (!config) throw new NotFoundError('Configuración no encontrada');
 
     // 2. Aplicar filtros y overrides
     if (excluirMedicos.length > 0) {

@@ -106,3 +106,78 @@ The API builds the solver payload automatically based on database data, but this
 >
 > - `medicosPorDia` can be a number (same for every day) or an object with per-day requirements.
 > - `capacidades` is optional and used by the repair flow to cap remaining shifts per doctor.
+
+## Error Contract
+
+All API errors are normalized by the global error handler and follow this shape:
+
+```json
+{
+  "error": "Human-readable error message",
+  "code": "ERROR_CODE",
+  "factible": false,
+  "details": {}
+}
+```
+
+### Fields
+
+- `error`: Message intended for UI and logs.
+- `code`: Stable machine-readable code.
+- `factible`: Compatibility field used by existing frontend flows.
+- `details`: Optional structured metadata (for example, validation issues).
+
+### Common Error Codes
+
+- `VALIDATION_ERROR` -> 400
+- `UNAUTHORIZED` -> 401
+- `FORBIDDEN` -> 403
+- `NOT_FOUND` -> 404
+- `CONFLICT` -> 409
+- `RATE_LIMIT` -> 429
+- `INTERNAL_ERROR` -> 500
+
+### Examples
+
+Validation error:
+
+```json
+{
+  "error": "Error de validación",
+  "code": "VALIDATION_ERROR",
+  "factible": false,
+  "details": [
+    { "path": "body.email", "message": "Invalid email address" }
+  ]
+}
+```
+
+Unauthorized error:
+
+```json
+{
+  "error": "Token inválido o expirado",
+  "code": "UNAUTHORIZED",
+  "factible": false
+}
+```
+
+Not found error:
+
+```json
+{
+  "error": "Médico no encontrado",
+  "code": "NOT_FOUND",
+  "factible": false
+}
+```
+
+Rate limit error:
+
+```json
+{
+  "error": "Demasiadas peticiones al solver, por favor espere.",
+  "code": "RATE_LIMIT",
+  "factible": false
+}
+```

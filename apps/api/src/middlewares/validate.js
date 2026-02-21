@@ -1,14 +1,15 @@
 import { ZodError } from 'zod';
+import { ApplicationError, ValidationError } from '../lib/errors.js';
 
 /**
  * Middleware genérico para validar esquemas Zod
  * @param {import('zod').ZodSchema} schema - Esquema Zod a validar
  */
-const validate = (schema) => (req, res, next) => {
+const validate = (schema) => async (req, res, next) => {
   try {
     // Validamos body, query y params contra el esquema
     // Usamos parseAsync por si el esquema tiene validaciones asíncronas
-    schema.parse({
+    await schema.parseAsync({
       body: req.body,
       query: req.query,
       params: req.params,
@@ -17,16 +18,22 @@ const validate = (schema) => (req, res, next) => {
   } catch (error) {
     if (error instanceof ZodError || error.name === 'ZodError') {
       const issues = error.issues || error.errors || [];
-      return res.status(400).json({
-        error: 'Error de validación',
-        details: issues.map((err) => ({
+      return next(
+        new ValidationError(
+          'Error de validación',
+          issues.map((err) => ({
           path: err.path.join('.'),
           message: err.message,
-        })),
-      });
+          }))
+        )
+      );
     }
-    console.error('Validate Middleware Error:', error);
-    return res.status(500).json({ error: 'Error interno de validación' });
+    return next(
+      new ApplicationError('Error interno de validación', {
+        code: 'VALIDATION_MIDDLEWARE_ERROR',
+        status: 500,
+      })
+    );
   }
 };
 

@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
+import { ConflictError, ValidationError } from '../lib/errors.js';
 
 class MedicosService {
   getStartOfToday() {
@@ -46,7 +47,7 @@ class MedicosService {
       .filter((fecha) => !allowedSet.has(fecha));
 
     if (invalidDates.length > 0) {
-      throw new Error(
+      throw new ValidationError(
         `Fechas no disponibles para edición: ${invalidDates.join(', ')}. Solo se permite disponibilidad en feriados pendientes.`
       );
     }
@@ -91,7 +92,7 @@ class MedicosService {
       });
 
       if (existingUser) {
-        throw { status: 409, message: 'El email ya está registrado' };
+        throw new ConflictError('El email ya está registrado');
       }
 
       // 2. Crear Usuario (Login)

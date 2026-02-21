@@ -2,23 +2,29 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../config.js';
+import {
+  ValidationError,
+  UnauthorizedError,
+  ForbiddenError,
+  ConflictError,
+} from '../lib/errors.js';
 
 const prisma = new PrismaClient();
 
 class AuthService {
   async login(email, password) {
     if (!email || !password) {
-      throw { status: 400, message: 'Email y contraseña requeridos' };
+      throw new ValidationError('Email y contraseña requeridos');
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw { status: 401, message: 'Credenciales inválidas' };
+      throw new UnauthorizedError('Credenciales inválidas');
     }
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      throw { status: 401, message: 'Credenciales inválidas' };
+      throw new UnauthorizedError('Credenciales inválidas');
     }
 
     const token = jwt.sign(
@@ -47,17 +53,17 @@ class AuthService {
     const { nombre, email, password, rol } = userData;
 
     if (!nombre || !email || !password || !rol) {
-      throw { status: 400, message: 'Faltan campos requeridos' };
+      throw new ValidationError('Faltan campos requeridos');
     }
 
     // Solo admin puede registrar
     if (!adminUser || adminUser.rol !== 'ADMIN') {
-      throw { status: 403, message: 'Solo admin puede crear usuarios' };
+      throw new ForbiddenError('Solo admin puede crear usuarios');
     }
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
-      throw { status: 409, message: 'El email ya está registrado' };
+      throw new ConflictError('El email ya está registrado');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);

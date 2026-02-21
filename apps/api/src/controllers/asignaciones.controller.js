@@ -1,5 +1,6 @@
 import asignacionesService from '../services/asignaciones.service.js';
 import prisma from '../lib/prisma.js';
+import { ValidationError } from '../lib/errors.js';
 
 /**
  * POST /asignaciones/calcular
@@ -56,8 +57,7 @@ async function limpiar(req, res, next) {
 async function reparar(req, res, next) {
   try {
     const { medicoId, darDeBaja } = req.body;
-    if (!medicoId)
-      return res.status(400).json({ error: 'medicoId es requerido' });
+    if (!medicoId) throw new ValidationError('medicoId es requerido');
 
     const usuarioEmail = req.user ? req.user.email : 'system';
 

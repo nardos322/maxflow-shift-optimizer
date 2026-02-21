@@ -1,4 +1,9 @@
 import medicosService from '../services/medicos.service.js';
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+} from '../lib/errors.js';
 
 /**
  * GET /medicos
@@ -20,7 +25,7 @@ async function obtenerPorId(req, res, next) {
   try {
     const medico = await medicosService.obtenerPorId(req.params.id);
     if (!medico) {
-      return res.status(404).json({ error: 'Médico no encontrado' });
+      throw new NotFoundError('Médico no encontrado');
     }
     res.json(medico);
   } catch (error) {
@@ -43,11 +48,7 @@ async function crear(req, res, next) {
     res.status(201).json(medico);
   } catch (error) {
     if (error.code === 'P2002') {
-      return res.status(400).json({ error: 'El email ya está registrado' });
-    }
-    // Si el error viene del service con status (ej: 409)
-    if (error.status) {
-      return res.status(error.status).json({ error: error.message });
+      return next(new ConflictError('El email ya está registrado'));
     }
     next(error);
   }
@@ -62,7 +63,7 @@ async function actualizar(req, res, next) {
     res.json(medico);
   } catch (error) {
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Médico no encontrado' });
+      return next(new NotFoundError('Médico no encontrado'));
     }
     next(error);
   }
@@ -77,7 +78,7 @@ async function eliminar(req, res, next) {
     res.status(204).send();
   } catch (error) {
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Médico no encontrado' });
+      return next(new NotFoundError('Médico no encontrado'));
     }
     next(error);
   }
@@ -105,7 +106,7 @@ async function agregarDisponibilidad(req, res, next) {
   try {
     const { fechas } = req.body;
     if (!fechas || !Array.isArray(fechas)) {
-      return res.status(400).json({ error: 'Se requiere un array de fechas' });
+      throw new ValidationError('Se requiere un array de fechas');
     }
     const result = await medicosService.agregarDisponibilidad(
       req.params.id,
@@ -113,9 +114,6 @@ async function agregarDisponibilidad(req, res, next) {
     );
     res.status(201).json(result);
   } catch (error) {
-    if (error.message?.includes('Fechas no disponibles para edición')) {
-      return res.status(400).json({ error: error.message });
-    }
     next(error);
   }
 }
@@ -128,14 +126,11 @@ async function eliminarDisponibilidad(req, res, next) {
   try {
     const { fechas } = req.body;
     if (!fechas || !Array.isArray(fechas)) {
-      return res.status(400).json({ error: 'Se requiere un array de fechas' });
+      throw new ValidationError('Se requiere un array de fechas');
     }
     await medicosService.eliminarDisponibilidad(req.params.id, fechas);
     res.status(204).send();
   } catch (error) {
-    if (error.message?.includes('Fechas no disponibles para edición')) {
-      return res.status(400).json({ error: error.message });
-    }
     next(error);
   }
 }

@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import exportService from '../services/export.service.js';
+import { NotFoundError } from '../lib/errors.js';
 
 async function downloadExcel(req, res, next) {
   try {
@@ -9,9 +10,7 @@ async function downloadExcel(req, res, next) {
     });
 
     if (!asignaciones.length) {
-      return res
-        .status(404)
-        .json({ message: 'No hay asignaciones para exportar' });
+      throw new NotFoundError('No hay asignaciones para exportar');
     }
 
     const buffer = await exportService.generateExcel(asignaciones);
@@ -26,7 +25,6 @@ async function downloadExcel(req, res, next) {
     );
     res.send(buffer);
   } catch (error) {
-    console.error('Error generando Excel:', error);
     next(error);
   }
 }
@@ -39,9 +37,7 @@ async function downloadICS(req, res, next) {
     });
 
     if (!asignaciones.length) {
-      return res
-        .status(404)
-        .json({ message: 'No hay asignaciones para exportar' });
+      throw new NotFoundError('No hay asignaciones para exportar');
     }
 
     const icsContent = exportService.generateICS(asignaciones);
@@ -53,7 +49,6 @@ async function downloadICS(req, res, next) {
     );
     res.send(icsContent);
   } catch (error) {
-    console.error('Error generando ICS:', error);
     next(error);
   }
 }
