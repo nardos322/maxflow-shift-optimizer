@@ -1,5 +1,10 @@
 # MaxFlow Shift Optimizer - Core
 
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C?logo=c%2B%2B&logoColor=white&style=flat-square)](https://isocpp.org/)
+[![Build](https://img.shields.io/badge/Build-make-427819?style=flat-square)](https://www.gnu.org/software/make/)
+[![Algorithm](https://img.shields.io/badge/Algorithm-Edmonds--Karp-orange?style=flat-square)](#algoritmo)
+[![Analysis](https://img.shields.io/badge/Diagnosis-Min--Cut-8A2BE2?style=flat-square)](#diagnostico-de-no-factibilidad)
+
 Motor de calculo en C++17 que resuelve la asignacion de guardias con flujo maximo.
 
 ## Algoritmo

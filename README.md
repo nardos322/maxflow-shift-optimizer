@@ -1,5 +1,13 @@
 # MaxFlow Shift Optimizer
 
+[![Core C++17](https://img.shields.io/badge/Core-C%2B%2B17-00599C?logo=c%2B%2B&logoColor=white&style=flat-square)](apps/core/README.md)
+[![API Node.js](https://img.shields.io/badge/API-Node.js-339933?logo=node.js&logoColor=white&style=flat-square)](apps/api/README.md)
+[![Web React](https://img.shields.io/badge/Web-React-61DAFB?logo=react&logoColor=111827&style=flat-square)](apps/web/README.md)
+[![Express](https://img.shields.io/badge/Express-5.x-000000?logo=express&logoColor=white&style=flat-square)](apps/api/README.md)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white&style=flat-square)](apps/api/README.md)
+[![Vite](https://img.shields.io/badge/Vite-7.x-646CFF?logo=vite&logoColor=white&style=flat-square)](apps/web/README.md)
+[![License MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+
 Monorepo para planificar guardias hospitalarias con un solver de flujo maximo en C++ y una capa de API/Web en Node.js + React.
 
 ## Problema real que resuelve
