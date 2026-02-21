@@ -1142,6 +1142,73 @@ class AsignacionesService {
       );
     }
 
+    const recomendaciones = [];
+    if (riesgo.resumen.diasConRiesgoCobertura > 0) {
+      const fechasCriticas = riesgo.diasConRiesgoCobertura
+        .slice(0, 5)
+        .map((d) => d.fecha);
+      recomendaciones.push({
+        tipo: 'COBERTURA',
+        prioridad: 'ALTA',
+        accion:
+          'Agregar disponibilidad o ajustar reasignaciones para cubrir días con déficit.',
+        detalle: {
+          diasPendientes: riesgo.resumen.diasConRiesgoCobertura,
+          fechasCriticas,
+        },
+      });
+    }
+
+    if (riesgo.resumen.cambiosEnZonaCongelada > 0) {
+      recomendaciones.push({
+        tipo: 'CONGELAMIENTO',
+        prioridad: 'ALTA',
+        accion:
+          'Mover la ventana de reparación fuera de freezeDays o reducir cambios en fechas cercanas.',
+        detalle: {
+          cambiosEnZonaCongelada: riesgo.resumen.cambiosEnZonaCongelada,
+        },
+      });
+    }
+
+    const medicosMasImpactados = riesgo.detallePorMedico
+      .slice(0, 3)
+      .map((m) => ({
+        medicoId: m.medicoId,
+        medico: m.medico,
+        cambios: m.agregadas + m.removidas,
+      }));
+    if (medicosMasImpactados.length > 0) {
+      recomendaciones.push({
+        tipo: 'EQUIDAD_OPERATIVA',
+        prioridad: 'MEDIA',
+        accion:
+          'Revisar distribución en médicos más impactados para minimizar fricción del cambio.',
+        detalle: {
+          medicosMasImpactados,
+        },
+      });
+    }
+
+    const periodosMasImpactados = riesgo.detallePorPeriodo
+      .slice(0, 3)
+      .map((p) => ({
+        periodoId: p.periodoId,
+        periodo: p.periodo,
+        cambios: p.agregadas + p.removidas,
+      }));
+    if (periodosMasImpactados.length > 0) {
+      recomendaciones.push({
+        tipo: 'SECUENCIA_PUBLICACION',
+        prioridad: 'MEDIA',
+        accion:
+          'Publicar primero cambios en períodos menos críticos y validar aceptación antes de despliegue total.',
+        detalle: {
+          periodosMasImpactados,
+        },
+      });
+    }
+
     const aprobable = bloqueantes.length === 0;
     const recomendacion = aprobable
       ? 'APROBAR'
@@ -1161,6 +1228,7 @@ class AsignacionesService {
         advertencias,
       },
       resumenRiesgo: riesgo.resumen,
+      recomendaciones,
       comparacionPublicada: diffPublicada
         ? {
             fromVersion: diffPublicada.fromVersion,

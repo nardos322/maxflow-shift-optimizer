@@ -283,5 +283,7 @@ describe('API Integration Tests', () => {
     expect(aprobacionRes.body).toHaveProperty('decision');
     expect(aprobacionRes.body.decision).toHaveProperty('aprobable');
     expect(aprobacionRes.body).toHaveProperty('resumenRiesgo');
+    expect(Array.isArray(aprobacionRes.body.recomendaciones)).toBe(true);
+    expect(aprobacionRes.body.recomendaciones.length).toBeGreaterThan(0);
   });
 });
