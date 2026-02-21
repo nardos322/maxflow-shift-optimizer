@@ -104,6 +104,8 @@ model PlanVersion {
   estado              String       @default("DRAFT") // DRAFT | PUBLICADO
   usuario             String
   sourcePlanVersionId Int?
+  snapshot            String?
+  metadata            String?
   createdAt           DateTime     @default(now())
   asignaciones        Asignacion[]
 

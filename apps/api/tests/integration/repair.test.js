@@ -284,4 +284,67 @@ describe('Integration: Shift Repair', () => {
     expect(Array.isArray(diffRes.body.agregadas)).toBe(true);
     expect(Array.isArray(diffRes.body.removidas)).toBe(true);
   });
+
+  it('should create repair candidate without applying, then publish to apply snapshot', async () => {
+    const [drA, drB] = await Promise.all([
+      Factories.createMedico({ nombre: 'Dr. Cand A', email: 'cand-a@test.com' }),
+      Factories.createMedico({ nombre: 'Dr. Cand B', email: 'cand-b@test.com' }),
+    ]);
+
+    const dia = new Date();
+    dia.setDate(dia.getDate() + 7);
+    dia.setHours(0, 0, 0, 0);
+
+    const periodo = await Factories.createPeriodoWithFeriados([dia]);
+    await Factories.createDisponibilidad(drA.id, dia);
+    await Factories.createDisponibilidad(drB.id, dia);
+
+    const baseVersion = await prisma.planVersion.create({
+      data: {
+        tipo: 'BASE',
+        estado: 'PUBLICADO',
+        usuario: 'admin@test.com',
+      },
+    });
+
+    const asignacionBase = await Factories.createAsignacion(drA.id, periodo.id, dia);
+    await prisma.asignacion.update({
+      where: { id: asignacionBase.id },
+      data: { planVersionId: baseVersion.id },
+    });
+
+    const candidataRes = await request(app)
+      .post('/asignaciones/reparaciones/candidatas')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        medicoId: drA.id,
+        ventanaInicio: dia.toISOString(),
+        ventanaFin: dia.toISOString(),
+      });
+
+    expect(candidataRes.status).toBe(200);
+    expect(candidataRes.body.status).toBe('FEASIBLE');
+    expect(candidataRes.body.planVersion.tipo).toBe('REPAIR_CANDIDATE');
+    const candidataId = candidataRes.body.planVersion.id;
+
+    const antesPublicar = await prisma.asignacion.findFirst({
+      where: { fecha: dia },
+    });
+    expect(antesPublicar.medicoId).toBe(drA.id);
+
+    const publishRes = await request(app)
+      .post(`/asignaciones/versiones/${candidataId}/publicar`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+
+    expect(publishRes.status).toBe(200);
+    expect(publishRes.body.id).toBe(candidataId);
+    expect(publishRes.body.estado).toBe('PUBLICADO');
+
+    const despuesPublicar = await prisma.asignacion.findFirst({
+      where: { fecha: dia },
+    });
+    expect(despuesPublicar.medicoId).toBe(drB.id);
+    expect(despuesPublicar.planVersionId).toBe(candidataId);
+  });
 });

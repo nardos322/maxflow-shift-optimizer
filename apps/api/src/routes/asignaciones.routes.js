@@ -116,6 +116,14 @@ router.post(
 );
 
 router.post(
+  '/reparaciones/candidatas',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(repararAsignacionSchema),
+  asignacionesController.repararCandidata
+);
+
+router.post(
   '/reparar',
   authenticateJWT,
   authorizeRoles('ADMIN'),

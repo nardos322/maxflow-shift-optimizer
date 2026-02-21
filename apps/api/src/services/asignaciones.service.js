@@ -34,6 +34,41 @@ class AsignacionesService {
     return planVersion;
   }
 
+  safeJsonParse(rawValue, defaultValue = null) {
+    if (!rawValue) return defaultValue;
+    try {
+      return JSON.parse(rawValue);
+    } catch (_error) {
+      return defaultValue;
+    }
+  }
+
+  async getAssignmentsForVersion(version) {
+    if (version.snapshot) {
+      const snapshot = this.safeJsonParse(version.snapshot, []);
+      if (!Array.isArray(snapshot)) return [];
+      const medicoIds = [...new Set(snapshot.map((a) => a.medicoId))];
+      const medicos = await prisma.medico.findMany({
+        where: { id: { in: medicoIds } },
+        select: { id: true, nombre: true },
+      });
+      const medicoMap = new Map(medicos.map((m) => [m.id, m.nombre]));
+      return snapshot
+        .map((a) => ({
+          fecha: new Date(a.fecha),
+          medicoId: a.medicoId,
+          periodoId: a.periodoId,
+          medico: { nombre: medicoMap.get(a.medicoId) || 'Desconocido' },
+        }))
+        .filter((a) => !Number.isNaN(a.fecha.getTime()));
+    }
+
+    return prisma.asignacion.findMany({
+      where: { planVersionId: version.id },
+      include: { medico: { select: { id: true, nombre: true } } },
+    });
+  }
+
   /**
    * Genera las asignaciones llamando al core (C++) y guardando resultados
    */
@@ -444,19 +479,228 @@ class AsignacionesService {
     }
   }
 
+  async generarCandidataReparacion(
+    medicoId,
+    darDeBaja = false,
+    ventanaInicio = null,
+    ventanaFin = null,
+    usuarioEmail = 'system'
+  ) {
+    medicoId = parseInt(medicoId);
+    if (isNaN(medicoId)) throw new ValidationError('ID de médico inválido');
+
+    const hoy = this.getStartOfToday();
+
+    let inicioSolicitado = new Date(hoy);
+    if (ventanaInicio) {
+      const parsedInicio = new Date(ventanaInicio);
+      if (Number.isNaN(parsedInicio.getTime())) {
+        throw new ValidationError('ventanaInicio inválida');
+      }
+      parsedInicio.setHours(0, 0, 0, 0);
+      if (parsedInicio > inicioSolicitado) inicioSolicitado = parsedInicio;
+    }
+
+    let fin = null;
+    if (ventanaFin) {
+      const parsedFin = new Date(ventanaFin);
+      if (Number.isNaN(parsedFin.getTime())) {
+        throw new ValidationError('ventanaFin inválida');
+      }
+      parsedFin.setHours(23, 59, 59, 999);
+      fin = parsedFin;
+    }
+
+    if (fin && fin < inicioSolicitado) {
+      throw new ValidationError(
+        'ventanaFin debe ser mayor o igual que ventanaInicio'
+      );
+    }
+
+    const config = await prisma.configuracion.findFirst();
+    if (!config) throw new NotFoundError('No hay configuración definida');
+
+    const freezeBoundary = this.getFreezeBoundary(config, hoy);
+    const inicio =
+      inicioSolicitado > freezeBoundary ? inicioSolicitado : freezeBoundary;
+
+    if (fin && fin < inicio) {
+      return {
+        status: 'OK',
+        message:
+          'La ventana solicitada cae completamente dentro del período congelado. No se generó candidata.',
+        ventanaAplicada: {
+          inicio,
+          fin,
+          freezeBoundary,
+        },
+      };
+    }
+
+    const whereBase = { fecha: { gte: inicio } };
+    if (fin) whereBase.fecha.lte = fin;
+
+    const asignacionesExistentes = await prisma.asignacion.findMany({
+      where: whereBase,
+      include: { medico: true, planVersion: true },
+    });
+
+    const asignacionesBorrables = asignacionesExistentes.filter(
+      (a) => a.medicoId === medicoId
+    );
+
+    if (asignacionesBorrables.length === 0) {
+      return {
+        status: 'OK',
+        message:
+          'El médico no tenía asignaciones futuras en la ventana. No se requiere candidata.',
+        ventanaAplicada: {
+          inicio,
+          fin,
+          freezeBoundary,
+        },
+      };
+    }
+
+    const medicosActivos = await prisma.medico.findMany({
+      where: {
+        activo: true,
+        id: { not: medicoId },
+      },
+      include: { disponibilidad: true },
+    });
+
+    const capacidadesPersonales = {};
+    const asignacionesConservadas = asignacionesExistentes.filter(
+      (a) => a.medicoId !== medicoId
+    );
+    for (const medico of medicosActivos) {
+      const usadas = asignacionesConservadas.filter(
+        (a) => a.medicoId === medico.id
+      ).length;
+      capacidadesPersonales[medico.nombre] = Math.max(
+        0,
+        config.maxGuardiasTotales - usadas
+      );
+    }
+
+    const fechasHuecos = asignacionesBorrables.map((a) =>
+      a.fecha.toISOString().split('T')[0]
+    );
+    const periodosAfectadosIds = [
+      ...new Set(asignacionesBorrables.map((a) => a.periodoId)),
+    ];
+
+    const periodos = await prisma.periodo.findMany({
+      where: { id: { in: periodosAfectadosIds } },
+      include: { feriados: true },
+    });
+
+    const periodosParaSolver = periodos
+      .map((p) => ({
+        ...p,
+        feriados: p.feriados.filter((f) =>
+          fechasHuecos.includes(f.fecha.toISOString().split('T')[0])
+        ),
+      }))
+      .filter((p) => p.feriados.length > 0);
+
+    const inputData = coreService.prepareInput(
+      medicosActivos,
+      periodosParaSolver,
+      config,
+      { capacidades: capacidadesPersonales }
+    );
+    const output = await coreService.runSolver(inputData);
+
+    const sourcePlanVersionId =
+      asignacionesBorrables.find((a) => a.planVersionId)?.planVersionId ?? null;
+
+    if (!output.factible) {
+      return {
+        status: 'INFEASIBLE',
+        message:
+          'No se pudo encontrar una solución válida para la candidata de reparación.',
+        minCut: output.bottlenecks || [],
+      };
+    }
+
+    const medicoMap = new Map(medicosActivos.map((m) => [m.nombre, m]));
+    const periodoIdsMap = new Map();
+    for (const p of periodosParaSolver) {
+      for (const f of p.feriados) {
+        periodoIdsMap.set(f.fecha.toISOString().split('T')[0], p.id);
+      }
+    }
+
+    const preservedAssignments = asignacionesConservadas.map((a) => ({
+      medicoId: a.medicoId,
+      periodoId: a.periodoId,
+      fecha: a.fecha.toISOString(),
+    }));
+
+    const reassignedAssignments = [];
+    for (const assignment of output.asignaciones) {
+      const medico = medicoMap.get(assignment.medico);
+      const periodoId = periodoIdsMap.get(assignment.dia);
+      if (medico && periodoId) {
+        reassignedAssignments.push({
+          medicoId: medico.id,
+          periodoId,
+          fecha: new Date(assignment.dia).toISOString(),
+        });
+      }
+    }
+
+    const snapshot = [...preservedAssignments, ...reassignedAssignments];
+
+    const version = await prisma.planVersion.create({
+      data: {
+        tipo: 'REPAIR_CANDIDATE',
+        estado: 'DRAFT',
+        usuario: usuarioEmail,
+        sourcePlanVersionId,
+        snapshot: JSON.stringify(snapshot),
+        metadata: JSON.stringify({
+          darDeBaja: Boolean(darDeBaja),
+          medicoId,
+        }),
+      },
+    });
+
+    await auditService.log('CREAR_CANDIDATA_REPARACION', usuarioEmail, {
+      medicoId,
+      reasignaciones: reassignedAssignments.length,
+      planVersionId: version.id,
+      sourcePlanVersionId,
+      darDeBaja,
+    });
+
+    return {
+      status: 'FEASIBLE',
+      reasignaciones: reassignedAssignments.length,
+      planVersion: {
+        id: version.id,
+        tipo: version.tipo,
+        estado: version.estado,
+        sourcePlanVersionId: version.sourcePlanVersionId,
+        createdAt: version.createdAt,
+      },
+      ventanaAplicada: {
+        inicio,
+        fin,
+        freezeBoundary,
+      },
+    };
+  }
+
   async compararVersiones(fromVersionId, toVersionId) {
     const fromVersion = await this.ensurePlanVersion(fromVersionId);
     const toVersion = await this.ensurePlanVersion(toVersionId);
 
     const [fromAsignaciones, toAsignaciones] = await Promise.all([
-      prisma.asignacion.findMany({
-        where: { planVersionId: fromVersion.id },
-        include: { medico: { select: { id: true, nombre: true } } },
-      }),
-      prisma.asignacion.findMany({
-        where: { planVersionId: toVersion.id },
-        include: { medico: { select: { id: true, nombre: true } } },
-      }),
+      this.getAssignmentsForVersion(fromVersion),
+      this.getAssignmentsForVersion(toVersion),
     ]);
 
     const fromSet = new Set(
@@ -543,6 +787,56 @@ class AsignacionesService {
         where: { id: version.id },
         data: { estado: 'PUBLICADO' },
       });
+
+      if (version.snapshot) {
+        const snapshot = this.safeJsonParse(version.snapshot, []);
+        if (!Array.isArray(snapshot)) {
+          throw new ValidationError('Snapshot de versión inválido');
+        }
+
+        const fechas = [
+          ...new Set(
+            snapshot
+              .map((a) => {
+                const fecha = new Date(a.fecha);
+                return Number.isNaN(fecha.getTime())
+                  ? null
+                  : fecha.toISOString().split('T')[0];
+              })
+              .filter(Boolean)
+          ),
+        ];
+
+        if (fechas.length > 0) {
+          const rangosFecha = fechas.map((day) => {
+            const start = new Date(`${day}T00:00:00.000Z`);
+            const end = new Date(`${day}T23:59:59.999Z`);
+            return { fecha: { gte: start, lte: end } };
+          });
+          await tx.asignacion.deleteMany({
+            where: { OR: rangosFecha },
+          });
+        }
+
+        if (snapshot.length > 0) {
+          await tx.asignacion.createMany({
+            data: snapshot.map((a) => ({
+              medicoId: a.medicoId,
+              periodoId: a.periodoId,
+              fecha: new Date(a.fecha),
+              planVersionId: version.id,
+            })),
+          });
+        }
+
+        const metadata = this.safeJsonParse(version.metadata, {});
+        if (metadata?.darDeBaja && metadata?.medicoId) {
+          await tx.medico.update({
+            where: { id: metadata.medicoId },
+            data: { activo: false },
+          });
+        }
+      }
 
       await auditService.log(
         'PUBLICAR_PLAN_VERSION',
