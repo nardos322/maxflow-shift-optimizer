@@ -35,4 +35,40 @@ describe('asignacionesService', () => {
 
     await expect(asignacionesService.getResultados()).rejects.toThrow('Error al obtener las asignaciones');
   });
+
+  it('simular sends payload to simulation endpoint', async () => {
+    (global.fetch as any).mockResolvedValue(mockJsonResponse(true, { resultado: { factible: true } }));
+
+    await asignacionesService.simular({
+      excluirMedicos: [1, 2],
+      config: { maxGuardiasTotales: 4 },
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/asignaciones/simulaciones', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer token-123',
+      },
+      body: JSON.stringify({
+        excluirMedicos: [1, 2],
+        config: { maxGuardiasTotales: 4 },
+      }),
+    });
+  });
+
+  it('reparar sends payload to repair endpoint', async () => {
+    (global.fetch as any).mockResolvedValue(mockJsonResponse(true, { status: 'FEASIBLE' }));
+
+    await asignacionesService.reparar({ medicoId: 7, darDeBaja: true });
+
+    expect(global.fetch).toHaveBeenCalledWith('/api/asignaciones/reparaciones', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer token-123',
+      },
+      body: JSON.stringify({ medicoId: 7, darDeBaja: true }),
+    });
+  });
 });

@@ -1,5 +1,12 @@
 import { authService } from "./auth.service";
-import type { Asignacion } from "@/types/asignaciones";
+import type {
+    Asignacion,
+    ReparacionParams,
+    ReparacionResult,
+    SimulacionParams,
+    SimulacionResult,
+    SolverRunResult,
+} from "@/types/asignaciones";
 import { parseApiError } from "./apiError";
 
 const API_BASE = "/api";
@@ -14,13 +21,35 @@ class AsignacionesService {
         };
     }
 
-    async resolver(): Promise<any> {
+    async resolver(): Promise<SolverRunResult> {
         const res = await fetch(`${API_BASE}/asignaciones/resolver`, {
             method: "POST",
             headers: this.getHeaders(),
         });
 
         if (!res.ok) throw await parseApiError(res, "Error al ejecutar el planificador");
+        return res.json();
+    }
+
+    async simular(payload: SimulacionParams): Promise<SimulacionResult> {
+        const res = await fetch(`${API_BASE}/asignaciones/simulaciones`, {
+            method: "POST",
+            headers: this.getHeaders(),
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw await parseApiError(res, "Error al ejecutar la simulación");
+        return res.json();
+    }
+
+    async reparar(payload: ReparacionParams): Promise<ReparacionResult> {
+        const res = await fetch(`${API_BASE}/asignaciones/reparaciones`, {
+            method: "POST",
+            headers: this.getHeaders(),
+            body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw await parseApiError(res, "Error al ejecutar la reparación");
         return res.json();
     }
 

@@ -4,11 +4,19 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SolverPage } from './SolverPage';
 import { asignacionesService } from '@/services/asignaciones.service';
+import { medicosService } from '@/services/medicos.service';
 
 vi.mock('@/services/asignaciones.service', () => ({
   asignacionesService: {
     getResultados: vi.fn(),
     resolver: vi.fn(),
+    simular: vi.fn(),
+    reparar: vi.fn(),
+  },
+}));
+vi.mock('@/services/medicos.service', () => ({
+  medicosService: {
+    getAll: vi.fn(),
   },
 }));
 
@@ -39,6 +47,9 @@ describe('SolverPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    (medicosService.getAll as any).mockResolvedValue([
+      { id: 1, nombre: 'Dr. Mock', email: 'mock@hospital.com', activo: true },
+    ]);
   });
 
   afterEach(() => {
