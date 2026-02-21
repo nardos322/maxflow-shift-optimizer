@@ -1,183 +1,114 @@
-# MaxFlow API 🚀
+# MaxFlow API
 
-This is the orchestration and data management layer of the system. It acts as the interface between the user, the database, and the C++ calculation engine.
+Capa backend del sistema. Orquesta autenticacion, reglas de negocio, persistencia y ejecucion del solver C++.
 
-## 🛠️ Tech Stack
+## Stack
 
-- **Runtime:** Node.js
-- **Framework:** Express.js
-- **ORM:** Prisma (SQLite by default)
-- **Validation:** Zod
-- **Docs:** Swagger / OpenAPI
-- **Testing:** Vitest + Supertest
+- Node.js + Express
+- Prisma (SQLite)
+- Validaciones compartidas con `@maxflow/shared`
+- Swagger/OpenAPI en `/api-docs`
+- Vitest + Supertest
 
-## ⚡ Key Commands
+## Ubicacion
 
-These commands are executed inside the `/api` folder:
+- Carpeta: `apps/api`
+- Entry point: `apps/api/index.js`
+- App express: `apps/api/src/app.js`
 
-### Development
+## Comandos
 
-```bash
-# Start server in watch mode (Node 18+)
-npm run dev
-
-# Open GUI to view/edit database (Very useful)
-npm run db:studio
-```
-
-### Database Management & Seeds
-
-The project includes predefined scenarios to test the algorithm:
+Ejecutar desde `apps/api`:
 
 ```bash
-# Load ideal scenario (feasible solution found)
-npm run db:scenario:feasible
-
-# Load stress scenario (forces Min-Cut analysis)
-npm run db:scenario:infeasible
-
-# Reset DB completely
+npm run setup                # prisma generate + prisma migrate dev
+npm run dev                  # modo watch
+npm run start                # modo normal
+npm run db:migrate
+npm run db:seed
 npm run db:reset
-```
-
-### Testing
-
-Integration tests spin up a test database (isolated) and verify the endpoints.
-
-```bash
+npm run db:studio
+npm run db:scenario:feasible
+npm run db:scenario:infeasible
 npm test
+npm run test:ci
 ```
 
-## 📂 Structure
+## Variables de entorno
 
-- `src/controllers`: Endpoint logic.
-- `src/routes`: API route definitions.
-- `prisma/schema.prisma`: Data model definition.
-- `prisma/scenarios`: Seed scripts to recreate edge cases.
+Archivo local: `apps/api/.env`
 
-## 🔗 Core Integration (C++)
+- `DATABASE_URL` (por defecto `file:./dev.db`)
+- `PORT` (por defecto `3000`)
+- `JWT_SECRET`
+- `JWT_EXPIRES_IN`
+- `CORS_ORIGIN` (opcional)
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` (seed de admin inicial)
 
-The API invokes the C++ executable (`../core/build/solver`) as a child process.
+Para tests: `apps/api/.env.test`.
 
-1.  **Input:** The API queries Prisma and generates a JSON that is injected into the `stdin` of the C++ process.
-2.  **Output:** Reads the JSON response from the C++ `stdout`.
-3.  **Error Handling:** Captures outputs in `stderr` for diagnostics.
+## Integracion con Core (C++)
 
-### 🧾 Solver Contract (JSON)
+La API ejecuta `apps/core/build/solver` como child process (ruta relativa desde API: `../core/build/solver`).
 
-The API builds the solver payload automatically based on database data, but this is the exact format sent to the core.
+Flujo:
 
-**Input (sent to solver):**
+1. Lee datos desde Prisma.
+2. Construye payload JSON y lo envia por `stdin`.
+3. Lee respuesta JSON por `stdout`.
+4. Captura `stderr` para diagnostico.
+
+## Endpoints principales
+
+- Auth: `POST /auth/login`, `POST /auth/register`
+- Medicos: `GET/POST/PUT/DELETE /medicos`, disponibilidad por medico
+- Periodos: `GET/POST/PUT/DELETE /periodos`
+- Config: `GET/PUT /configuracion`
+- `POST /asignaciones/ejecuciones` (alias legacy: `POST /asignaciones/resolver`)
+- `POST /asignaciones/simulaciones`
+- `POST /asignaciones/reparaciones`
+- `POST /asignaciones/reparaciones/previsualizar`
+- `POST /asignaciones/reparaciones/candidatas`
+- `GET /asignaciones`
+- `GET /asignaciones/versiones`
+- `POST /asignaciones/versiones/:id/publicar`
+- `GET /asignaciones/diff`
+- `GET /asignaciones/diff/publicado`
+- `GET /asignaciones/versiones/:id/riesgo`
+- `GET /asignaciones/versiones/:id/aprobacion`
+- `GET /asignaciones/versiones/:id/autofix-sugerido`
+- Reportes: `GET /reportes/equidad`, `GET /reportes/faltantes`
+- Export: `GET /export/excel`, `GET /export/ics`
+- Auditoria: `GET /auditoria`
+
+## Contrato de errores
+
+Todas las respuestas de error salen normalizadas:
 
 ```json
 {
-  "medicos": ["Dra. Perez", "Dr. Lopez"],
-  "dias": ["2024-06-01", "2024-06-02"],
-  "periodos": [{ "id": "Junio", "dias": ["2024-06-01", "2024-06-02"] }],
-  "disponibilidad": {
-    "Dra. Perez": ["2024-06-01"],
-    "Dr. Lopez": ["2024-06-02"]
-  },
-  "maxGuardiasPorPeriodo": 1,
-  "maxGuardiasTotales": 4,
-  "medicosPorDia": 1,
-  "capacidades": {
-    "Dra. Perez": 2
-  }
-}
-```
-
-**Output (returned by solver):**
-
-```json
-{
-  "factible": true,
-  "diasCubiertos": 2,
-  "diasRequeridos": 2,
-  "asignaciones": [
-    { "medico": "Dra. Perez", "dia": "2024-06-01" },
-    { "medico": "Dr. Lopez", "dia": "2024-06-02" }
-  ],
-  "bottlenecks": []
-}
-```
-
-> Notes:
->
-> - `medicosPorDia` can be a number (same for every day) or an object with per-day requirements.
-> - `capacidades` is optional and used by the repair flow to cap remaining shifts per doctor.
-
-## Error Contract
-
-All API errors are normalized by the global error handler and follow this shape:
-
-```json
-{
-  "error": "Human-readable error message",
+  "error": "Mensaje legible",
   "code": "ERROR_CODE",
   "factible": false,
   "details": {}
 }
 ```
 
-### Fields
+Codigos comunes:
 
-- `error`: Message intended for UI and logs.
-- `code`: Stable machine-readable code.
-- `factible`: Compatibility field used by existing frontend flows.
-- `details`: Optional structured metadata (for example, validation issues).
+- `VALIDATION_ERROR` (400)
+- `UNAUTHORIZED` (401)
+- `FORBIDDEN` (403)
+- `NOT_FOUND` (404)
+- `CONFLICT` (409)
+- `RATE_LIMIT` (429)
+- `INTERNAL_ERROR` (500)
 
-### Common Error Codes
+## Estructura relevante
 
-- `VALIDATION_ERROR` -> 400
-- `UNAUTHORIZED` -> 401
-- `FORBIDDEN` -> 403
-- `NOT_FOUND` -> 404
-- `CONFLICT` -> 409
-- `RATE_LIMIT` -> 429
-- `INTERNAL_ERROR` -> 500
-
-### Examples
-
-Validation error:
-
-```json
-{
-  "error": "Error de validación",
-  "code": "VALIDATION_ERROR",
-  "factible": false,
-  "details": [
-    { "path": "body.email", "message": "Invalid email address" }
-  ]
-}
-```
-
-Unauthorized error:
-
-```json
-{
-  "error": "Token inválido o expirado",
-  "code": "UNAUTHORIZED",
-  "factible": false
-}
-```
-
-Not found error:
-
-```json
-{
-  "error": "Médico no encontrado",
-  "code": "NOT_FOUND",
-  "factible": false
-}
-```
-
-Rate limit error:
-
-```json
-{
-  "error": "Demasiadas peticiones al solver, por favor espere.",
-  "code": "RATE_LIMIT",
-  "factible": false
-}
-```
+- `src/controllers`: controladores HTTP
+- `src/services`: logica de negocio
+- `src/routes`: definicion de endpoints
+- `src/middlewares`: auth, validacion, rate limit y manejo de errores
+- `prisma/schema.prisma`: modelo de datos
+- `prisma/scenarios`: escenarios de seed

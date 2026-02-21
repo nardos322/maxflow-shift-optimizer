@@ -1,73 +1,56 @@
-# React + TypeScript + Vite
+# MaxFlow Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend de operacion para el planificador de guardias.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 + TypeScript
+- Vite
+- React Router
+- TanStack Query
+- Zustand
+- Tailwind + componentes UI
+- Vitest + Testing Library
 
-## React Compiler
+## Ubicacion
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Carpeta: `apps/web`
+- App principal: `apps/web/src/App.tsx`
 
-## Expanding the ESLint configuration
+## Comandos
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Ejecutar desde `apps/web`:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run lint
+npm test
+npm run test:watch
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Integracion con API
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+En desarrollo, Vite proxy redirige `/api/*` a `http://localhost:3000` y remueve el prefijo `/api`.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Configurado en `apps/web/vite.config.ts`:
+
+- Frontend usa requests como `/api/auth/login`, `/api/asignaciones/resolver`, etc.
+- El backend recibe `/auth/login`, `/asignaciones/resolver`, etc.
+
+## Funcionalidad principal
+
+- Login y rutas protegidas por rol.
+- Admin: dashboard, gestion de usuarios, CRUD de medicos y periodos, configuracion global.
+- Admin: ejecucion del solver, simulaciones, reparaciones y versionado de planes.
+- Admin: reporte de equidad.
+- Medico: panel personal, gestion de disponibilidad y consulta de guardias asignadas.
+
+## Estructura relevante
+
+- `src/pages`: pantallas de la app
+- `src/components`: layout, auth y UI
+- `src/services`: cliente HTTP hacia la API
+- `src/hooks`: estado de autenticacion y hooks de dominio
+- `src/test`: setup y pruebas base
