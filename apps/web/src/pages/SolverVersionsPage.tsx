@@ -62,6 +62,12 @@ export function SolverVersionsPage() {
     }
   }, [versiones, selectedVersionId]);
 
+  useEffect(() => {
+    if (medicos.length > 0 && !repairMedicoId) {
+      setRepairMedicoId(String(medicos[0].id));
+    }
+  }, [medicos, repairMedicoId]);
+
   const selectedVersion = useMemo(
     () => versiones.find((v) => v.id === selectedVersionId) ?? null,
     [versiones, selectedVersionId]
@@ -352,9 +358,9 @@ export function SolverVersionsPage() {
         <h3 className="text-lg font-bold">Crear Candidata de Reparación</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-4">
           <div className="space-y-2">
-            <Label>Médico</Label>
+            <Label htmlFor="repair-medico">Médico</Label>
             <Select value={repairMedicoId} onValueChange={setRepairMedicoId}>
-              <SelectTrigger>
+              <SelectTrigger id="repair-medico">
                 <SelectValue placeholder="Selecciona médico" />
               </SelectTrigger>
               <SelectContent>
@@ -365,12 +371,12 @@ export function SolverVersionsPage() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Ventana Inicio</Label>
-            <Input type="date" value={ventanaInicio} onChange={(e) => setVentanaInicio(e.target.value)} />
+            <Label htmlFor="repair-ventana-inicio">Ventana Inicio</Label>
+            <Input id="repair-ventana-inicio" type="date" value={ventanaInicio} onChange={(e) => setVentanaInicio(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Ventana Fin</Label>
-            <Input type="date" value={ventanaFin} onChange={(e) => setVentanaFin(e.target.value)} />
+            <Label htmlFor="repair-ventana-fin">Ventana Fin</Label>
+            <Input id="repair-ventana-fin" type="date" value={ventanaFin} onChange={(e) => setVentanaFin(e.target.value)} />
           </div>
           <label className="flex items-end gap-2 pb-2 text-sm">
             <input type="checkbox" checked={darDeBaja} onChange={(e) => setDarDeBaja(e.target.checked)} />
