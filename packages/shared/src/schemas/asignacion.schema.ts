@@ -40,6 +40,15 @@ export const repararAsignacionSchema = z.object({
 
 export const simulacionBodySchema = z.object({
   excluirMedicos: z.array(z.number().int()).optional(),
+  periodosIds: z.array(z.number().int()).optional(),
+  medicosHipoteticos: z
+    .array(
+      z.object({
+        nombre: z.string().min(2),
+        disponibilidadFechas: z.array(z.string()).optional(),
+      })
+    )
+    .optional(),
   config: z
     .object({
       maxGuardiasTotales: z.number().int().optional(),

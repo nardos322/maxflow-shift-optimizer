@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Users, Calculator, Settings, Calendar, FileText, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Users, Calculator, Settings, Calendar, FileText, ClipboardList, FlaskConical } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 
 export function Sidebar() {
@@ -15,17 +15,18 @@ export function Sidebar() {
 
     const navItems = isAdmin
         ? [
-            { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-            { href: "/medicos", label: "Médicos", icon: Users },
-            { href: "/periodos", label: "Períodos", icon: Calendar },
-            { href: "/reportes", label: "Reportes", icon: FileText },
-            { href: "/solver", label: "Planificador", icon: Calculator },
-            { href: "/config", label: "Configuración", icon: Settings },
+            { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, match: "prefix" },
+            { href: "/medicos", label: "Médicos", icon: Users, match: "prefix" },
+            { href: "/periodos", label: "Períodos", icon: Calendar, match: "prefix" },
+            { href: "/reportes", label: "Reportes", icon: FileText, match: "prefix" },
+            { href: "/solver", label: "Planificador", icon: Calculator, match: "exact" },
+            { href: "/solver/laboratorio", label: "Laboratorio", icon: FlaskConical, match: "prefix" },
+            { href: "/config", label: "Configuración", icon: Settings, match: "prefix" },
           ]
         : [
-            { href: "/mi-panel", label: "Mi Panel", icon: LayoutDashboard },
-            { href: "/mi-disponibilidad", label: "Disponibilidad", icon: Calendar },
-            { href: "/mis-guardias", label: "Mis Guardias", icon: ClipboardList },
+            { href: "/mi-panel", label: "Mi Panel", icon: LayoutDashboard, match: "prefix" },
+            { href: "/mi-disponibilidad", label: "Disponibilidad", icon: Calendar, match: "prefix" },
+            { href: "/mis-guardias", label: "Mis Guardias", icon: ClipboardList, match: "prefix" },
           ];
 
     return (
@@ -40,7 +41,10 @@ export function Sidebar() {
             <nav className="flex gap-2 overflow-x-auto px-4 pb-4 md:block md:space-y-1 md:px-4">
                 {navItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
+                    const isActive =
+                        item.match === "exact"
+                            ? location.pathname === item.href
+                            : location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
 
                     return (
                         <Link

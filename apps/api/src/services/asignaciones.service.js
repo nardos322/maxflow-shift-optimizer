@@ -331,7 +331,12 @@ class AsignacionesService {
    * @param {object} options.config - Sobreescritura de configuración
    */
   async simularAsignaciones(options = {}) {
-    const { excluirMedicos = [], config: configOverride = {} } = options;
+    const {
+      excluirMedicos = [],
+      periodosIds = [],
+      medicosHipoteticos = [],
+      config: configOverride = {},
+    } = options;
 
     // 1. Obtener datos base
     let medicos = await prisma.medico.findMany({
@@ -340,6 +345,8 @@ class AsignacionesService {
     });
 
     const periodos = await prisma.periodo.findMany({
+      where:
+        periodosIds.length > 0 ? { id: { in: periodosIds.map((id) => parseInt(id)) } } : undefined,
       include: { feriados: true },
       orderBy: { fechaInicio: 'asc' },
     });
@@ -351,6 +358,62 @@ class AsignacionesService {
     // 2. Aplicar filtros y overrides
     if (excluirMedicos.length > 0) {
       medicos = medicos.filter((m) => !excluirMedicos.includes(m.id));
+    }
+
+    if (periodosIds.length > 0 && periodos.length !== periodosIds.length) {
+      throw new ValidationError('Uno o más períodos seleccionados no existen');
+    }
+
+    const fechasPeriodo = periodos.flatMap((p) =>
+      p.feriados.map((f) => f.fecha)
+    );
+
+    if (periodos.length === 0 || fechasPeriodo.length === 0) {
+      return {
+        factible: false,
+        message: 'No hay períodos/feriados disponibles para simular',
+      };
+    }
+
+    if (medicosHipoteticos.length > 0) {
+      const existingNames = new Set(medicos.map((m) => m.nombre));
+      const hypotheticalNames = new Set();
+
+      for (const [idx, medico] of medicosHipoteticos.entries()) {
+        const nombre =
+          typeof medico.nombre === 'string' ? medico.nombre.trim() : '';
+        if (!nombre) {
+          throw new ValidationError('Cada médico hipotético debe tener nombre');
+        }
+        if (existingNames.has(nombre) || hypotheticalNames.has(nombre)) {
+          throw new ValidationError(
+            `Nombre de médico duplicado en simulación: ${nombre}`
+          );
+        }
+        hypotheticalNames.add(nombre);
+
+        const availabilitySource =
+          medico.disponibilidadFechas && medico.disponibilidadFechas.length > 0
+            ? medico.disponibilidadFechas
+            : fechasPeriodo.map((fecha) => fecha.toISOString());
+
+        const disponibilidad = availabilitySource.map((fechaLike) => {
+          const parsedDate = new Date(fechaLike);
+          if (Number.isNaN(parsedDate.getTime())) {
+            throw new ValidationError(
+              `Fecha inválida en disponibilidad de ${nombre}: ${fechaLike}`
+            );
+          }
+          return { fecha: parsedDate };
+        });
+
+        medicos.push({
+          id: -(idx + 1),
+          nombre,
+          activo: true,
+          disponibilidad,
+        });
+      }
     }
 
     if (medicos.length === 0) {
@@ -377,6 +440,8 @@ class AsignacionesService {
     return {
       parametros: {
         medicosExcluidos: excluirMedicos.length,
+        medicosHipoteticos: medicosHipoteticos.length,
+        periodosConsiderados: periodos.length,
         config: configSimulacion,
       },
       resultado: output,

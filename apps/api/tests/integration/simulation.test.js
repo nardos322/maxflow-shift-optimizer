@@ -101,4 +101,24 @@ describe('Simulation Endpoint Tests', () => {
 
     expect(res.statusCode).toEqual(400); // Bad Request validation error
   });
+
+  test('POST /asignaciones/simular should accept period selection and hypothetical doctors', async () => {
+    const periodos = await prisma.periodo.findMany({ select: { id: true } });
+
+    const res = await request(app)
+      .post('/asignaciones/simular')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        periodosIds: [periodos[0].id],
+        excluirMedicos: [],
+        medicosHipoteticos: [{ nombre: 'Dra. Escenario' }],
+        config: { maxGuardiasTotales: 6 },
+      });
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('resultado');
+    expect(res.body).toHaveProperty('parametros');
+    expect(res.body.parametros.medicosHipoteticos).toBe(1);
+    expect(res.body.parametros.periodosConsiderados).toBe(1);
+  });
 });

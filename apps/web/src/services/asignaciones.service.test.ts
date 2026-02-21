@@ -41,6 +41,8 @@ describe('asignacionesService', () => {
 
     await asignacionesService.simular({
       excluirMedicos: [1, 2],
+      periodosIds: [10],
+      medicosHipoteticos: [{ nombre: 'Dra. Escenario' }],
       config: { maxGuardiasTotales: 4 },
     });
 
@@ -52,6 +54,8 @@ describe('asignacionesService', () => {
       },
       body: JSON.stringify({
         excluirMedicos: [1, 2],
+        periodosIds: [10],
+        medicosHipoteticos: [{ nombre: 'Dra. Escenario' }],
         config: { maxGuardiasTotales: 4 },
       }),
     });

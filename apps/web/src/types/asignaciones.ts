@@ -35,6 +35,11 @@ export interface SolverRunResult {
 
 export interface SimulacionParams {
   excluirMedicos: number[];
+  periodosIds?: number[];
+  medicosHipoteticos?: Array<{
+    nombre: string;
+    disponibilidadFechas?: string[];
+  }>;
   config?: {
     maxGuardiasTotales?: number;
     medicosPorDia?: number;
@@ -45,6 +50,8 @@ export interface SimulacionParams {
 export interface SimulacionResult {
   parametros?: {
     medicosExcluidos?: number;
+    medicosHipoteticos?: number;
+    periodosConsiderados?: number;
     config?: Record<string, unknown>;
   };
   resultado?: SolverEngineResult;

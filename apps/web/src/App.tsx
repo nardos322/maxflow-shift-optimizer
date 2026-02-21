@@ -11,6 +11,7 @@ import { MedicosListPage } from '@/pages/admin/medicos/MedicosListPage'
 import { CreateMedicoPage } from '@/pages/admin/medicos/CreateMedicoPage'
 import { EditMedicoPage } from '@/pages/admin/medicos/EditMedicoPage'
 import { SolverPage } from '@/pages/SolverPage'
+import { ScenarioLabPage } from '@/pages/ScenarioLabPage'
 import { ConfigPage } from '@/pages/ConfigPage'
 import { PeriodosListPage } from '@/pages/admin/periodos/PeriodosListPage'
 import { CreatePeriodoPage } from '@/pages/admin/periodos/CreatePeriodoPage'
@@ -58,6 +59,7 @@ function App() {
                 <Route path="/reportes" element={<ReportesPage />} />
 
                 <Route path="/solver" element={<SolverPage />} />
+                <Route path="/solver/laboratorio" element={<ScenarioLabPage />} />
                 <Route path="/config" element={<ConfigPage />} />
               </Route>
 
