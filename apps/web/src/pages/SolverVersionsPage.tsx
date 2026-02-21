@@ -43,6 +43,8 @@ export function SolverVersionsPage() {
   const [ventanaFin, setVentanaFin] = useState('');
   const [darDeBaja, setDarDeBaja] = useState(false);
   const [previewResult, setPreviewResult] = useState<ReparacionResult | null>(null);
+  const [uiMessage, setUiMessage] = useState<string | null>(null);
+  const [uiError, setUiError] = useState<string | null>(null);
 
   const { data: versiones = [], isLoading: loadingVersiones } = useQuery({
     queryKey: ['plan-versiones'],
@@ -93,11 +95,17 @@ export function SolverVersionsPage() {
   const publicarMutation = useMutation({
     mutationFn: (versionId: number) => asignacionesService.publicarVersion(versionId),
     onSuccess: () => {
+      setUiError(null);
+      setUiMessage('Versión publicada correctamente.');
       queryClient.invalidateQueries({ queryKey: ['plan-versiones'] });
       queryClient.invalidateQueries({ queryKey: ['plan-riesgo'] });
       queryClient.invalidateQueries({ queryKey: ['plan-aprobacion'] });
       queryClient.invalidateQueries({ queryKey: ['plan-diff-publicado'] });
       queryClient.invalidateQueries({ queryKey: ['asignaciones'] });
+    },
+    onError: (error: Error) => {
+      setUiMessage(null);
+      setUiError(error.message || 'No se pudo publicar la versión.');
     },
   });
 
@@ -109,7 +117,15 @@ export function SolverVersionsPage() {
         ventanaInicio: ventanaInicio || undefined,
         ventanaFin: ventanaFin || undefined,
       }),
-    onSuccess: (data) => setPreviewResult(data),
+    onSuccess: (data) => {
+      setUiError(null);
+      setUiMessage('Previsualización completada.');
+      setPreviewResult(data);
+    },
+    onError: (error: Error) => {
+      setUiMessage(null);
+      setUiError(error.message || 'No se pudo previsualizar la reparación.');
+    },
   });
 
   const candidateMutation = useMutation({
@@ -121,11 +137,17 @@ export function SolverVersionsPage() {
         ventanaFin: ventanaFin || undefined,
       }),
     onSuccess: (data) => {
+      setUiError(null);
+      setUiMessage('Candidata de reparación creada.');
       setPreviewResult(data);
       queryClient.invalidateQueries({ queryKey: ['plan-versiones'] });
       if (data.planVersion?.id) {
         setSelectedVersionId(data.planVersion.id);
       }
+    },
+    onError: (error: Error) => {
+      setUiMessage(null);
+      setUiError(error.message || 'No se pudo crear la candidata de reparación.');
     },
   });
 
@@ -162,6 +184,21 @@ export function SolverVersionsPage() {
           <p className="mt-2 text-3xl font-extrabold">{draftCount}</p>
         </div>
       </div>
+
+      {(uiMessage || uiError) && (
+        <section className="space-y-2">
+          {uiMessage && (
+            <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+              {uiMessage}
+            </div>
+          )}
+          {uiError && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {uiError}
+            </div>
+          )}
+        </section>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_1fr]">
         <section className="panel-glass rounded-xl border border-border/70">
@@ -209,7 +246,12 @@ export function SolverVersionsPage() {
               {selectedVersion && (
                 <Button
                   size="sm"
-                  onClick={() => publicarMutation.mutate(selectedVersion.id)}
+                  onClick={() => {
+                    const ok = window.confirm(
+                      `¿Publicar la versión #${selectedVersion.id}? Esta acción aplicará cambios al calendario vigente.`
+                    );
+                    if (ok) publicarMutation.mutate(selectedVersion.id);
+                  }}
                   disabled={
                     publicarMutation.isPending ||
                     !aprobacion?.decision?.aprobable ||
@@ -249,6 +291,9 @@ export function SolverVersionsPage() {
             <h3 className="flex items-center gap-2 text-lg font-bold">
               <ShieldCheck className="h-4 w-4" /> Riesgo Operativo
             </h3>
+            {!riesgo && (
+              <p className="mt-2 text-xs text-muted-foreground">Calculando riesgo...</p>
+            )}
             {riesgo ? (
               <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
                 <p>Cambios netos: <strong>{riesgo.resumen.cambiosNetos}</strong></p>
@@ -265,6 +310,9 @@ export function SolverVersionsPage() {
             <h3 className="flex items-center gap-2 text-lg font-bold">
               <Sparkles className="h-4 w-4" /> Autofix Sugerido
             </h3>
+            {!autofix && (
+              <p className="mt-2 text-xs text-muted-foreground">Calculando sugerencias...</p>
+            )}
             {autofix ? (
               <div className="mt-3 space-y-2 text-sm">
                 <p>Inicio sugerido: <strong>{fmtDate(autofix.parametrosReintento.ventanaInicioSugerida)}</strong></p>
@@ -284,6 +332,9 @@ export function SolverVersionsPage() {
             <h3 className="flex items-center gap-2 text-lg font-bold">
               <Workflow className="h-4 w-4" /> Diff vs Publicada
             </h3>
+            {!diffPublicado && (
+              <p className="mt-2 text-xs text-muted-foreground">Buscando comparación...</p>
+            )}
             {diffPublicado ? (
               <div className="mt-3 grid gap-2 text-sm md:grid-cols-3">
                 <p>Agregadas: <strong>{diffPublicado.resumen.agregadas}</strong></p>
