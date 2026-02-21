@@ -28,11 +28,15 @@ describe('API Integration Tests - Configuracion', () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('id');
     expect(res.body).toHaveProperty('maxGuardiasTotales');
+    expect(res.body).toHaveProperty('maxGuardiasPorPeriodo');
     expect(res.body).toHaveProperty('medicosPorDia');
+    expect(res.body).toHaveProperty('freezeDays');
 
     // Verificar valores numéricos razonables
     expect(res.body.maxGuardiasTotales).toBeGreaterThan(0);
+    expect(res.body.maxGuardiasPorPeriodo).toBeGreaterThan(0);
     expect(res.body.medicosPorDia).toBeGreaterThan(0);
+    expect(res.body.freezeDays).toBeGreaterThanOrEqual(0);
   });
 
   /**
@@ -41,7 +45,9 @@ describe('API Integration Tests - Configuracion', () => {
   test('PUT /configuracion debe actualizar los valores', async () => {
     const nuevosValores = {
       maxGuardiasTotales: 10,
+      maxGuardiasPorPeriodo: 2,
       medicosPorDia: 2,
+      freezeDays: 14,
     };
 
     const res = await request(app)
@@ -51,7 +57,11 @@ describe('API Integration Tests - Configuracion', () => {
 
     expect(res.statusCode).toEqual(200);
     expect(res.body.maxGuardiasTotales).toBe(nuevosValores.maxGuardiasTotales);
+    expect(res.body.maxGuardiasPorPeriodo).toBe(
+      nuevosValores.maxGuardiasPorPeriodo
+    );
     expect(res.body.medicosPorDia).toBe(nuevosValores.medicosPorDia);
+    expect(res.body.freezeDays).toBe(nuevosValores.freezeDays);
   });
 
   /**
@@ -64,6 +74,8 @@ describe('API Integration Tests - Configuracion', () => {
 
     expect(res.statusCode).toEqual(200);
     expect(res.body.maxGuardiasTotales).toBe(10);
+    expect(res.body.maxGuardiasPorPeriodo).toBe(2);
     expect(res.body.medicosPorDia).toBe(2);
+    expect(res.body.freezeDays).toBe(14);
   });
 });

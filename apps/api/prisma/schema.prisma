@@ -77,6 +77,7 @@ model Configuracion {
   maxGuardiasTotales    Int @default(3) // C: máximo días asignados por médico en total
   maxGuardiasPorPeriodo Int @default(1) // Máximo días asignados por médico dentro de un mismo período
   medicosPorDia         Int @default(1) // Cuántos médicos se necesitan por día
+  freezeDays            Int @default(0) // Días desde hoy que quedan congelados para cambios automáticos
 }
 
 // Asignaciones generadas por el solver
@@ -87,11 +88,27 @@ model Asignacion {
   medicoId  Int
   periodo   Periodo  @relation(fields: [periodoId], references: [id])
   periodoId Int
+  planVersion   PlanVersion? @relation(fields: [planVersionId], references: [id])
+  planVersionId Int?
   createdAt DateTime @default(now())
 
   @@unique([fecha, medicoId]) // Un médico no puede tener dos asignaciones el mismo día
   @@index([medicoId])
   @@index([periodoId])
+  @@index([planVersionId])
+}
+
+model PlanVersion {
+  id                  Int          @id @default(autoincrement())
+  tipo                String // BASE | REPAIR
+  estado              String       @default("DRAFT") // DRAFT | PUBLICADO
+  usuario             String
+  sourcePlanVersionId Int?
+  createdAt           DateTime     @default(now())
+  asignaciones        Asignacion[]
+
+  @@index([createdAt])
+  @@index([tipo])
 }
 
 // Registro de auditoría de acciones críticas

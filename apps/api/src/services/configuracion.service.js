@@ -14,6 +14,7 @@ class ConfiguracionService {
           maxGuardiasTotales: 3,
           maxGuardiasPorPeriodo: 1,
           medicosPorDia: 1,
+          freezeDays: 0,
         },
       });
     }
@@ -34,6 +35,7 @@ class ConfiguracionService {
         maxGuardiasTotales: data.maxGuardiasTotales,
         maxGuardiasPorPeriodo: data.maxGuardiasPorPeriodo,
         medicosPorDia: data.medicosPorDia,
+        freezeDays: data.freezeDays,
       },
     });
   }

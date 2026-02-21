@@ -81,6 +81,9 @@ describe('API Integration Tests', () => {
 
     expect(res.body).toHaveProperty('asignacionesCreadas');
     expect(res.body.asignacionesCreadas).toBeGreaterThan(0);
+    expect(res.body).toHaveProperty('planVersion');
+    expect(res.body.planVersion).toHaveProperty('id');
+    expect(res.body.planVersion.tipo).toBe('BASE');
   }, 30000); // Timeout aumentado
 
   test('POST /asignaciones/ejecuciones (alias REST) debe generar asignaciones', async () => {

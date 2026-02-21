@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { createAsignacionBodySchema, idParamSchema } from '../src/schemas/asignacion.schema';
+import {
+  createAsignacionBodySchema,
+  idParamSchema,
+  planDiffQuerySchema,
+  repararAsignacionBodySchema,
+} from '../src/schemas/asignacion.schema';
 
 describe('Asignacion Schemas', () => {
   describe('idParamSchema', () => {
@@ -43,6 +48,49 @@ describe('Asignacion Schemas', () => {
         fecha: 'invalid-date',
       };
       const result = createAsignacionBodySchema.safeParse(data);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('repararAsignacionBodySchema', () => {
+    it('should validate repair payload with optional window', () => {
+      const result = repararAsignacionBodySchema.safeParse({
+        medicoId: 5,
+        darDeBaja: true,
+        ventanaInicio: '2026-03-01',
+        ventanaFin: '2026-03-10',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should fail when ventanaFin is before ventanaInicio', () => {
+      const result = repararAsignacionBodySchema.safeParse({
+        medicoId: 5,
+        ventanaInicio: '2026-03-10',
+        ventanaFin: '2026-03-01',
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('planDiffQuerySchema', () => {
+    it('should parse valid version ids from query strings', () => {
+      const result = planDiffQuerySchema.safeParse({
+        fromVersionId: '1',
+        toVersionId: '2',
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.fromVersionId).toBe(1);
+        expect(result.data.toVersionId).toBe(2);
+      }
+    });
+
+    it('should fail for non positive values', () => {
+      const result = planDiffQuerySchema.safeParse({
+        fromVersionId: 0,
+        toVersionId: -1,
+      });
       expect(result.success).toBe(false);
     });
   });

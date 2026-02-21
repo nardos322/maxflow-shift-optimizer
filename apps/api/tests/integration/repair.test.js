@@ -52,9 +52,21 @@ describe('Integration: Shift Repair', () => {
     }
 
     // Asignaciones Iniciales
+    const baseVersion = await prisma.planVersion.create({
+      data: {
+        tipo: 'BASE',
+        estado: 'PUBLICADO',
+        usuario: 'admin@test.com',
+      },
+    });
+
     await Factories.createAsignacion(drA.id, periodo.id, dias[0]); // Se va
     await Factories.createAsignacion(drB.id, periodo.id, dias[1]);
     await Factories.createAsignacion(drC.id, periodo.id, dias[2]);
+
+    await prisma.asignacion.updateMany({
+      data: { planVersionId: baseVersion.id },
+    });
 
     // 2. Ejecutar Reparación (Sacar a Dr. A)
     const res = await request(app)
@@ -65,6 +77,9 @@ describe('Integration: Shift Repair', () => {
     expect(res.status).toBe(200);
     expect(['OPTIMAL', 'FEASIBLE']).toContain(res.body.status);
     expect(res.body.reasignaciones).toBeGreaterThan(0);
+    expect(res.body.planVersion).toBeDefined();
+    expect(res.body.planVersion.tipo).toBe('REPAIR');
+    expect(res.body.planVersion.sourcePlanVersionId).toBe(baseVersion.id);
 
     // 3. Verificar estado final en DB
     const asignacionesFinales = await prisma.asignacion.findMany({
@@ -126,5 +141,147 @@ describe('Integration: Shift Repair', () => {
 
     // Debe devolver explicación (minCut)
     expect(res.body.minCut).toBeDefined();
+  });
+
+  it('should only repair assignments inside provided window', async () => {
+    const [drA, drB] = await Promise.all([
+      Factories.createMedico({ nombre: 'Dr. Window A', email: 'window-a@test.com' }),
+      Factories.createMedico({ nombre: 'Dr. Window B', email: 'window-b@test.com' }),
+    ]);
+
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    base.setDate(base.getDate() + 8);
+
+    const diaDentro = new Date(base);
+    const diaFuera = new Date(base.getTime() + 86400000);
+
+    const periodo = await Factories.createPeriodoWithFeriados([diaDentro, diaFuera]);
+
+    for (const medico of [drA, drB]) {
+      for (const feriado of periodo.feriados) {
+        await Factories.createDisponibilidad(medico.id, feriado.fecha);
+      }
+    }
+
+    await Factories.createAsignacion(drA.id, periodo.id, diaDentro);
+    await Factories.createAsignacion(drA.id, periodo.id, diaFuera);
+
+    const res = await request(app)
+      .post('/asignaciones/reparar')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        medicoId: drA.id,
+        ventanaInicio: diaDentro.toISOString(),
+        ventanaFin: diaDentro.toISOString(),
+      });
+
+    expect(res.status).toBe(200);
+    expect(['OPTIMAL', 'FEASIBLE']).toContain(res.body.status);
+
+    const asignacionDentro = await prisma.asignacion.findFirst({
+      where: { fecha: diaDentro },
+    });
+    expect(asignacionDentro).toBeDefined();
+    expect(asignacionDentro.medicoId).toBe(drB.id);
+
+    const asignacionFuera = await prisma.asignacion.findFirst({
+      where: { fecha: diaFuera },
+    });
+    expect(asignacionFuera).toBeDefined();
+    expect(asignacionFuera.medicoId).toBe(drA.id);
+  });
+
+  it('should not repair when requested window is fully frozen', async () => {
+    await Factories.createConfiguracion({
+      maxGuardiasTotales: 5,
+      medicosPorDia: 1,
+      freezeDays: 30,
+    });
+
+    const [drA, drB] = await Promise.all([
+      Factories.createMedico({ nombre: 'Dr. Freeze A', email: 'freeze-a@test.com' }),
+      Factories.createMedico({ nombre: 'Dr. Freeze B', email: 'freeze-b@test.com' }),
+    ]);
+
+    const diaCercano = new Date();
+    diaCercano.setDate(diaCercano.getDate() + 2);
+    diaCercano.setHours(0, 0, 0, 0);
+
+    const periodo = await Factories.createPeriodoWithFeriados([diaCercano]);
+    await Factories.createDisponibilidad(drA.id, diaCercano);
+    await Factories.createDisponibilidad(drB.id, diaCercano);
+    await Factories.createAsignacion(drA.id, periodo.id, diaCercano);
+
+    const res = await request(app)
+      .post('/asignaciones/reparar')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        medicoId: drA.id,
+        ventanaInicio: diaCercano.toISOString(),
+        ventanaFin: diaCercano.toISOString(),
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('OK');
+    expect(res.body.message).toContain('período congelado');
+
+    const asignacion = await prisma.asignacion.findFirst({
+      where: { fecha: diaCercano },
+    });
+    expect(asignacion).toBeDefined();
+    expect(asignacion.medicoId).toBe(drA.id);
+  });
+
+  it('should return a diff between two plan versions', async () => {
+    const [drA, drB] = await Promise.all([
+      Factories.createMedico({ nombre: 'Dr. Diff A', email: 'diff-a@test.com' }),
+      Factories.createMedico({ nombre: 'Dr. Diff B', email: 'diff-b@test.com' }),
+    ]);
+
+    const dia = new Date();
+    dia.setDate(dia.getDate() + 9);
+    dia.setHours(0, 0, 0, 0);
+
+    const periodo = await Factories.createPeriodoWithFeriados([dia]);
+    await Factories.createDisponibilidad(drA.id, dia);
+    await Factories.createDisponibilidad(drB.id, dia);
+
+    const baseVersion = await prisma.planVersion.create({
+      data: {
+        tipo: 'BASE',
+        estado: 'PUBLICADO',
+        usuario: 'admin@test.com',
+      },
+    });
+
+    const baseAsignacion = await Factories.createAsignacion(drA.id, periodo.id, dia);
+    await prisma.asignacion.update({
+      where: { id: baseAsignacion.id },
+      data: { planVersionId: baseVersion.id },
+    });
+
+    const repairRes = await request(app)
+      .post('/asignaciones/reparar')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ medicoId: drA.id });
+
+    expect(repairRes.status).toBe(200);
+    expect(repairRes.body.status).toBe('FEASIBLE');
+    const repairVersionId = repairRes.body.planVersion.id;
+
+    const diffRes = await request(app)
+      .get('/asignaciones/diff')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .query({
+        fromVersionId: baseVersion.id,
+        toVersionId: repairVersionId,
+      });
+
+    expect(diffRes.status).toBe(200);
+    expect(diffRes.body).toHaveProperty('resumen');
+    expect(diffRes.body.resumen.cambiosNetos).toBeGreaterThan(0);
+    expect(Array.isArray(diffRes.body.agregadas)).toBe(true);
+    expect(Array.isArray(diffRes.body.removidas)).toBe(true);
   });
 });

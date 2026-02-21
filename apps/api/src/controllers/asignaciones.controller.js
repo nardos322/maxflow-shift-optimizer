@@ -22,6 +22,7 @@ const obtenerResultados = asyncHandler(async (req, res) => {
     include: {
       medico: { select: { id: true, nombre: true } },
       periodo: { select: { id: true, nombre: true } },
+      planVersion: { select: { id: true, tipo: true, createdAt: true } },
     },
     orderBy: { fecha: 'asc' },
   });
@@ -43,7 +44,7 @@ const limpiar = asyncHandler(async (req, res) => {
  * Body: { medicoId: 123 }
  */
 const reparar = asyncHandler(async (req, res) => {
-  const { medicoId, darDeBaja } = req.body;
+  const { medicoId, darDeBaja, ventanaInicio, ventanaFin } = req.body;
   if (!medicoId) throw new ValidationError('medicoId es requerido');
 
   const usuarioEmail = req.user ? req.user.email : 'system';
@@ -51,6 +52,8 @@ const reparar = asyncHandler(async (req, res) => {
   const resultado = await asignacionesService.repararAsignaciones(
     medicoId,
     darDeBaja,
+    ventanaInicio,
+    ventanaFin,
     usuarioEmail
   );
   res.json(resultado);
@@ -70,10 +73,20 @@ const simular = asyncHandler(async (req, res) => {
   res.json(resultado);
 });
 
+const compararVersiones = asyncHandler(async (req, res) => {
+  const { fromVersionId, toVersionId } = req.query;
+  const diff = await asignacionesService.compararVersiones(
+    fromVersionId,
+    toVersionId
+  );
+  res.json(diff);
+});
+
 export default {
   calcular,
   obtenerResultados,
   limpiar,
   reparar,
   simular,
+  compararVersiones,
 };

@@ -32,10 +32,30 @@ export const createAsignacionSchema = z.object({
 
 export const repararAsignacionBodySchema = z.object({
   medicoId: z.number().int('ID de médico inválido'),
+  darDeBaja: z.boolean().optional(),
+  ventanaInicio: z.coerce.date().optional(),
+  ventanaFin: z.coerce.date().optional(),
+}).superRefine((data, ctx) => {
+  if (data.ventanaInicio && data.ventanaFin && data.ventanaFin < data.ventanaInicio) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['ventanaFin'],
+      message: 'ventanaFin debe ser mayor o igual que ventanaInicio',
+    });
+  }
 });
 
 export const repararAsignacionSchema = z.object({
   body: repararAsignacionBodySchema,
+});
+
+export const planDiffQuerySchema = z.object({
+  fromVersionId: z.coerce.number().int('fromVersionId inválido').positive(),
+  toVersionId: z.coerce.number().int('toVersionId inválido').positive(),
+});
+
+export const planDiffSchema = z.object({
+  query: planDiffQuerySchema,
 });
 
 export const simulacionBodySchema = z.object({

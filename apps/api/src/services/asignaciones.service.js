@@ -10,6 +10,30 @@ class AsignacionesService {
     return today;
   }
 
+  getFreezeBoundary(config, fromDate = null) {
+    const base = fromDate ? new Date(fromDate) : this.getStartOfToday();
+    const freezeDays = Number.isInteger(config?.freezeDays)
+      ? config.freezeDays
+      : 0;
+    base.setDate(base.getDate() + Math.max(0, freezeDays));
+    base.setHours(0, 0, 0, 0);
+    return base;
+  }
+
+  async ensurePlanVersion(id) {
+    const planVersionId = parseInt(id, 10);
+    if (Number.isNaN(planVersionId)) {
+      throw new ValidationError('ID de versión inválido');
+    }
+    const planVersion = await prisma.planVersion.findUnique({
+      where: { id: planVersionId },
+    });
+    if (!planVersion) {
+      throw new NotFoundError(`Versión de plan ${planVersionId} no encontrada`);
+    }
+    return planVersion;
+  }
+
   /**
    * Genera las asignaciones llamando al core (C++) y guardando resultados
    */
@@ -21,13 +45,20 @@ class AsignacionesService {
     });
 
     const today = this.getStartOfToday();
+    const config = await prisma.configuracion.findFirst();
+
+    if (!config) {
+      throw new NotFoundError('Configuración no encontrada');
+    }
+
+    const freezeBoundary = this.getFreezeBoundary(config, today);
 
     const periodos = await prisma.periodo.findMany({
       include: {
         feriados: {
           where: {
             estadoPlanificacion: 'PENDIENTE',
-            fecha: { gte: today },
+            fecha: { gte: freezeBoundary },
           },
         },
       },
@@ -35,15 +66,11 @@ class AsignacionesService {
     });
     const periodosPendientes = periodos.filter((periodo) => periodo.feriados.length > 0);
 
-    const config = await prisma.configuracion.findFirst();
-
-    if (!config) {
-      throw new NotFoundError('Configuración no encontrada');
-    }
-
     if (medicos.length === 0) throw new ValidationError('No hay médicos activos');
     if (periodosPendientes.length === 0) {
-      throw new ValidationError('No hay feriados pendientes para planificar');
+      throw new ValidationError(
+        'No hay feriados pendientes para planificar fuera de la ventana congelada'
+      );
     }
 
     // 2. Preparar JSON para el core (Usando core.service)
@@ -56,10 +83,18 @@ class AsignacionesService {
     if (output.factible) {
       // Usar transacción para asegurar atomicidad
       return await prisma.$transaction(async (tx) => {
+        const nuevaVersion = await tx.planVersion.create({
+          data: {
+            tipo: 'BASE',
+            estado: 'DRAFT',
+            usuario: usuarioEmail,
+          },
+        });
+
         // Replanificar solo hacia adelante para no perder histórico ya ejecutado.
         await tx.asignacion.deleteMany({
           where: {
-            fecha: { gte: today },
+            fecha: { gte: freezeBoundary },
           },
         });
 
@@ -90,6 +125,7 @@ class AsignacionesService {
               medicoId: medico.id,
               periodoId: periodo.id,
               fecha: new Date(assignment.dia),
+              planVersionId: nuevaVersion.id,
             });
             if (feriadoId) {
               feriadosPlanificadosIds.add(feriadoId);
@@ -120,6 +156,7 @@ class AsignacionesService {
           usuarioEmail,
           {
             asignacionesCreadas: asignacionesParaGuardar.length,
+            planVersionId: nuevaVersion.id,
           },
           tx
         );
@@ -127,6 +164,12 @@ class AsignacionesService {
         return {
           status: 'FEASIBLE',
           asignacionesCreadas: asignacionesParaGuardar.length,
+          planVersion: {
+            id: nuevaVersion.id,
+            tipo: nuevaVersion.tipo,
+            estado: nuevaVersion.estado,
+            createdAt: nuevaVersion.createdAt,
+          },
         };
       });
     } else {
@@ -153,22 +196,68 @@ class AsignacionesService {
   async repararAsignaciones(
     medicoId,
     darDeBaja = false,
+    ventanaInicio = null,
+    ventanaFin = null,
     usuarioEmail = 'system'
   ) {
     medicoId = parseInt(medicoId);
     if (isNaN(medicoId)) throw new ValidationError('ID de médico inválido');
 
+    const hoy = this.getStartOfToday();
+
+    let inicioSolicitado = new Date(hoy);
+    if (ventanaInicio) {
+      const parsedInicio = new Date(ventanaInicio);
+      if (Number.isNaN(parsedInicio.getTime())) {
+        throw new ValidationError('ventanaInicio inválida');
+      }
+      parsedInicio.setHours(0, 0, 0, 0);
+      if (parsedInicio > inicioSolicitado) inicioSolicitado = parsedInicio;
+    }
+
+    let fin = null;
+    if (ventanaFin) {
+      const parsedFin = new Date(ventanaFin);
+      if (Number.isNaN(parsedFin.getTime())) {
+        throw new ValidationError('ventanaFin inválida');
+      }
+      parsedFin.setHours(23, 59, 59, 999);
+      fin = parsedFin;
+    }
+
+    if (fin && fin < inicioSolicitado) {
+      throw new ValidationError('ventanaFin debe ser mayor o igual que ventanaInicio');
+    }
+
     // 1. Obtener configuración
     const config = await prisma.configuracion.findFirst();
     if (!config) throw new NotFoundError('No hay configuración definida');
 
+    const freezeBoundary = this.getFreezeBoundary(config, hoy);
+    const inicio = inicioSolicitado > freezeBoundary ? inicioSolicitado : freezeBoundary;
+
+    if (fin && fin < inicio) {
+      return {
+        status: 'OK',
+        message:
+          'La ventana solicitada cae completamente dentro del período congelado. No se aplicaron cambios.',
+        ventanaAplicada: {
+          inicio,
+          fin,
+          freezeBoundary,
+        },
+      };
+    }
+
     // 2. Obtener todas las asignaciones futuras
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
+    const whereBase = { fecha: { gte: inicio } };
+    if (fin) {
+      whereBase.fecha.lte = fin;
+    }
 
     const asignacionesExistentes = await prisma.asignacion.findMany({
-      where: { fecha: { gte: hoy } },
-      include: { medico: true },
+      where: whereBase,
+      include: { medico: true, planVersion: true },
     });
 
     // 3. Identificar huecos (asignaciones del médico saliente)
@@ -188,6 +277,11 @@ class AsignacionesService {
         status: 'OK',
         message:
           'El médico no tenía asignaciones futuras. No se requiere reparación.',
+        ventanaAplicada: {
+          inicio,
+          fin,
+          freezeBoundary,
+        },
       };
     }
 
@@ -255,10 +349,22 @@ class AsignacionesService {
     // 6. Ejecutar solver
     const output = await coreService.runSolver(inputData);
 
+    const sourcePlanVersionId =
+      asignacionesBorrables.find((a) => a.planVersionId)?.planVersionId ?? null;
+
     // 7. Procesar resultados
     if (output.factible) {
       // Transacción para aplicar cambios
-      await prisma.$transaction(async (tx) => {
+      const nuevaVersion = await prisma.$transaction(async (tx) => {
+        const nuevaVersionTx = await tx.planVersion.create({
+          data: {
+            tipo: 'REPAIR',
+            estado: 'DRAFT',
+            usuario: usuarioEmail,
+            sourcePlanVersionId,
+          },
+        });
+
         // Borrar asignaciones del médico saliente
         await tx.asignacion.deleteMany({
           where: {
@@ -287,6 +393,7 @@ class AsignacionesService {
               medicoId: medico.id,
               periodoId: periodoId,
               fecha: new Date(assignment.dia),
+              planVersionId: nuevaVersionTx.id,
             });
           }
         }
@@ -301,17 +408,32 @@ class AsignacionesService {
             data: { activo: false },
           });
         }
+        return nuevaVersionTx;
       });
 
       await auditService.log('REPARAR_ASIGNACIONES', usuarioEmail, {
         medicoId,
         reasignaciones: output.asignaciones.length,
         darDeBaja,
+        planVersionId: nuevaVersion.id,
+        sourcePlanVersionId,
       });
 
       return {
         status: 'FEASIBLE',
         reasignaciones: output.asignaciones.length, // Número de reasignaciones
+        planVersion: {
+          id: nuevaVersion.id,
+          tipo: nuevaVersion.tipo,
+          estado: nuevaVersion.estado,
+          sourcePlanVersionId: nuevaVersion.sourcePlanVersionId,
+          createdAt: nuevaVersion.createdAt,
+        },
+        ventanaAplicada: {
+          inicio,
+          fin,
+          freezeBoundary,
+        },
       };
     } else {
       return {
@@ -320,6 +442,71 @@ class AsignacionesService {
         minCut: output.bottlenecks || [],
       };
     }
+  }
+
+  async compararVersiones(fromVersionId, toVersionId) {
+    const fromVersion = await this.ensurePlanVersion(fromVersionId);
+    const toVersion = await this.ensurePlanVersion(toVersionId);
+
+    const [fromAsignaciones, toAsignaciones] = await Promise.all([
+      prisma.asignacion.findMany({
+        where: { planVersionId: fromVersion.id },
+        include: { medico: { select: { id: true, nombre: true } } },
+      }),
+      prisma.asignacion.findMany({
+        where: { planVersionId: toVersion.id },
+        include: { medico: { select: { id: true, nombre: true } } },
+      }),
+    ]);
+
+    const fromSet = new Set(
+      fromAsignaciones.map(
+        (a) => `${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`
+      )
+    );
+    const toSet = new Set(
+      toAsignaciones.map(
+        (a) => `${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`
+      )
+    );
+
+    const removidas = fromAsignaciones
+      .filter((a) => !toSet.has(`${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`))
+      .map((a) => ({
+        fecha: a.fecha,
+        medicoId: a.medicoId,
+        medico: a.medico.nombre,
+      }));
+
+    const agregadas = toAsignaciones
+      .filter((a) => !fromSet.has(`${a.fecha.toISOString().split('T')[0]}|${a.medicoId}`))
+      .map((a) => ({
+        fecha: a.fecha,
+        medicoId: a.medicoId,
+        medico: a.medico.nombre,
+      }));
+
+    return {
+      fromVersion: {
+        id: fromVersion.id,
+        tipo: fromVersion.tipo,
+        createdAt: fromVersion.createdAt,
+      },
+      toVersion: {
+        id: toVersion.id,
+        tipo: toVersion.tipo,
+        createdAt: toVersion.createdAt,
+      },
+      resumen: {
+        totalFrom: fromAsignaciones.length,
+        totalTo: toAsignaciones.length,
+        agregadas: agregadas.length,
+        removidas: removidas.length,
+        cambiosNetos: agregadas.length + removidas.length,
+      },
+      agregadas,
+      removidas,
+    };
   }
 
   /**
