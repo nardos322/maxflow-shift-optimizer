@@ -9,7 +9,7 @@ echo "========================================="
 # 1. Compilar el Core C++
 echo ""
 echo "📦 [1/3] Compilando Core C++..."
-cd core
+cd apps/core
 make
 if [ $? -eq 0 ]; then
     echo "✅ Core compilado correctamente."
@@ -17,14 +17,16 @@ else
     echo "❌ Error al compilar el Core."
     exit 1
 fi
-cd ..
+cd ../..
 
 # 2. Preparar la API
 echo ""
 echo "🔧 [2/3] Configurando API..."
-cd api
-echo "   Installing dependencies..."
-npm install
+cd apps/api
+echo "   Installing dependencies (from root)..."
+if [ ! -d "../../node_modules" ]; then
+    npm install --prefix ../..
+fi
 
 echo "   Running DB setup..."
 npm run setup

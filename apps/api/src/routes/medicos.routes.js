@@ -1,0 +1,323 @@
+import { Router } from 'express';
+import medicosController from '../controllers/medicos.controller.js';
+import { authenticateJWT } from '../middlewares/authenticateJWT.js';
+import { authorizeRoles } from '../middlewares/authorizeRoles.js';
+
+import validate from '../middlewares/validate.js';
+import {
+  createMedicoSchema,
+  updateMedicoSchema,
+  getMedicoSchema,
+  deleteMedicoSchema,
+  deleteDisponibilidadSchema,
+  createDisponibilidadSchema,
+} from '@maxflow/shared';
+
+/**
+ * @swagger
+ * tags:
+ *   name: Medicos
+ *   description: Gestión de médicos y sus disponibilidades
+ */
+
+const router = Router();
+
+// Solo admin puede crear, actualizar y eliminar médicos
+/**
+ * @swagger
+ * /medicos:
+ *   post:
+ *     summary: Crear nuevo médico
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - email
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               activo:
+ *                 type: boolean
+ *               userId:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Médico creado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Medico'
+ */
+router.post(
+  '/',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(createMedicoSchema),
+  medicosController.crear
+);
+
+/**
+ * @swagger
+ * /medicos/{id}:
+ *   put:
+ *     summary: Actualizar médico
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               activo:
+ *                 type: boolean
+ *               userId:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Médico actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Medico'
+ */
+router.put(
+  '/:id',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(updateMedicoSchema),
+  medicosController.actualizar
+);
+
+/**
+ * @swagger
+ * /medicos/{id}:
+ *   delete:
+ *     summary: Eliminar médico
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Médico eliminado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.delete(
+  '/:id',
+  authenticateJWT,
+  authorizeRoles('ADMIN'),
+  validate(deleteMedicoSchema),
+  medicosController.eliminar
+);
+
+// Médicos autenticados pueden gestionar su disponibilidad
+/**
+ * @swagger
+ * /medicos/{id}/disponibilidad:
+ *   get:
+ *     summary: Obtener disponibilidad de un médico
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Lista de fechas disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Disponibilidad'
+ */
+router.get(
+  '/:id/disponibilidad',
+  authenticateJWT,
+  authorizeRoles('MEDICO', 'ADMIN'),
+  medicosController.obtenerDisponibilidad
+);
+
+/**
+ * @swagger
+ * /medicos/{id}/disponibilidad:
+ *   post:
+ *     summary: Agregar fecha de disponibilidad
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fecha
+ *             properties:
+ *               fecha:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       201:
+ *         description: Disponibilidad agregada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Disponibilidad'
+ */
+router.post(
+  '/:id/disponibilidad',
+  authenticateJWT,
+  authorizeRoles('MEDICO', 'ADMIN'),
+  validate(createDisponibilidadSchema),
+  medicosController.agregarDisponibilidad
+);
+
+/**
+ * @swagger
+ * /medicos/{id}/disponibilidad:
+ *   delete:
+ *     summary: Eliminar fecha de disponibilidad
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fecha
+ *             properties:
+ *               fecha:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       200:
+ *         description: Disponibilidad eliminada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
+router.delete(
+  '/:id/disponibilidad',
+  authenticateJWT,
+  authorizeRoles('MEDICO', 'ADMIN'),
+  validate(deleteDisponibilidadSchema),
+  medicosController.eliminarDisponibilidad
+);
+
+// Todos los autenticados pueden consultar médicos
+/**
+ * @swagger
+ * /medicos:
+ *   get:
+ *     summary: Listar todos los médicos
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de médicos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Medico'
+ */
+router.get(
+  '/',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  medicosController.obtenerTodos
+);
+
+/**
+ * @swagger
+ * /medicos/{id}:
+ *   get:
+ *     summary: Obtener médico por ID
+ *     tags: [Medicos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Detalles del médico
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Medico'
+ *       404:
+ *         description: Médico no encontrado
+ */
+router.get(
+  '/:id',
+  authenticateJWT,
+  authorizeRoles('ADMIN', 'MEDICO', 'LECTOR'),
+  validate(getMedicoSchema),
+  medicosController.obtenerPorId
+);
+
+export default router;

@@ -17,11 +17,11 @@
 *.pch
 
 # Directorio build completo (ejecutables, objetos, etc.)
-core/build/*
-!core/build/.gitkeep
+apps/core/build/*
+!apps/core/build/.gitkeep
 
 # Compile commands (generado localmente para clangd)
-core/compile_commands.json
+apps/core/compile_commands.json
 
 # CMake (si se usa en el futuro)
 CMakeCache.txt
@@ -34,7 +34,7 @@ Makefile.cmake
 *.su
 *.idb
 *.pdb
-core/*.stackdump
+apps/core/*.stackdump
 
 # ================================
 # Node.js (api/)
@@ -77,8 +77,8 @@ out/
 .env.production.local
 
 # Prisma y Bases de Datos
-api/*.db
-api/*.db-journal
+apps/api/*.db
+apps/api/*.db-journal
 *.db
 *.db-journal
 
@@ -109,3 +109,12 @@ Thumbs.db
 *.temp
 *.cache
 .cache/
+
+# ================================
+# Agent Tooling
+# ================================
+
+.agents/
+.interface-design/
+skills-lock.json
+
